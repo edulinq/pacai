@@ -16,7 +16,7 @@ Some improvements from the original project:
 ## FAQ
 
 **Q:** What version of Python does this project support?  
-**A:** Python >= 3.8.
+**A:** Python >= 3.10.
 The original version of this project was written for Python 2, but it has since been updated.
 
 **Q:** What dependencies do I need for this project?  

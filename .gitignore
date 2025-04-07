@@ -1,10 +1,30 @@
-*.swp
+# Editor Files
 .DS_Store
+*.swp
+
+# Language Dirents
+.ipynb_checkpoints
+node_modules/
+venv/
 *.pyc
-__pycache__
-*.egg-info
-/dist/
-/html/
-/*.gif
-/._site/
+__pycache__/
+
+# Common Temp Dirents
+old/
+temp/
+out*/
+/test-*
+/test.*
+
+# Build
+/bin/
 /build/
+/dist/
+*.egg-info
+/html/
+
+# Project-Specific
+*.gif
+*.gz
+/._site/
+*.zip

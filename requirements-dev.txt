@@ -1,0 +1,5 @@
+build
+packaging>=21.3
+pdoc>=14.7.0
+twine
+vermin

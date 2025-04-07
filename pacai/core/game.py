@@ -1,202 +1,108 @@
-"""
-The core of a pacman-style game.
-"""
+import abc
+import random
 
-import logging
-import time
+import pacai.core.action
+import pacai.core.agent
+import pacai.core.time
 
-class Game:
+class MoveHistoryRecord:
+    """ A record of a single move made by an agent. """
+
+    def __init__(self, index: int, action: pacai.core.action.Action, duration: pacai.core.time.Duration) -> None:
+        self.index: int = index
+        """ The index of the agent making this move. """
+
+        self.action: pacai.core.action.Action = action
+        """ The action made by the agent. """
+
+        self.duration: pacai.core.time.Duration = duration
+        """ How long the agent took to compute the this move. """
+
+class GameResult:
+    """ The result of running a game. """
+
+    def __init__(self, id: int, seed: int, agents: list[pacai.core.agent.Agent]) -> None:
+        self.id: int = id
+        """ The ID of the game. """
+
+        self.seed: int = seed
+        """ The seed used for the game. """
+
+        self.agent_names: list[str] = []
+        """ The names of the agents in the game by index. """
+
+        for agent in agents:
+            self.agent_names.append(agent.name)
+        
+        self.history: list[MoveHistoryRecord] = []
+        """ The history of actions taken by each agent in this game. """
+
+class Game(abc.ABC):
     """
-    The Game manages the control flow, soliciting actions from agents.
+    A game that can be run in pacai.
+    Games combine the rules, layouts, and agents to run.
     """
 
-    def __init__(self, agents, display, rules, startingIndex = 0, catchExceptions = False):
-        self.agentCrashed = False
-        self.agents = agents
-        self.display = display
-        self.rules = rules
-        self.startingIndex = startingIndex
-        self.gameOver = False
-        self.moveHistory = []
-        self.totalAgentTimes = [0 for agent in agents]
-        self.totalAgentTimeWarnings = [0 for agent in agents]
-        self.agentTimeout = False
+    def __init__(self,
+            agents: list[pacai.core.agent.Agent],
+            seed: int | None = None,
+            ) -> None:
+        if seed is None:
+            seed = random.randint(0, 2**64)
 
-        self.enforceTimeouts = catchExceptions
-        self.catchExceptions = catchExceptions
+        self._seed: int = seed
+        self._rng: random.Random = random.Random(seed)
 
-    def run(self):
+        self._id = self._rng.randint(0, 2**64)
+
+        self._agents: list[pacai.core.agent.Agent] = agents
+        if (len(self._agents) == 0):
+            raise ValueError("No agents provided.")
+
+        # Assign initial tickets to all the agents.
+        self._tickets = [pacai.core.agent.Ticket(agent.move_delay, 0, 0) for agent in self._agents]
+
+    def setup(self) -> None:
+        # TEST - Is this necessary?
+        pass
+
+    @abc.abstractmethod
+    def process_move(self, move: MoveHistoryRecord) -> None:
+        """ Process the given move and update the game's state. """
+
+        pass
+
+    def run(self) -> GameResult:
         """
-        Main control loop for game play.
-        """
-
-        self.numMoves = 0
-
-        agentIndex = self.startingIndex
-        numAgents = len(self.agents)
-
-        self.display.initialize(self.state)
-
-        if (not self._registerInitialState()):
-            return False
-
-        # Draw the initial frame.
-        self.display.update(self.state)
-
-        while (not self.gameOver):
-            # Fetch the next agent
-            agent = self.agents[agentIndex]
-
-            action = None
-            startTime = time.time()
-
-            # Get an action from the agent.
-            try:
-                agent.observationFunction(self.state)
-                action = agent.getAction(self.state)
-            except Exception as ex:
-                if (not self.catchExceptions):
-                    raise ex
-
-                self._agentCrash(agentIndex, ex)
-                return False
-
-            timeTaken = time.time() - startTime
-            self.totalAgentTimes[agentIndex] += timeTaken
-
-            if (self._checkForTimeouts(agentIndex, timeTaken)):
-                return False
-
-            # Execute the action.
-            self.moveHistory.append((agentIndex, action))
-            try:
-                self.state = self.state.generateSuccessor(agentIndex, action)
-            except Exception as ex:
-                if (not self.catchExceptions):
-                    raise ex
-
-                self._agentCrash(agentIndex, ex)
-                return False
-
-            # Update the display.
-            self.display.update(self.state)
-
-            # Allow for game specific conditions (winning, losing, etc.).
-            self.rules.process(self.state, self)
-
-            # Track progress.
-            if (agentIndex == numAgents + 1):
-                self.numMoves += 1
-
-            # Next agent.
-            agentIndex = (agentIndex + 1) % numAgents
-
-        if (not self._registerFinalState()):
-            return False
-
-        self.display.finish()
-
-    def _agentCrash(self, agentIndex, exception = None):
-        """
-        Helper method for handling agent crashes.
+        The main "game loop" for all games.
+        One round of the loop will:
+         1) allow the next agent to move,
+         2) allocate a new ticket for the moved agent,
+         3) record actions,
+         4) check the game's rules,
+         and 5) update the display.
         """
 
-        logging.warning('Agent %d crashedtimed out on a single move!' % agentIndex,
-                exc_info = exception)
+        result = GameResult(self._id, self._seed, self._agents)
 
-        self.gameOver = True
-        self.agentCrashed = True
-        self.rules.agentCrash(self, agentIndex)
+        turn_count = 0
+        while (True):
+            agent_index = self._get_next_agent_index()
+            agent = self._agents[agent_index]
 
-    def _checkForTimeouts(self, agentIndex, timeTaken):
+        # TEST
+
+        return result
+
+    def _get_next_agent_index(self):
         """
-        Check if an agent timed out.
-        Return: True if an agent times out.
-        """
-
-        if (not self.enforceTimeouts):
-            return False
-
-        # Check for a single move timeout (results in an instant loss).
-        moveTimeout = self.rules.getMoveTimeout(agentIndex)
-        if (timeTaken > moveTimeout):
-            logging.warning('Agent %d timed out on a single move!' % agentIndex)
-            self.agentTimeout = True
-            self._agentCrash(agentIndex)
-            return True
-
-        # Check for a timeout warning (you get a few of theses).
-        moveWarningTime = self.rules.getMoveWarningTime(agentIndex)
-        if (timeTaken > moveWarningTime):
-            self.totalAgentTimeWarnings[agentIndex] += 1
-            logging.warning('Agent %d took too long to move! This is warning %d' %
-                    (agentIndex, self.totalAgentTimeWarnings[agentIndex]))
-
-            maxTimeouts = self.rules.getMaxTimeWarnings(agentIndex)
-            if (self.totalAgentTimeWarnings[agentIndex] > maxTimeouts):
-                logging.warning('Agent %d exceeded the maximum number of warnings: %d' %
-                        (agentIndex, self.totalAgentTimeWarnings[agentIndex]))
-                self.agentTimeout = True
-                self._agentCrash(agentIndex)
-                return True
-
-        # Check if the agent has used too much time overall.
-        maxTotalTime = self.rules.getMaxTotalAgentTime(agentIndex)
-        if (self.totalAgentTimes[agentIndex] > maxTotalTime):
-            logging.warning('Agent %d ran out of time! (time: %1.2f)' %
-                    (agentIndex, self.totalAgentTimes[agentIndex]))
-            self.agentTimeout = True
-            self._agentCrash(agentIndex)
-            return True
-
-        return False
-
-    def _registerInitialState(self):
-        """
-        Inform agents of the game start.
+        Get the agent that moves next.
+        Do this by looking at the agents' tickets and choosing the one with the lowest ticket.
         """
 
-        for agentIndex in range(len(self.agents)):
-            agent = self.agents[agentIndex]
+        next_index = 0
+        for i in range(1, len(self._agents)):
+            if (self._tickets[i] < self._tickets[next_index]):
+                next_index = i
 
-            if (not agent):
-                # this is a null agent, meaning it failed to load the other team wins.
-                self._agentCrash(agentIndex)
-                return False
-
-            maxStartupTime = float(self.rules.getMaxStartupTime(agentIndex))
-            startTime = time.time()
-
-            try:
-                agent.registerInitialState(self.state)
-            except Exception as ex:
-                if (not self.catchExceptions):
-                    raise ex
-
-                self._agentCrash(agentIndex, ex)
-                return False
-
-            timeTaken = time.time() - startTime
-            self.totalAgentTimes[agentIndex] += timeTaken
-
-            if (self.enforceTimeouts and timeTaken > maxStartupTime):
-                logging.warning('Agent %d ran out of time on startup!' % agentIndex)
-                self.agentTimeout = True
-                self._agentCrash(agentIndex)
-                return False
-
-        return True
-
-    def _registerFinalState(self):
-        # Inform a learning agent of the game's result.
-        for agent in self.agents:
-            try:
-                agent.final(self.state)
-            except Exception as ex:
-                if (not self.catchExceptions):
-                    raise ex
-
-                self._agentCrash(agent.index, ex)
-                return False
-
-        return True
+        return next_index

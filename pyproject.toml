@@ -2,7 +2,7 @@
 build-backend = "setuptools.build_meta"
 requires = [
     "packaging>=21.3",
-    "pdoc3>=0.7.0",
+    "pdoc>=15.0.1",
     "setuptools",
     "twine",
     "vermin",
@@ -10,14 +10,14 @@ requires = [
 
 [project]
 name = "linqs-pacai"
-version = "1.3.0"
 description = "A modified version of the Pacman educational project from the Berkley AI Lab."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = {file = "LICENSE.md"}
 
 authors = [
     {name = "Eriq Augustine", email = "eaugusti@ucsc.edu"},
+    {name = "Connor Pryor", email = "cfpryor@ucsc.edu"},
     {name = "LINQS", email = "linqs.edu@gmail.com"},
 ]
 
@@ -26,14 +26,21 @@ classifiers = [
     'Intended Audience :: Science/Research',
     'Intended Audience :: Education',
     'Operating System :: OS Independent',
-    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.10',
     'Topic :: Education',
     'Topic :: Scientific/Engineering :: Artificial Intelligence',
 ]
 
-dependencies = [
-    "Pillow>=8.3.2",
+dynamic = [
+    "version",
+    "dependencies",
+    "optional-dependencies",
 ]
+
+[tool.setuptools.dynamic]
+version = {attr = "pacai.__version__"}
+dependencies = {file = ["requirements.txt"]}
+optional-dependencies = {dev = {file = ["requirements-dev.txt"]}}
 
 [project.urls]
 Homepage = "https://github.com/linqs/pacman"

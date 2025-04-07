@@ -1,22 +1,16 @@
 name: Main
 
 on:
-  push:
-    branches:
-      - '*'
-    tags:
-      - '*'
-  pull_request:
-    branches:
-      - '*'
+  - push
+  - pull_request
 
 jobs:
-  main:
-
+  test:
     strategy:
+      fail-fast: true
       matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
         os: ['ubuntu-22.04', 'ubuntu-24.04', 'macos-13', 'macos-14', 'macos-15', 'windows-2019', 'windows-2022']
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
     runs-on: ${{ matrix.os }}
 
@@ -33,77 +27,21 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ runner.os }}-${{matrix.os}}-${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-os:${{ matrix.os }}-python:${{ matrix.python-version }}-${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
 
       - name: Install Dependencies
         shell: bash
-        run: pip3 install -U -r requirements.txt
+        run: pip3 install -r requirements.txt -r requirements-dev.txt
 
       - name: Check Python Version Compatibility
         shell: bash
-        run: vermin --no-tips --no-parse-comments --target=3.8- --violations pacai
+        run: vermin --no-tips --no-parse-comments --target=3.10- --violations pacai
 
       - name: Run Tests
         shell: bash
-        run: ./run_tests.py
+        run: ./scripts/run_tests.py
 
       - name: Generate Documentation
         if: runner.os == 'Linux'
         shell: bash
-        run: ./gen_docs.sh
-
-  deploy-docs:
-    needs: [main]
-    if: ${{ github.event_name == 'push' && github.repository_owner == 'linqs' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) }}
-
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    # We will only run on one config, but using the matrix allows us to use the exact same steps.
-    strategy:
-      matrix:
-        os: ['ubuntu-22.04']
-        python-version: ['3.10']
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Cache Python Dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ runner.os }}-${{matrix.os}}-${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
-
-      - name: Install Dependencies
-        shell: bash
-        run: pip3 install -U -r requirements.txt
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Build Site
-        shell: bash
-        run: ./.ci/build_site.sh
-
-      - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '._site'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        run: ./scripts/gen_docs.sh
