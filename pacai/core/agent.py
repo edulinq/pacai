@@ -1,25 +1,11 @@
 import abc
 import typing
 
+import pacai.core.action
+import pacai.core.gamestate
+
 DEFAULT_MOVE_DELAY: int = 100
 """ The defaut delay between agent moves. """
-
-class Ticket(typing.NamedTuple):
-    """
-    An agent's Ticket determines when they will move next.
-    A ticket is a tuple of three values: (next move time, last move time, number of moves).
-    The agent with the lowest ticket (starting with the first value and moving to the next on a tie) gets to move next.
-    All "time" values represented by a ticket are abstract and do not relate to any actual time units.
-    """
-
-    next_time: int
-    """ The next time the ticket is allowed to move. """
-
-    last_time: int
-    """ The last time that the agent moved. """
-
-    num_moves: int
-    """ The total number of times this agent has moved so far. """
 
 class Agent(abc.ABC):
     """ The base for all agents in the pacai system. """
@@ -39,13 +25,30 @@ class Agent(abc.ABC):
         """
 
     # TEST
-    def get_action(self, game_state):
+    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         pass
 
     # TEST
-    def game_start(self, is_victory, game_state):
+    def game_start(self, agent_index: int, game_state: pacai.core.gamestate.GameState) -> None:
         pass
 
     # TEST
-    def game_complete(self, is_victory, game_state):
+    def game_complete(self, game_state: pacai.core.gamestate.GameState) -> None:
         pass
+
+class Ticket(typing.NamedTuple):
+    """
+    An agent's Ticket determines when they will move next.
+    A ticket is a tuple of three values: (next move time, last move time, number of moves).
+    The agent with the lowest ticket (starting with the first value and moving to the next on a tie) gets to move next.
+    All "time" values represented by a ticket are abstract and do not relate to any actual time units.
+    """
+
+    next_time: int
+    """ The next time the ticket is allowed to move. """
+
+    last_time: int
+    """ The last time that the agent moved. """
+
+    num_moves: int
+    """ The total number of times this agent has moved so far. """

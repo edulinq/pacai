@@ -23,7 +23,7 @@ function main() {
 
     mkdir -p "${outputDir}"
 
-    pdoc --output-directory "${outputDir}" pacai
+    pdoc --output-directory "${outputDir}" pacai !.*\.test_.*
 
     return 0
 }
