@@ -7,14 +7,26 @@ import pacai.core.gamestate
 DEFAULT_MOVE_DELAY: int = 100
 """ The defaut delay between agent moves. """
 
+class AgentArguments:
+    def __init__(self, name: str = '', move_delay: int = DEFAULT_MOVE_DELAY, **kwargs) -> None:
+        self.name: str = name.strip()
+        self.move_delay: int = move_delay
+        self.other_arguments: dict[str, typing.Any] = kwargs
+
+        if (len(self.name) == 0):
+            raise ValueError("Agent name cannot be empty.")
+
+        if (self.move_delay <= 0):
+            raise ValueError("Agent move delay must be > 0.")
+
 class Agent(abc.ABC):
     """ The base for all agents in the pacai system. """
 
-    def __init__(self, name: str, move_delay: int = DEFAULT_MOVE_DELAY) -> None:
-        self.name: str = name
+    def __init__(self, args: AgentArguments) -> None:
+        self.name: str = args.name
         """ The name of this agent. """
 
-        self.move_delay: int = move_delay
+        self.move_delay: int = args.move_delay
         """
         The delay between moves for this agent.
         This value is abstract and has not real units,
@@ -25,14 +37,17 @@ class Agent(abc.ABC):
         """
 
     # TEST
+    @abc.abstractmethod
     def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         pass
 
     # TEST
+    @abc.abstractmethod
     def game_start(self, agent_index: int, game_state: pacai.core.gamestate.GameState) -> None:
         pass
 
     # TEST
+    @abc.abstractmethod
     def game_complete(self, game_state: pacai.core.gamestate.GameState) -> None:
         pass
 
@@ -52,3 +67,7 @@ class Ticket(typing.NamedTuple):
 
     num_moves: int
     """ The total number of times this agent has moved so far. """
+
+def load(arguments: AgentArguments) -> Agent:
+    # TEST
+    raise NotImplementedError()

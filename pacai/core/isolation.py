@@ -16,9 +16,9 @@ class Isolator(abc.ABC):
     """
 
     @abc.abstractmethod
-    def game_init(self, agents: list[pacai.core.agent.Agent]) -> None:
+    def game_init(self, agent_args: list[pacai.core.agent.AgentArguments]) -> None:
         """
-        Initialize the isolator with the given agents.
+        Initialize the isolator with the given agent arguments.
         Called when a game is just preparing to start.
         """
 

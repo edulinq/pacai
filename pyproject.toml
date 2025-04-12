@@ -1,11 +1,9 @@
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = [
+    "build",
     "packaging>=21.3",
-    "pdoc>=15.0.1",
     "setuptools",
-    "twine",
-    "vermin",
 ]
 
 [project]

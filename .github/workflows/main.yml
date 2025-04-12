@@ -37,6 +37,10 @@ jobs:
         shell: bash
         run: vermin --no-tips --no-parse-comments --target=3.10- --violations pacai
 
+      - name: Check Types
+        shell: bash
+        run: ./scripts/check_types.py
+
       - name: Run Tests
         shell: bash
         run: ./scripts/run_tests.py
