@@ -3,21 +3,26 @@ import typing
 
 import pacai.core.action
 import pacai.core.gamestate
+import pacai.core.time
 
 DEFAULT_MOVE_DELAY: int = 100
-""" The defaut delay between agent moves. """
+""" The default delay between agent moves. """
 
 class AgentArguments:
-    def __init__(self, name: str = '', move_delay: int = DEFAULT_MOVE_DELAY, **kwargs) -> None:
-        self.name: str = name.strip()
-        self.move_delay: int = move_delay
-        self.other_arguments: dict[str, typing.Any] = kwargs
-
-        if (len(self.name) == 0):
+    def __init__(self, name: str = '',
+            move_delay: int = DEFAULT_MOVE_DELAY,
+            **kwargs) -> None:
+        name = name.strip()
+        if (len(name) == 0):
             raise ValueError("Agent name cannot be empty.")
 
-        if (self.move_delay <= 0):
+        if (move_delay <= 0):
             raise ValueError("Agent move delay must be > 0.")
+
+        self.name: str = name
+        self.move_delay: int = move_delay
+
+        self.other_arguments: dict[str, typing.Any] = kwargs
 
 class Agent(abc.ABC):
     """ The base for all agents in the pacai system. """
@@ -43,12 +48,12 @@ class Agent(abc.ABC):
 
     # TEST
     @abc.abstractmethod
-    def game_start(self, agent_index: int, game_state: pacai.core.gamestate.GameState) -> None:
+    def game_start(self, agent_index: int, suggested_seed: int, initial_state: pacai.core.gamestate.GameState) -> None:
         pass
 
     # TEST
     @abc.abstractmethod
-    def game_complete(self, game_state: pacai.core.gamestate.GameState) -> None:
+    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
         pass
 
 class Ticket(typing.NamedTuple):
@@ -67,6 +72,33 @@ class Ticket(typing.NamedTuple):
 
     num_moves: int
     """ The total number of times this agent has moved so far. """
+
+    def next(self, move_delay: int) -> 'Ticket':
+        """ Get the next ticket in the sequence for this agent. """
+
+        return Ticket(
+            next_time = self.next_time + move_delay,
+            last_time = self.next_time,
+            num_moves = self.num_moves + 1,
+        )
+
+class ActionRecord(typing.NamedTuple):
+    """
+    The result of requesting an action from an agent.
+    Aside from the action, this also includes timing and crashing information.
+    """
+
+    agent_index: int
+    """ The index of the agent making this action. """
+
+    action: pacai.core.action.Action
+    """ The action returned by the agent (or pacai.core.action.STOP on a crash). """
+
+    duration: pacai.core.time.Duration
+    """ The duration (in MS) the agent took to compute this action. """
+
+    crashed: bool
+    """ Whether or not the agent crashed (e.g., raised an exception) when computing this action. """
 
 def load(arguments: AgentArguments) -> Agent:
     # TEST

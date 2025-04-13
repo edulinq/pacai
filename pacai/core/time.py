@@ -1,5 +1,12 @@
 import time
 
+class Duration(int):
+    """
+    A Duration represents some length in time in milliseconds.
+    """
+
+    pass
+
 class Timestamp(int):
     """
     A Timestamp represent a moment in time (sometimes called "datetimes").
@@ -8,14 +15,8 @@ class Timestamp(int):
     This is sometimes referred to as "Unix Time".
     """
 
-    pass
-
-class Duration(int):
-    """
-    A Duration represents some length in time in milliseconds.
-    """
-
-    pass
+    def sub(self, other: 'Timestamp') -> Duration:
+        return Duration(self - other)
 
 def now() -> Timestamp:
     return Timestamp(time.time() * 1000)

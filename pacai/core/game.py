@@ -1,4 +1,5 @@
 import abc
+import logging
 import random
 
 import pacai.core.action
@@ -6,23 +7,15 @@ import pacai.core.agent
 import pacai.core.isolation
 import pacai.core.time
 
-class MoveHistoryRecord:
-    """ A record of a single move made by an agent. """
-
-    def __init__(self, index: int, action: pacai.core.action.Action, duration: pacai.core.time.Duration) -> None:
-        self.index: int = index
-        """ The index of the agent making this move. """
-
-        self.action: pacai.core.action.Action = action
-        """ The action made by the agent. """
-
-        self.duration: pacai.core.time.Duration = duration
-        """ How long the agent took to compute the this move. """
-
 class GameResult:
     """ The result of running a game. """
 
     def __init__(self, id: int, seed: int, agent_args: list[pacai.core.agent.AgentArguments]) -> None:
+        """
+        Create a new game result.
+        This class is mutable and will be modified as the game progresses.
+        """
+
         self.id: int = id
         """ The ID of the game. """
 
@@ -32,8 +25,13 @@ class GameResult:
         self.agent_args: list[pacai.core.agent.AgentArguments] = []
         """ The arguments used to construct each agent. """
         
-        self.history: list[MoveHistoryRecord] = []
+        self.history: list[pacai.core.agent.ActionRecord] = []
         """ The history of actions taken by each agent in this game. """
+
+    def add_action(self, action_record: pacai.core.agent.ActionRecord) -> None:
+        """ Add an action to the result's game history. """
+
+        self.history.append(action_record)
 
 class Game(abc.ABC):
     """
@@ -71,14 +69,23 @@ class Game(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def process_move(self, move: MoveHistoryRecord) -> None:
-        """ Process the given move and update the game's state. """
+    def get_initial_state(self, rng: random.Random) -> pacai.core.gamestate.GameState:
+        """ Create the initial state for this game. """
 
         pass
 
     @abc.abstractmethod
-    def get_initial_state(self, rng: random.Random) -> pacai.core.gamestate.GameState:
-        """ Create the initial state for this game. """
+    def process_action(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.agent.ActionRecord) -> pacai.core.gamestate.GameState:
+        """ Process the given move and return an updated game state. """
+
+        pass
+
+    @abc.abstractmethod
+    def check_end(self, state: pacai.core.gamestate.GameState) -> bool:
+        """
+        Check to see if the game is over.
+        Return True if the game is now over, False otherwise.
+        """
 
         pass
 
@@ -93,12 +100,14 @@ class Game(abc.ABC):
          and 5) update the display.
         """
 
+        logging.debug("Starting a game with seed: %d.", self._seed)
+
         # Create a new random number generator just for this game.
         rng = random.Random(self._seed)
 
         # Initialize the agent isolator.
         isolator = self._isolation_level.get_isolator()
-        isolator.game_init(self._agent_args)
+        isolator.init_agents(self._agent_args)
 
         # Assign initial tickets to all the agents.
         tickets = []
@@ -113,24 +122,31 @@ class Game(abc.ABC):
         state = self.get_initial_state(rng)
 
         # Notify agents about the start of the game.
-        isolator.game_start(state)
+        isolator.game_start(rng, state)
 
         turn_count = 0
         while (True):
+            # Choose the next agent to move.
             agent_index = self._get_next_agent_index(tickets)
 
-            # Get the next action from the agent.
-            next_action = isolator.get_action(agent_index, state)
+            logging.debug("Turn %d, agent %d, state: '%s'.", turn_count, agent_index, state)
 
-            # Execute the next action.
+            # Get the next action from the agent.
+            action_record = isolator.get_action(agent_index, state)
+
+            # Execute the next action and update the state.
+            state = self.process_action(state, action_record)
 
             # Update the move history.
-
-            # Update the game state.
+            result.add_action(action_record)
 
             # Check for game ending conditions.
+            game_over = self.check_end(state)
+            if (game_over):
+                break
 
             # Issue the agent a new ticket.
+            tickets[agent_index] = tickets[agent_index].next(self._agent_args[agent_index].move_delay)
 
             # Increment the turn count.
             turn_count += 1

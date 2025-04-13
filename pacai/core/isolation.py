@@ -1,11 +1,14 @@
 import abc
 import enum
+import logging
+import random
 
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.gamestate
+import pacai.core.time
 
-class Isolator(abc.ABC):
+class AgentIsolator(abc.ABC):
     """
     An isolator isolates an agent instance from the game being played.
     This "isolation" allows the game to hide or protect state from a agent.
@@ -16,16 +19,15 @@ class Isolator(abc.ABC):
     """
 
     @abc.abstractmethod
-    def game_init(self, agent_args: list[pacai.core.agent.AgentArguments]) -> None:
+    def init_agents(self, agent_args: list[pacai.core.agent.AgentArguments]) -> None:
         """
-        Initialize the isolator with the given agent arguments.
-        Called when a game is just preparing to start.
+        Initialize the agents this isolator will be responsible for.
         """
 
         pass
 
     @abc.abstractmethod
-    def game_start(self, initial_state: pacai.core.gamestate.GameState) -> None:
+    def game_start(self, rng: random.Random, initial_state: pacai.core.gamestate.GameState) -> None:
         """
         Pass along the initial game state to each agent and all them the allotted time to start.
         """
@@ -41,9 +43,17 @@ class Isolator(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_action(self, agent_index: int, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
+    def get_action(self, agent_index: int, state: pacai.core.gamestate.GameState) -> pacai.core.agent.ActionRecord:
         """
-        Get an agent's next action.
+        Get an agent's next action and how long it took to decide on that action.
+        """
+
+        pass
+
+    @abc.abstractmethod
+    def close(self) -> None:
+        """
+        Close the isolator and release all owned resources.
         """
 
         pass
@@ -53,26 +63,81 @@ class Level(enum.Enum):
     PROCESS = 1
     TCP = 2
 
-    def get_isolator(self) -> Isolator:
+    def get_isolator(self, **kwargs) -> AgentIsolator:
         """ Get an isolator matching the given level. """
 
         if (self.value == Level.NONE):
-            return NoneIsolator()
+            return NoneIsolator(**kwargs)
         if (self.value == Level.PROCESS):
-            return ProcessIsolator()
+            return ProcessIsolator(**kwargs)
         if (self.value == Level.TCP):
-            return TCPIsolator()
+            return TCPIsolator(**kwargs)
         else:
             raise ValueError(f"Unknown isolation level '{self.value}'.")
 
+class NoneIsolator(AgentIsolator):
+    """
+    An isolator that does not do any isolation between the engine and agents.
+    All agents will be run in the same thread (and therefore processes space).
+    This is the simplest and fastest of all isolators, but offers the least control and protection.
+    Agents cannot be timed out (since they run on the same thread).
+    Agents can also access any memory or disk that the core engine has access to.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        self._agents: list[pacai.core.agent.Agent] | None = None
+
+    def init_agents(self, agent_args: list[pacai.core.agent.AgentArguments]) -> None:
+        self._agents = [pacai.core.agent.load(args) for args in agent_args]
+
+    def game_start(self, rng: random.Random, initial_state: pacai.core.gamestate.GameState) -> None:
+        if (self._agents is None):
+            raise ValueError("Isolator agents has not been initialized.")
+
+        for i in range(len(self._agents)):
+            suggested_seed = rng.randint(0, 2**64)
+            self._agents[i].game_start(i, suggested_seed, initial_state)
+
+    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
+        if (self._agents is None):
+            raise ValueError("Isolator agents has not been initialized.")
+
+        for agent in self._agents:
+            agent.game_complete(final_state)
+
+    def get_action(self, agent_index: int, state: pacai.core.gamestate.GameState) -> pacai.core.agent.ActionRecord:
+        if (self._agents is None):
+            raise ValueError("Isolator agents has not been initialized.")
+
+        agent = self._agents[agent_index]
+        crashed = False
+
+        start_time = pacai.core.time.now()
+
+        try:
+            action = agent.get_action(state)
+        except Exception as ex:
+            logging.warning("Agent '%s' (%d) crashed.", agent.name, agent_index, exc_info = ex)
+
+            crashed = True
+            action = pacai.core.action.STOP
+
+        end_time = pacai.core.time.now()
+
+        return pacai.core.agent.ActionRecord(
+                agent_index = agent_index,
+                action = action,
+                duration = end_time.sub(start_time),
+                crashed = crashed)
+
+
+    def close(self) -> None:
+        self._agents = None
+
 # TEST
-class NoneIsolator(abc.ABC):
+class ProcessIsolator(AgentIsolator):
     pass
 
 # TEST
-class ProcessIsolator(abc.ABC):
-    pass
-
-# TEST
-class TCPIsolator(abc.ABC):
+class TCPIsolator(AgentIsolator):
     pass
