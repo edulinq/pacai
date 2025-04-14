@@ -19,4 +19,3 @@ class TicketTest(pacai.test.base.BaseTest):
             (lower_ticket, higher_ticket) = test_cases[i]
             with self.subTest(msg = f"Case {i}: {lower_ticket} < {higher_ticket}"):
                 self.assertTrue((lower_ticket < higher_ticket))
-
