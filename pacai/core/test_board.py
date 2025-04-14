@@ -13,15 +13,21 @@ class BoardTest(pacai.test.base.BaseTest):
     def test_load_test_boards(self):
         # [(board, expected error substring), ...]
         test_cases = [
-            ('', None),
             (TEST_BOARD_NO_SEP, None),
             (TEST_BOARD_OPTIONS, None),
             (TEST_BOARD_SEP_EMPTY_OPTIONS, None),
-            (TEST_BOARD_EMPTY_BOARD, None),
-            (TEST_BOARD_FULL_EMPTY, None),
-            (TEST_BOARD_FULL_EMPTY_SEP, None),
+
+            ('', 'A board cannot be empty.'),
+            (TEST_BOARD_ERROR_EMPTY_BOARD, 'A board cannot be empty.'),
+            (TEST_BOARD_ERROR_FULL_EMPTY, 'A board cannot be empty.'),
+            (TEST_BOARD_ERROR_FULL_EMPTY_SEP, 'A board cannot be empty.'),
 
             (TEST_BOARD_ERROR_BAD_CLASS, "Cannot find class 'ZZZ' in module 'pacai.core.board'."),
+
+            (TEST_BOARD_ERROR_WIDTH_ZERO, 'A board must have at least one column.'),
+            (TEST_BOARD_ERROR_INCONSISTENT_WIDTH, 'Unexpected width'),
+
+            (TEST_BOARD_ERROR_UNKNOWN_MARKER, 'Unknown marker'),
         ]
 
         for i in range(len(test_cases)):
@@ -40,42 +46,60 @@ class BoardTest(pacai.test.base.BaseTest):
                     self.fail(f"Did not get expected error: '{error_substring}'.")
 
 TEST_BOARD_NO_SEP = '''
-%%%%%
-%. P%
-%%%%%
+%%%
+% %
+%%%
 '''
 
 TEST_BOARD_OPTIONS = '''
 {"marker_wall": "#"}
 ---
-#####
-#. P#
-#####
+###
+# #
+###
 '''
 
 TEST_BOARD_SEP_EMPTY_OPTIONS = '''
 ---
-%%%%%
-%. P%
-%%%%%
+%%%
+% %
+%%%
 '''
 
-TEST_BOARD_EMPTY_BOARD = '''
+TEST_BOARD_ERROR_EMPTY_BOARD = '''
 {"marker_wall": "#"}
 ---
 '''
 
-TEST_BOARD_FULL_EMPTY = '''
+TEST_BOARD_ERROR_FULL_EMPTY = '''
 '''
 
-TEST_BOARD_FULL_EMPTY_SEP = '''
+TEST_BOARD_ERROR_FULL_EMPTY_SEP = '''
 ---
 '''
 
 TEST_BOARD_ERROR_BAD_CLASS = '''
 {"class": "pacai.core.board.ZZZ"}
 ---
+%%%
+% %
+%%%
+'''
+
+TEST_BOARD_ERROR_WIDTH_ZERO = '''
+{"strip": false}
+---
+
+'''
+
+TEST_BOARD_ERROR_INCONSISTENT_WIDTH = '''
+%%%
+% %%
 %%%%%
-%. P%
-%%%%%
+'''
+
+TEST_BOARD_ERROR_UNKNOWN_MARKER = '''
+%%%
+%?%
+%%%
 '''
