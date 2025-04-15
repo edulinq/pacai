@@ -1,6 +1,8 @@
 import os
 import re
+import typing
 
+import pacai.core.action
 import pacai.util.file
 import pacai.util.json
 import pacai.util.reflection
@@ -18,10 +20,42 @@ DEFAULT_MARKER_WALL: str = '%'
 class Marker(str):
     """
     A marker represents something that can appear on a board.
-    These are similar to a game piece of token in a traditional board game (like the top hat or dog in Monolopy).
+    These are similar to a game piece of token in a traditional board game (like the top hat or dog in Monopoly).
     """
 
     pass
+
+class Position(typing.NamedTuple):
+    """
+    A 2-dimension location.
+    The first value represent row/y/height,
+    and the second value represents col/x/width.
+    """
+
+    row: int
+    """ The row / y / height of this position. """
+
+    col: int
+    """ The col / x / width of this position. """
+
+    def to_index(self, width: int) -> int:
+        """ Convert this position into a 1-dimension index. """
+        return (self.row * width) + self.col
+
+    @staticmethod
+    def from_index(index: int, width: int) -> 'Position':
+        """ Convert a 1-dimension index into a 2-dimension position. """
+        row = index // width
+        col = index % width
+
+        return Position(row, col)
+
+    def add(self, other: 'Position') -> 'Position':
+        """
+        Add another position (offset) to this one and return the result.
+        """
+
+        return Position(self.row + other.row, self.col + other.col)
 
 class Board:
     """
@@ -44,9 +78,19 @@ class Board:
             extra_markers: list[str] = [],
             strip: bool = True,
             **kwargs) -> None:
+        self._marker_empty: Marker = Marker(marker_empty)
+        """
+        The marker used for empty locations.
+        """
+
+        self._marker_wall: Marker = Marker(marker_wall)
+        """
+        The marker used for wall locations.
+        """
+
         self._markers: dict[str, Marker] = {
-            marker_empty: Marker(marker_empty),
-            marker_wall: Marker(marker_wall),
+            marker_empty: self._marker_empty,
+            marker_wall: self._marker_wall,
         }
         """ Map the text for a marker to the actual marker. """
 
@@ -104,6 +148,44 @@ class Board:
 
         return height, width, locations
 
+    def _get_index(self, position):
+        """
+        Get the internal 1-d index for this position.
+        Will raise if this position is not valid.
+        """
+
+        index = position.to_index(self.width)
+        if ((index < 0) or (index >= len(self._locations))):
+            raise ValueError("Invalid position: %s.", str(position))
+
+        return index
+
+    def is_wall(self, position):
+        return (self._locations[self._get_index(position)] == self._marker_wall)
+
+    def get_neighbors(self, position: Position) -> list[tuple[pacai.core.action.Action, Position]]:
+        """
+        Get positions that are directly touching (via cardinal directions) the given position
+        without being inside a wall,
+        and the action it would take to get there.
+        """
+
+        neighbors = []
+        for (action, offset) in CARDINAL_OFFSETS:
+            neighbor = position.add(offset)
+
+            if ((neighbor.row < 0) or (neighbor.col < 0)):
+                continue
+
+            if ((neighbor.row >= self.height) or (neighbor.col >= self.width)):
+                continue
+
+            if (self.is_wall(neighbor)):
+                continue
+
+            neighbors.append((action, neighbor))
+
+        return neighbors
 
 def load_path(path: str) -> Board:
     """ Load a board from a file. """
@@ -138,3 +220,10 @@ def load_string(text: str) -> Board:
 
     board_class = options.get('class', DEFAULT_BOARD_CLASS)
     return pacai.util.reflection.new_object(board_class, board_text, **options)
+
+CARDINAL_OFFSETS: list[tuple[pacai.core.action.Action, Position]] = [
+    (pacai.core.action.NORTH, Position(-1, 0)),
+    (pacai.core.action.EAST, Position(0, 1)),
+    (pacai.core.action.WEST, Position(0, -1)),
+    (pacai.core.action.SOUTH, Position(1, 0)),
+]

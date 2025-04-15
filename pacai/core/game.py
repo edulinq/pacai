@@ -42,6 +42,7 @@ class Game(abc.ABC):
     def __init__(self,
             agent_args: list[pacai.core.agent.AgentArguments],
             isolation_level: pacai.core.isolation.Level = pacai.core.isolation.Level.NONE,
+            max_moves: int = -1,
             seed: int | None = None,
             ) -> None:
         """
@@ -55,12 +56,22 @@ class Game(abc.ABC):
             seed = random.randint(0, 2**64)
 
         self._seed: int = seed
+        """ The random seed for this game's RNG. """
 
         self._agent_args: list[pacai.core.agent.AgentArguments] = agent_args
+        """ The required information for creating the agents for this game. """
+
         if (len(self._agent_args) == 0):
             raise ValueError("No agents provided.")
 
         self._isolation_level: pacai.core.isolation.Level = isolation_level
+        """ The isolation level to use for this game. """
+
+        self._max_moves: int = max_moves
+        """
+        The total number of moves (between all agents) allowed for this game.
+        If -1, unlimited moves are allowed.
+        """
 
     def _setup(self) -> None:
         """ Prepare for a game. """
@@ -69,7 +80,7 @@ class Game(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_initial_state(self, rng: random.Random) -> pacai.core.gamestate.GameState:
+    def get_initial_state(self, rng: random.Random, board: pacai.core.board.Board) -> pacai.core.gamestate.GameState:
         """ Create the initial state for this game. """
 
         pass
@@ -89,7 +100,9 @@ class Game(abc.ABC):
 
         pass
 
-    def run(self) -> GameResult:
+    # TODO(eriq): Validate that the board works for this game (e.g., number of agent positions).
+
+    def run(self, board: pacai.core.board.Board) -> GameResult:
         """
         The main "game loop" for all games.
         One round of the loop will:
@@ -119,17 +132,17 @@ class Game(abc.ABC):
         result = GameResult(result_id, self._seed, self._agent_args)
 
         # Create the initial game state.
-        state = self.get_initial_state(rng)
+        state = self.get_initial_state(rng, board)
 
         # Notify agents about the start of the game.
         isolator.game_start(rng, state)
 
-        turn_count = 0
-        while (True):
+        move_count = 0
+        while ((self._max_moves < 0) or (move_count < self._max_moves)):
             # Choose the next agent to move.
             agent_index = self._get_next_agent_index(tickets)
 
-            logging.debug("Turn %d, agent %d, state: '%s'.", turn_count, agent_index, state)
+            logging.debug("Turn %d, agent %d, state: '%s'.", move_count, agent_index, state)
 
             # Get the next action from the agent.
             action_record = isolator.get_action(agent_index, state)
@@ -148,10 +161,12 @@ class Game(abc.ABC):
             # Issue the agent a new ticket.
             tickets[agent_index] = tickets[agent_index].next(self._agent_args[agent_index].move_delay)
 
-            # Increment the turn count.
-            turn_count += 1
+            # Increment the move count.
+            move_count += 1
 
-        # TEST
+        # Check if this game ended naturally or in a timeout.
+        if (not state.game_over):
+            state.timeout = True
 
         # Notify agents about the end of this game.
         isolator.game_complete(state)

@@ -41,17 +41,14 @@ class Agent(abc.ABC):
         For example, an agent with a move delay of 50 will move twice as often as an agent with a move delay of 100.
         """
 
-    # TEST
     @abc.abstractmethod
     def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         pass
 
-    # TEST
     @abc.abstractmethod
     def game_start(self, agent_index: int, suggested_seed: int, initial_state: pacai.core.gamestate.GameState) -> None:
         pass
 
-    # TEST
     @abc.abstractmethod
     def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
         pass
