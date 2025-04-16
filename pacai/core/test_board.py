@@ -16,6 +16,9 @@ class BoardTest(pacai.test.base.BaseTest):
             (TEST_BOARD_NO_SEP, None),
             (TEST_BOARD_OPTIONS, None),
             (TEST_BOARD_SEP_EMPTY_OPTIONS, None),
+            (TEST_BOARD_AGENT, None),
+            (TEST_BOARD_AGENTS, None),
+            (TEST_BOARD_AGENTS_NUMBERS, None),
 
             ('', 'A board cannot be empty.'),
             (TEST_BOARD_ERROR_EMPTY_BOARD, 'A board cannot be empty.'),
@@ -52,11 +55,11 @@ TEST_BOARD_NO_SEP = '''
 '''
 
 TEST_BOARD_OPTIONS = '''
-{"marker_wall": "#"}
+{"class": "pacai.core.board.Board"}
 ---
-###
-# #
-###
+%%%
+% %
+%%%
 '''
 
 TEST_BOARD_SEP_EMPTY_OPTIONS = '''
@@ -66,8 +69,26 @@ TEST_BOARD_SEP_EMPTY_OPTIONS = '''
 %%%
 '''
 
+TEST_BOARD_AGENT = '''
+%%%
+%0%
+%%%
+'''
+
+TEST_BOARD_AGENTS = '''
+%%%%%
+%0 1%
+%%%%%
+'''
+
+TEST_BOARD_AGENTS_NUMBERS = '''
+%%%%%
+%9 3%
+%%%%%
+'''
+
 TEST_BOARD_ERROR_EMPTY_BOARD = '''
-{"marker_wall": "#"}
+{"class": "pacai.core.board.Board"}
 ---
 '''
 
