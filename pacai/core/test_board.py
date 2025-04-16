@@ -31,6 +31,8 @@ class BoardTest(pacai.test.base.BaseTest):
             (TEST_BOARD_ERROR_INCONSISTENT_WIDTH, 'Unexpected width'),
 
             (TEST_BOARD_ERROR_UNKNOWN_MARKER, 'Unknown marker'),
+
+            (TEST_BOARD_ERROR_DUP_AGENTS, 'Duplicate agents'),
         ]
 
         for i in range(len(test_cases)):
@@ -84,6 +86,12 @@ TEST_BOARD_AGENTS = '''
 TEST_BOARD_AGENTS_NUMBERS = '''
 %%%%%
 %9 3%
+%%%%%
+'''
+
+TEST_BOARD_ERROR_DUP_AGENTS = '''
+%%%%%
+%0 0%
 %%%%%
 '''
 

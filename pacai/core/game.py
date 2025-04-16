@@ -25,10 +25,10 @@ class GameResult:
         self.agent_args: list[pacai.core.agent.AgentArguments] = []
         """ The arguments used to construct each agent. """
         
-        self.history: list[pacai.core.agent.ActionRecord] = []
+        self.history: list[pacai.core.action.ActionRecord] = []
         """ The history of actions taken by each agent in this game. """
 
-    def add_action(self, action_record: pacai.core.agent.ActionRecord) -> None:
+    def add_action(self, action_record: pacai.core.action.ActionRecord) -> None:
         """ Add an action to the result's game history. """
 
         self.history.append(action_record)
@@ -86,8 +86,11 @@ class Game(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def process_action(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.agent.ActionRecord) -> pacai.core.gamestate.GameState:
-        """ Process the given move and return an updated game state. """
+    def process_action(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> pacai.core.gamestate.GameState:
+        """
+        Process the given move and return an updated game state.
+        The returned game state may be a copy or modified version of the passed in game state.
+        """
 
         pass
 
@@ -141,14 +144,16 @@ class Game(abc.ABC):
         while ((self._max_moves < 0) or (move_count < self._max_moves)):
             # Choose the next agent to move.
             agent_index = self._get_next_agent_index(tickets)
+            state.agent_index = agent_index
 
             logging.debug("Turn %d, agent %d, state: '%s'.", move_count, agent_index, state)
 
             # Get the next action from the agent.
-            action_record = isolator.get_action(agent_index, state)
+            action_record = isolator.get_action(state)
 
             # Execute the next action and update the state.
             state = self.process_action(state, action_record)
+            state.agent_index = -1
 
             # Update the move history.
             result.add_action(action_record)

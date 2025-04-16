@@ -20,10 +20,25 @@ MAX_AGENTS: int = 10
 class Marker(str):
     """
     A marker represents something that can appear on a board.
-    These are similar to a game piece of token in a traditional board game (like the top hat or dog in Monopoly).
+    These are similar to a game pieces in a traditional board game (like the top hat or dog in Monopoly).
+    Another name for this class could be "Token",
+    but that term is already overloaded in Computer Science.
     """
 
-    pass
+    def is_empty(self) -> bool:
+        """ Check if the marker is for an empty location. """
+
+        return (self == MARKER_EMPTY)
+
+    def is_wall(self) -> bool:
+        """ Check if the marker is for a wall. """
+
+        return (self == MARKER_WALL)
+
+    def is_agent(self) -> bool:
+        """ Check if the marker is for an agent. """
+
+        return (self in AGENT_MARKERS)
 
 MARKER_EMPTY: Marker = Marker(' ')
 MARKER_WALL: Marker = Marker('%')
@@ -91,6 +106,26 @@ class Position(typing.NamedTuple):
 
         return Position(self.row + other.row, self.col + other.col)
 
+    def apply_action(self, action: pacai.core.action.Action) -> 'Position':
+        """
+        Return a position that represents moving in the cardinal direction indicated by the given action.
+        If the action is not one of the cardinal actions (N/E/S/W),
+        then the same position will be returned.
+        """
+
+        offset = CARDINAL_OFFSETS.get(action, None)
+        if (offset is None):
+            return self
+
+        return self.add(offset)
+
+CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
+    pacai.core.action.NORTH: Position(-1, 0),
+    pacai.core.action.EAST: Position(0, 1),
+    pacai.core.action.WEST: Position(0, -1),
+    pacai.core.action.SOUTH: Position(1, 0),
+}
+
 class Board:
     """
     A board represents the positional components of a game.
@@ -120,7 +155,7 @@ class Board:
         for marker in additional_markers:
             self._markers[marker] = Marker(marker)
 
-        height, width, locations, agents = self._process_text(board_text, strip = strip)
+        height, width, all_objects, agents = self._process_text(board_text, strip = strip)
 
         self.height: int = height
         """ The height (number of rows, "y") of the board. """
@@ -128,22 +163,119 @@ class Board:
         self.width: int = width
         """ The width (number of columns, "x") of the board. """
 
-        self._locations: list[Marker] = locations
-        """ The full content of the board as a single list. """
+        self._all_objects: dict[Marker, set[Position]] = all_objects
+        """ All the objects that appear on the board. """
 
-        self._agents: list[int | None] = agents
+        self._agent_initial_position: dict[Marker, Position] = agents
+        """ Keep track of where each agent started. """
+
+    def size(self) -> int:
+        return self.height * self.width
+
+    def get(self, position: Position) -> set[Marker]:
         """
-        Keep explicit track of each agent on this board.
-        The agents are indexed by their original marker (0-9).
-
-        A None position means that the agent is not currently on the board.
-
-        Note that this quick lookup requires additional maintenance when agents moves.
+        Get all objects at the given position.
         """
 
-    def _process_text(self, board_text: str, strip: bool = True) -> tuple[int, int, list[Marker], list[int | None]]:
+        self._check_bounds(position)
+
+        found_objects: set[Marker] = set()
+        for (marker, objects) in self._all_objects.items():
+            if position in objects:
+                found_objects.add(marker)
+
+        return found_objects
+
+    def get_marker_positions(self, marker: Marker) -> set[Position]:
+        """ Get all the positions for a specific marker. """
+
+        return self._all_objects.get(marker, set())
+
+    def remove_marker(self, marker: Marker, position: Position) -> None:
         """
-        Create a board from a string.
+        Remove the specified marker from the given position if it exists.
+        """
+
+        self._check_bounds(position)
+        self._all_objects.get(marker, set()).discard(position)
+
+    def place(self, position: Position, marker: Marker) -> None:
+        """
+        Place a marker at the given position.
+        """
+
+        self._check_bounds(position)
+
+        if (marker not in self._all_objects):
+            self._all_objects[marker] = set()
+
+        self._all_objects[marker].add(position)
+
+    def get_neighbors(self, position: Position) -> list[tuple[pacai.core.action.Action, Position]]:
+        """
+        Get positions that are directly touching (via cardinal directions) the given position
+        without being inside a wall,
+        and the action it would take to get there.
+        """
+
+        neighbors = []
+        for (action, offset) in CARDINAL_OFFSETS.items():
+            neighbor = position.add(offset)
+            if (not self._check_bounds(neighbor, throw = False)):
+                continue
+
+            if (self.is_wall(neighbor)):
+                continue
+
+            neighbors.append((action, neighbor))
+
+        return neighbors
+
+    def is_empty(self, position: Position) -> bool:
+        """ Check if the given position is empty. """
+
+        for objects in self._all_objects.values():
+            if (position in objects):
+                return False
+
+        return True
+
+    def is_wall(self, position) -> bool:
+        """ Check if the given position is a wall. """
+
+        self._check_bounds(position)
+
+        return (position in self._all_objects.get(MARKER_WALL, set()))
+
+    def get_agent_position(self, agent_index: int) -> Position | None:
+        """
+        Get the position of an agent,
+        or None if the agent is not on the board.
+        """
+
+        marker = Marker(str(agent_index))
+        positions = self._all_objects.get(marker, set())
+
+        if (len(positions) == 0):
+            return None
+
+        if (len(positions) > 0):
+            raise ValueError(f"Found too many agent positions ({len(positions)}) for agent {marker}. There should only be one.")
+
+        return positions.pop()
+
+    def get_agent_initial_position(self, agent_index: int) -> Position | None:
+        """
+        Get the initial position of an agent,
+        or None if the agent was never on the board.
+        """
+
+        marker = Marker(str(agent_index))
+        return self._agent_initial_position.get(marker, None)
+
+    def _process_text(self, board_text: str, strip: bool = True) -> tuple[int, int, dict[Marker, set[Position]], dict[Marker, Position]]:
+        """
+        Parse out a board from text.
         """
 
         if (strip):
@@ -156,8 +288,8 @@ class Board:
 
         height: int = len(lines)
         width: int = -1
-        locations: list[Marker] = []
-        agents: list[int | None] = [None] * MAX_AGENTS
+        all_objects: dict[Marker, set[Position]] = {}
+        agents: dict[Marker, Position] = {}
 
         for row in range(len(lines)):
             line = lines[row]
@@ -173,98 +305,43 @@ class Board:
             for col in range(len(line)):
                 marker = self._markers.get(line[col], None)
                 if (marker is None):
-                    raise ValueError(f"Unknown marker '{line[col]}' found at location ({row}, {col}).")
+                    raise ValueError(f"Unknown marker '{line[col]}' found at position ({row}, {col}).")
 
-                if (marker in AGENT_MARKERS):
-                    agents[int(marker)] = (row * width) + col
+                if (marker.is_empty()):
+                    continue
 
-                locations.append(marker)
+                position = Position(row, col)
+
+                if (marker not in all_objects):
+                    all_objects[marker] = set()
+
+                all_objects[marker].add(position)
+
+                if (marker.is_agent()):
+                    if (marker in agents):
+                        raise ValueError(f"Duplicate agents ('{marker}') seen on board.")
+
+                    agents[marker] = position
 
         if (width == 0):
             raise ValueError("A board must have at least one column.")
 
-        return height, width, locations, agents
+        return height, width, all_objects, agents
 
-    def _get_index(self, position):
+    def _check_bounds(self, position: Position, throw: bool = False) -> bool:
         """
-        Get the internal 1-d index for this position.
-        Will raise if this position is not valid.
-        """
-
-        index = position.to_index(self.width)
-        if ((index < 0) or (index >= len(self._locations))):
-            raise ValueError("Invalid position: %s.", str(position))
-
-        return index
-
-    def move(self, old_position: Position, new_position: Position, filler: Marker = MARKER_EMPTY) -> Marker:
-        """
-        Move the marker from the old position to the new position.
-        The previous marker at the new position will be returned,
-        and the old position will be filled with the specified filler marker.
+        Check if the given position is out-of-bonds for this board.
+        Return True if the position is in bounds, False otherwise.
+        If |throw| is True, then raise an exception.
         """
 
-        if (filler in AGENT_MARKERS):
-            raise ValueError("Agents cannot be used as fillers.")
+        if ((position.row < 0) or (position.col < 0) or (position.row >= self.height) or (position.col >= self.width)):
+            if (throw):
+                raise ValueError("Position ('%s') is out-of-bounds.", str(position))
 
-        old_index = self._get_index(old_position)
-        new_index = self._get_index(new_position)
+            return False
 
-        moving_marker = self._locations[old_index]
-        replaced_marker = self._locations[new_index]
-
-        self._locations[new_index] = moving_marker
-        self._locations[old_index] = filler
-
-        # If an agent was moved or displaced, note it.
-        if (replaced_marker in AGENT_MARKERS):
-            agent_index = int(replaced_marker)
-            self._agents[agent_index] = None
-
-        if (moving_marker in AGENT_MARKERS):
-            agent_index = int(moving_marker)
-            self._agents[agent_index] = new_index
-
-        return replaced_marker
-
-    def is_wall(self, position):
-        return (self._locations[self._get_index(position)] == MARKER_WALL)
-
-    def get_neighbors(self, position: Position) -> list[tuple[pacai.core.action.Action, Position]]:
-        """
-        Get positions that are directly touching (via cardinal directions) the given position
-        without being inside a wall,
-        and the action it would take to get there.
-        """
-
-        neighbors = []
-        for (action, offset) in CARDINAL_OFFSETS:
-            neighbor = position.add(offset)
-
-            if ((neighbor.row < 0) or (neighbor.col < 0)):
-                continue
-
-            if ((neighbor.row >= self.height) or (neighbor.col >= self.width)):
-                continue
-
-            if (self.is_wall(neighbor)):
-                continue
-
-            neighbors.append((action, neighbor))
-
-        return neighbors
-
-    def get_agent_position(self, agent_index: int) -> Position | None:
-        """
-        Get the position of an agent,
-        or None if the agent is not on the board.
-        """
-
-        index = self._agents[agent_index]
-        if (index is None):
-            return None
-
-        return Position.from_index(index, self.width)
+        return True
 
 def load_path(path: str) -> Board:
     """ Load a board from a file. """
@@ -299,10 +376,3 @@ def load_string(text: str) -> Board:
 
     board_class = options.get('class', DEFAULT_BOARD_CLASS)
     return pacai.util.reflection.new_object(board_class, board_text, **options)
-
-CARDINAL_OFFSETS: list[tuple[pacai.core.action.Action, Position]] = [
-    (pacai.core.action.NORTH, Position(-1, 0)),
-    (pacai.core.action.EAST, Position(0, 1)),
-    (pacai.core.action.WEST, Position(0, -1)),
-    (pacai.core.action.SOUTH, Position(1, 0)),
-]

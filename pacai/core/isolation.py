@@ -43,9 +43,9 @@ class AgentIsolator(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_action(self, agent_index: int, state: pacai.core.gamestate.GameState) -> pacai.core.agent.ActionRecord:
+    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.ActionRecord:
         """
-        Get an agent's next action and how long it took to decide on that action.
+        Get the current agent's next action.
         """
 
         pass
@@ -105,11 +105,14 @@ class NoneIsolator(AgentIsolator):
         for agent in self._agents:
             agent.game_complete(final_state)
 
-    def get_action(self, agent_index: int, state: pacai.core.gamestate.GameState) -> pacai.core.agent.ActionRecord:
+    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.ActionRecord:
         if (self._agents is None):
             raise ValueError("Isolator agents has not been initialized.")
 
-        agent = self._agents[agent_index]
+        if (state.agent_index == -1):
+            raise ValueError("Game state does not have an active agent.")
+
+        agent = self._agents[state.agent_index]
         crashed = False
 
         start_time = pacai.core.time.now()
@@ -117,15 +120,15 @@ class NoneIsolator(AgentIsolator):
         try:
             action = agent.get_action(state)
         except Exception as ex:
-            logging.warning("Agent '%s' (%d) crashed.", agent.name, agent_index, exc_info = ex)
+            logging.warning("Agent '%s' (%d) crashed.", agent.name, state.agent_index, exc_info = ex)
 
             crashed = True
             action = pacai.core.action.STOP
 
         end_time = pacai.core.time.now()
 
-        return pacai.core.agent.ActionRecord(
-                agent_index = agent_index,
+        return pacai.core.action.ActionRecord(
+                agent_index = state.agent_index,
                 action = action,
                 duration = end_time.sub(start_time),
                 crashed = crashed)
