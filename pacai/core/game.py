@@ -94,14 +94,16 @@ class Game(abc.ABC):
 
         pass
 
-    @abc.abstractmethod
     def check_end(self, state: pacai.core.gamestate.GameState) -> bool:
         """
         Check to see if the game is over.
         Return True if the game is now over, False otherwise.
+
+        By default, this will just check pacai.core.gamestate.GameState.game_over,
+        but child games can override for more complex functionality.
         """
 
-        pass
+        return state.game_over
 
     # TODO(eriq): Validate that the board works for this game (e.g., number of agent positions).
 

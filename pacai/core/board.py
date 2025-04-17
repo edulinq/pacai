@@ -199,7 +199,7 @@ class Board:
         self._check_bounds(position)
         self._all_objects.get(marker, set()).discard(position)
 
-    def place(self, position: Position, marker: Marker) -> None:
+    def place_marker(self, marker: Marker, position: Position) -> None:
         """
         Place a marker at the given position.
         """
