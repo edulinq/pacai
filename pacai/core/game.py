@@ -155,6 +155,7 @@ class Game(abc.ABC):
 
             # Execute the next action and update the state.
             state = self.process_action(state, action_record)
+            state.last_agent_actions[agent_index] = action_record.action
             state.agent_index = -1
 
             # Update the move history.

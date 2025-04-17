@@ -41,6 +41,9 @@ class GameState(abc.ABC):
         self.timeout: bool = timeout
         """ Indicates that the game ended in a timeout. """
 
+        self.last_agent_actions: dict[int, pacai.core.action.Action] = {}
+        """ Keep track of the last action that each agent made. """
+
     def get_agent_position(self) -> pacai.core.board.Position | None:
         """ Get the position of the current active agent. """
 
