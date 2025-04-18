@@ -25,7 +25,7 @@ class BoardTest(pacai.test.base.BaseTest):
             (TEST_BOARD_ERROR_FULL_EMPTY, 'A board cannot be empty.'),
             (TEST_BOARD_ERROR_FULL_EMPTY_SEP, 'A board cannot be empty.'),
 
-            (TEST_BOARD_ERROR_BAD_CLASS, "Cannot find class 'ZZZ' in module 'pacai.core.board'."),
+            (TEST_BOARD_ERROR_BAD_CLASS, 'Cannot find class'),
 
             (TEST_BOARD_ERROR_WIDTH_ZERO, 'A board must have at least one column.'),
             (TEST_BOARD_ERROR_INCONSISTENT_WIDTH, 'Unexpected width'),

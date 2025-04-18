@@ -8,21 +8,19 @@ This file aims to contain all the reflection necessary for this project
 """
 
 import importlib
+import importlib.util
 import typing
+import uuid
 
 CLASS_REF_DELIM: str = ':'
 
 class ClassReference:
     """
     A ClassReference is constructed from a formatted that references a specific Python class.
-    The basic structure of a class reference is: `[<path>:][<qualified package name>.][<module name>.]<class name>`.
-    This means that a valid class reference for this class can be all of the following:
-    1) `reflection.ClassReference` -- a module and class name,
-    2) `pacai.util.reflection.ClassReference` -- a fully qualified name.
-    3) `pacai/util/reflection.py:ClassReference` -- a path and class name,
-    4) `pacai/util/reflection.py:pacai.util.reflection.ClassReference` -- a path with a fully qualified name.
-
-    Note that a class reference without a package name will need some default package path to look in.
+    The rough basic structure of a class reference is: `[<path>:][<qualified package name>.][<module name>.]<class name>`.
+    This means that a valid class reference for this class can either:
+    1) `pacai.util.reflection.ClassReference` -- a fully qualified name.
+    2) `pacai/util/reflection.py:ClassReference` -- a path and class name,
     """
 
     def __init__(self, text: str) -> None:
@@ -51,6 +49,12 @@ class ClassReference:
         if (len(parts) > 1):
             module_name = '.'.join(parts[0:-1]).strip()
 
+        if ((filepath is not None) and (module_name is not None)):
+            raise ValueError("Cannot specify both a filepath and module name for class reference: '%s'.", text)
+
+        if ((filepath is None) and (module_name is None)):
+            raise ValueError("Cannot specify a class name alone, need a filepath or module name for class reference: '%s'.", text)
+
         self.filepath: str | None = filepath
         """ The filepath component of the class reference (or None). """
 
@@ -60,29 +64,48 @@ class ClassReference:
         self.class_name: str = class_name
         """ The class_name component of the class reference (or None). """
 
-def new_object(class_name: str, *args, **kwargs) -> typing.Any:
+    def __str__(self) -> str:
+        text = self.class_name
+
+        if (self.module_name is not None):
+            text = self.module_name + '.' + text
+
+        if (self.filepath is not None):
+            text = self.filepath + CLASS_REF_DELIM + text
+
+        return text
+
+def new_object(class_ref: ClassReference | str, *args, **kwargs) -> typing.Any:
     """
-    Create a new instance of the specified class,
+    Create a new instance of the specified class reference,
     passing along the args and kwargs.
-    The class name should be fully qualified, e.g., 'pacai.core.agent.Agent', not just 'Agent'.
-
-    The module must be importable (i.e., already in the PATH).
     """
 
-    parts = class_name.split('.')
-    module_name = '.'.join(parts[0:-1])
-    target_name = parts[-1]
+    if (isinstance(class_ref, str)):
+        class_ref = ClassReference(class_ref)
 
-    if (len(parts) == 1):
-        raise ValueError(f"Non-qualified name supplied '{class_name}'.")
+    module = _import_module(class_ref)
 
-    try:
-        module = importlib.import_module(module_name)
-    except ImportError:
-        raise ValueError(f"Unable to locate module '{module_name}'.")
-
-    target_class = getattr(module, target_name, None)
+    target_class = getattr(module, class_ref.class_name, None)
     if (target_class is None):
-        raise ValueError(f"Cannot find class '{target_name}' in module '{module_name}'.")
+        raise ValueError(f"Cannot find class '{class_ref.class_name}' in class reference '{class_ref}'.")
 
     return target_class(*args, **kwargs)
+
+def _import_module(class_ref):
+    """
+    Import and return the module for the given class reference.
+    This may involve importing files.
+    """
+
+    if (class_ref.filepath is not None):
+        temp_module_name = str(uuid.uuid4()).replace('-', '')
+        spec = importlib.util.spec_from_file_location(temp_module_name, class_ref.filepath)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    else:
+        try:
+            return importlib.import_module(class_ref.module_name)
+        except ImportError:
+            raise ValueError(f"Unable to locate module '{class_ref.module_name}'.")
