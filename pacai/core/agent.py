@@ -4,6 +4,7 @@ import typing
 import pacai.core.action
 import pacai.core.gamestate
 import pacai.core.time
+import pacai.util.reflection
 
 DEFAULT_MOVE_DELAY: int = 100
 """ The default delay between agent moves. """
@@ -99,5 +100,9 @@ class Ticket(typing.NamedTuple):
         )
 
 def load(arguments: AgentArguments) -> Agent:
-    # TEST
-    raise NotImplementedError()
+    agent = pacai.util.reflection.new_object(arguments.name, arguments)
+
+    if (not isinstance(agent, Agent)):
+        raise ValueError(f"Loaded class is not an agent: '{arguments.name}'.")
+
+    return agent

@@ -23,13 +23,13 @@ class GameState(pacai.core.gamestate.GameState):
 
     def get_legal_actions(self) -> list[pacai.core.action.Action]:
         if (self.agent_index == -1):
-            return []
+            raise ValueError("Cannot get legal actions when no agent is active.")
+
+        actions = [pacai.core.action.STOP]
 
         position = self.get_agent_position()
         if (position is None):
-            return []
-
-        actions = [pacai.core.action.STOP]
+            return actions
 
         neighbor_moves = self.board.get_neighbors(position)
         for (action, position) in neighbor_moves:

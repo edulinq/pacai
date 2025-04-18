@@ -22,7 +22,7 @@ class GameResult:
         self.seed: int = seed
         """ The seed used for the game. """
 
-        self.agent_args: list[pacai.core.agent.AgentArguments] = []
+        self.agent_args: list[pacai.core.agent.AgentArguments] = agent_args.copy()
         """ The arguments used to construct each agent. """
         
         self.history: list[pacai.core.action.ActionRecord] = []
@@ -144,6 +144,11 @@ class Game(abc.ABC):
 
         move_count = 0
         while ((self._max_moves < 0) or (move_count < self._max_moves)):
+            # TEST
+            print('---')
+            print(state.board)
+            print('---')
+
             # Choose the next agent to move.
             agent_index = self._get_next_agent_index(tickets)
             state.agent_index = agent_index

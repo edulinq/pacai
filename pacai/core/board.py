@@ -256,13 +256,13 @@ class Board:
         marker = Marker(str(agent_index))
         positions = self._all_objects.get(marker, set())
 
-        if (len(positions) == 0):
-            return None
-
-        if (len(positions) > 0):
+        if (len(positions) > 1):
             raise ValueError(f"Found too many agent positions ({len(positions)}) for agent {marker}. There should only be one.")
 
-        return positions.pop()
+        for position in positions:
+            return position
+
+        return None
 
     def get_agent_initial_position(self, agent_index: int) -> Position | None:
         """
@@ -342,6 +342,12 @@ class Board:
                     grid[position.row][position.col] = marker
 
         return grid
+
+    def __str__(self) -> str:
+        """ Get a rough string representation of the board. """
+
+        grid = self.to_grid()
+        return "\n".join([''.join(row) for row in grid])
 
     def _check_bounds(self, position: Position, throw: bool = False) -> bool:
         """

@@ -47,7 +47,7 @@ class Game(pacai.core.game.Game):
 
     def process_action(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> pacai.core.gamestate.GameState:
         if (action_record.action not in state.get_legal_actions()):
-            raise ValueError(f"Illegal action: '{action_record.action}")
+            raise ValueError(f"Illegal action for agent {state.agent_index}: '{action_record.action}'.")
 
         state = typing.cast(pacai.pacman.gamestate.GameState, state)
 
