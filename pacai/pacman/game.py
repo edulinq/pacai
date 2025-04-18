@@ -45,7 +45,6 @@ class Game(pacai.core.game.Game):
 
         return state
 
-    @abc.abstractmethod
     def process_action(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> pacai.core.gamestate.GameState:
         if (action_record.action not in state.get_legal_actions()):
             raise ValueError(f"Illegal action: '{action_record.action}")

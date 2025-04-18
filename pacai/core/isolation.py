@@ -59,21 +59,21 @@ class AgentIsolator(abc.ABC):
         pass
 
 class Level(enum.Enum):
-    NONE = 0
-    PROCESS = 1
-    TCP = 2
+    NONE = 'none'
+    PROCESS = 'process'
+    TCP = 'tcp'
 
     def get_isolator(self, **kwargs) -> AgentIsolator:
         """ Get an isolator matching the given level. """
 
-        if (self.value == Level.NONE):
+        if (self == Level.NONE):
             return NoneIsolator(**kwargs)
-        if (self.value == Level.PROCESS):
+        elif (self == Level.PROCESS):
             return ProcessIsolator(**kwargs)
-        if (self.value == Level.TCP):
+        elif (self == Level.TCP):
             return TCPIsolator(**kwargs)
         else:
-            raise ValueError(f"Unknown isolation level '{self.value}'.")
+            raise ValueError(f"Unknown isolation level '{self}'.")
 
 class NoneIsolator(AgentIsolator):
     """
@@ -138,9 +138,11 @@ class NoneIsolator(AgentIsolator):
         self._agents = None
 
 # TEST
-class ProcessIsolator(AgentIsolator):
+# class ProcessIsolator(AgentIsolator):
+class ProcessIsolator(NoneIsolator):
     pass
 
 # TEST
-class TCPIsolator(AgentIsolator):
+# class TCPIsolator(AgentIsolator):
+class TCPIsolator(NoneIsolator):
     pass

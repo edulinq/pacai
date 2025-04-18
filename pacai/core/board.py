@@ -328,6 +328,21 @@ class Board:
 
         return height, width, all_objects, agents
 
+    def to_grid(self) -> list[list[Marker]]:
+        """ Convert this board to a 2-d grid. """
+
+        grid = [[MARKER_EMPTY] * self.width for _ in range(self.height)]
+
+        for (marker, positions) in self._all_objects.items():
+            for position in positions:
+                existing_marker = grid[position.row][position.col]
+
+                # Don't replace agents.
+                if (not existing_marker.is_agent()):
+                    grid[position.row][position.col] = marker
+
+        return grid
+
     def _check_bounds(self, position: Position, throw: bool = False) -> bool:
         """
         Check if the given position is out-of-bonds for this board.
