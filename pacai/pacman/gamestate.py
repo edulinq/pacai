@@ -6,14 +6,10 @@ class GameState(pacai.core.gamestate.GameState):
     """ A game state specific to a standard Pacman game. """
 
     def __init__(self,
-            score: int = 0,
             power_time: int = 0,
             food_count: int = 0,
             **kwargs) -> None:
         super().__init__(**kwargs)
-
-        self.score: int = score
-        """ Pacman's current score. """
 
         self.power_time: int = power_time
         """ The number of pacman turns the power capsule is active for. """

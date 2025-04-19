@@ -8,6 +8,7 @@ import sys
 import pacai.core.agent
 import pacai.core.board
 import pacai.pacman.game
+import pacai.pacman.ui.text
 import pacai.util.json
 
 def run(args) -> int:
@@ -19,8 +20,10 @@ def run(args) -> int:
 
     board = pacai.core.board.load_path('pacai/boards/medium-classic.txt')
 
+    ui = pacai.pacman.ui.text.Text()
+
     game = pacai.pacman.game.Game(agent_args)
-    result = game.run(board)
+    result = game.run(board, ui)
 
     # TEST
     print('###')

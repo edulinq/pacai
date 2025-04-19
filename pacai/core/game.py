@@ -6,6 +6,9 @@ import pacai.core.action
 import pacai.core.agent
 import pacai.core.isolation
 import pacai.core.time
+import pacai.core.ui
+
+# TODO(eriq): Clean up the difference between what should be passed in the constructor and run().
 
 class GameResult:
     """ The result of running a game. """
@@ -107,7 +110,7 @@ class Game(abc.ABC):
 
     # TODO(eriq): Validate that the board works for this game (e.g., number of agent positions).
 
-    def run(self, board: pacai.core.board.Board) -> GameResult:
+    def run(self, board: pacai.core.board.Board, ui: pacai.core.ui.UI) -> GameResult:
         """
         The main "game loop" for all games.
         One round of the loop will:
@@ -142,13 +145,11 @@ class Game(abc.ABC):
         # Notify agents about the start of the game.
         isolator.game_start(rng, state)
 
+        # Start the UI.
+        ui.game_start(state)
+
         move_count = 0
         while ((self._max_moves < 0) or (move_count < self._max_moves)):
-            # TEST
-            print('---')
-            print(state.board)
-            print('---')
-
             # Choose the next agent to move.
             agent_index = self._get_next_agent_index(tickets)
             state.agent_index = agent_index
@@ -162,6 +163,9 @@ class Game(abc.ABC):
             state = self.process_action(state, action_record)
             state.last_agent_actions[agent_index] = action_record.action
             state.agent_index = -1
+
+            # Update the UI.
+            ui.update(state)
 
             # Update the move history.
             result.add_action(action_record)
@@ -183,6 +187,13 @@ class Game(abc.ABC):
 
         # Notify agents about the end of this game.
         isolator.game_complete(state)
+
+        # Update the UI.
+        ui.game_complete(state)
+
+        # Cleanup
+        isolator.close()
+        ui.close()
 
         return result
 

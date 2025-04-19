@@ -22,6 +22,7 @@ class GameState(abc.ABC):
             agent_index: int = -1,
             game_over: bool = False,
             timeout: bool = False,
+            score: int = 0,
             **kwargs) -> None:
         if (board is None):
             raise ValueError("Cannot construct a game state without a board.")
@@ -43,6 +44,9 @@ class GameState(abc.ABC):
 
         self.last_agent_actions: dict[int, pacai.core.action.Action] = {}
         """ Keep track of the last action that each agent made. """
+
+        self.score: int = score
+        """ The current score of the game. """
 
     def get_agent_position(self) -> pacai.core.board.Position | None:
         """ Get the position of the current active agent. """
