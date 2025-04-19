@@ -9,6 +9,7 @@ import pacai.core.gamestate
 import pacai.pacman.gamestate
 
 # TODO(eriq): Handle ghost scarred speed (halved).
+# TODO(eriq): Handle ghost scarred direction (reverse?).
 
 PACMAN_MARKER: pacai.core.board.Marker = pacai.core.board.MARKER_AGENT_0
 

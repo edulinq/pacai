@@ -25,11 +25,6 @@ def run(args) -> int:
     game = pacai.pacman.game.Game(agent_args)
     result = game.run(board, ui)
 
-    # TEST
-    print('###')
-    print(pacai.util.json.dumps(result, indent = 4))
-    print('###')
-
     return 0
 
 def _get_parser() -> argparse.ArgumentParser:
