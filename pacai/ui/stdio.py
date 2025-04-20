@@ -1,12 +1,18 @@
+import pacai.core.action
 import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.ui
+import pacai.ui.textstream
 
 class Text(pacai.core.ui.UI):
     """
     A simple UI that renders the game to stdout.
     This UI will be simple and generally meant for debugging.
     """
+
+    def __init__(self, char_mapping: dict[str, pacai.core.action.Action] = pacai.ui.textstream.WASD_CHAR_MAPPING) -> None:
+        self._user_input = pacai.ui.textstream.StdinUserInputDevice(char_mapping)
+        """ Take input from stdin. """
 
     def update(self, state: pacai.core.gamestate.GameState) -> None:
         grid = state.board.to_grid()
@@ -28,7 +34,7 @@ class Text(pacai.core.ui.UI):
         self.update(final_state)
 
     def close(self) -> None:
-        pass
+        self._user_input.close()
 
     def _translate_marker(self, marker: pacai.core.board.Marker, state: pacai.core.gamestate.GameState) -> str:
         """
@@ -38,3 +44,6 @@ class Text(pacai.core.ui.UI):
         """
 
         return marker
+
+    def get_user_input(self) -> pacai.core.ui.UserInputDevice:
+        return self._user_input

@@ -1,6 +1,23 @@
 import abc
 
+import pacai.core.action
 import pacai.core.gamestate
+
+class UserInputDevice(abc.ABC):
+    """
+    This class provides a way for users to convey inputs through a UI.
+    Not all UIs will support user input.
+    """
+
+    @abc.abstractmethod
+    def get_inputs(self) -> list[pacai.core.action.Action]:
+        """
+        Get any inputs that have occurred since the last call to this method.
+        This method is responsible for not returning the same input instance in subsequent calls.
+        The last input in the returned list should be the most recent input.
+        """
+
+        pass
 
 class UI(abc.ABC):
     """
@@ -31,3 +48,11 @@ class UI(abc.ABC):
         """ Close the UI and release all owned resources. """
 
         pass
+
+    def get_user_input(self) -> UserInputDevice:
+        """
+        Get an object that conveys user input (in the form of actions).
+        Not all UIs will support user input.
+        """
+
+        raise NotImplementedError(f"This view ('{type(self).__qualname__}') does not support keyboards.")

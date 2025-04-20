@@ -4,9 +4,9 @@ import pacai.core.board
 import pacai.core.gamestate
 import pacai.pacman.board
 import pacai.pacman.gamestate
-import pacai.ui.text
+import pacai.ui.stdio
 
-class Text(pacai.ui.text.Text):
+class Text(pacai.ui.stdio.Text):
     """ A text-based UI specifically for pacman. """
 
     def _translate_marker(self, marker: pacai.core.board.Marker, state: pacai.core.gamestate.GameState) -> str:
