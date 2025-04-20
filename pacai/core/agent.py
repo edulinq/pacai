@@ -3,7 +3,6 @@ import typing
 
 import pacai.core.action
 import pacai.core.gamestate
-import pacai.core.time
 import pacai.util.reflection
 
 DEFAULT_MOVE_DELAY: int = 100
@@ -28,11 +27,11 @@ class AgentArguments:
 class Agent(abc.ABC):
     """ The base for all agents in the pacai system. """
 
-    def __init__(self, args: AgentArguments) -> None:
-        self.name: str = args.name
+    def __init__(self, agent_args: AgentArguments, *args, **kwargs) -> None:
+        self.name: str = agent_args.name
         """ The name of this agent. """
 
-        self.move_delay: int = args.move_delay
+        self.move_delay: int = agent_args.move_delay
         """
         The delay between moves for this agent.
         This value is abstract and has not real units,
@@ -43,7 +42,7 @@ class Agent(abc.ABC):
         """
 
     @abc.abstractmethod
-    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
+    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
         """
         Get an action for this agent given the current state of the game.
         Agents may keep internal state, but the given state should be considered the source of truth.
@@ -99,10 +98,10 @@ class Ticket(typing.NamedTuple):
             num_moves = self.num_moves + 1,
         )
 
-def load(arguments: AgentArguments) -> Agent:
-    agent = pacai.util.reflection.new_object(arguments.name, arguments)
+def load(agent_args: AgentArguments) -> Agent:
+    agent = pacai.util.reflection.new_object(agent_args.name, agent_args)
 
     if (not isinstance(agent, Agent)):
-        raise ValueError(f"Loaded class is not an agent: '{arguments.name}'.")
+        raise ValueError(f"Loaded class is not an agent: '{agent_args.name}'.")
 
     return agent

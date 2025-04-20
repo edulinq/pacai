@@ -9,7 +9,7 @@ class DummyAgent(pacai.core.agent.Agent):
     Like being a stand-in for a future agent, fallback for a failing agent, or a placeholder when running a replay.
     """
 
-    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
+    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
         return pacai.core.action.STOP
 
     def game_start(self, agent_index: int, suggested_seed: int, initial_state: pacai.core.gamestate.GameState) -> None:

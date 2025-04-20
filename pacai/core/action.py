@@ -5,7 +5,7 @@ Default actions are provided, but custom actions can be easily created.
 
 import typing
 
-import pacai.core.time
+import pacai.util.time
 
 class Action(str):
     """ An action that an agent is allowed to take. """
@@ -24,7 +24,7 @@ class ActionRecord(typing.NamedTuple):
     action: Action
     """ The action returned by the agent (or pacai.core.action.STOP on a crash). """
 
-    duration: pacai.core.time.Duration
+    duration: pacai.util.time.Duration
     """ The duration (in MS) the agent took to compute this action. """
 
     crashed: bool

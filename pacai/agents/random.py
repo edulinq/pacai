@@ -12,7 +12,7 @@ class RandomAgent(pacai.core.agent.Agent):
 
         self._rng: random.Random | None = None
 
-    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
+    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
         """ Choose a random action. """
 
         if (self._rng is None):

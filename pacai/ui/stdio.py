@@ -10,11 +10,12 @@ class Text(pacai.core.ui.UI):
     This UI will be simple and generally meant for debugging.
     """
 
-    def __init__(self, char_mapping: dict[str, pacai.core.action.Action] = pacai.ui.textstream.WASD_CHAR_MAPPING) -> None:
-        self._user_input = pacai.ui.textstream.StdinUserInputDevice(char_mapping)
-        """ Take input from stdin. """
+    def __init__(self,
+            char_mapping: dict[str, pacai.core.action.Action] = pacai.ui.textstream.WASD_CHAR_MAPPING,
+            **kwargs) -> None:
+        super().__init__(pacai.ui.textstream.StdinUserInputDevice(char_mapping), **kwargs)
 
-    def update(self, state: pacai.core.gamestate.GameState) -> None:
+    def draw(self, state: pacai.core.gamestate.GameState) -> None:
         grid = state.board.to_grid()
         for row in grid:
             line = ''.join([self._translate_marker(marker, state) for marker in row])
@@ -27,15 +28,6 @@ class Text(pacai.core.ui.UI):
 
         print('', flush = True)
 
-    def game_start(self, initial_state: pacai.core.gamestate.GameState) -> None:
-        self.update(initial_state)
-
-    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
-        self.update(final_state)
-
-    def close(self) -> None:
-        self._user_input.close()
-
     def _translate_marker(self, marker: pacai.core.board.Marker, state: pacai.core.gamestate.GameState) -> str:
         """
         Convert a marker to a string.
@@ -44,6 +36,3 @@ class Text(pacai.core.ui.UI):
         """
 
         return marker
-
-    def get_user_input(self) -> pacai.core.ui.UserInputDevice:
-        return self._user_input

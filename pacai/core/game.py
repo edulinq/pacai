@@ -5,7 +5,6 @@ import random
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.isolation
-import pacai.core.time
 import pacai.core.ui
 
 # TODO(eriq): Clean up the difference between what should be passed in the constructor and run().
@@ -76,12 +75,6 @@ class Game(abc.ABC):
         If -1, unlimited moves are allowed.
         """
 
-    def _setup(self) -> None:
-        """ Prepare for a game. """
-
-        # TEST - Is this necessary?
-        pass
-
     @abc.abstractmethod
     def get_initial_state(self, rng: random.Random, board: pacai.core.board.Board) -> pacai.core.gamestate.GameState:
         """ Create the initial state for this game. """
@@ -139,6 +132,11 @@ class Game(abc.ABC):
         result_id = rng.randint(0, 2**64)
         result = GameResult(result_id, self._seed, self._agent_args)
 
+        # Keep track of all the user inputs since the last time an agent moved.
+        # Note that we need to keep track for all agents,
+        # since the UI will only tell us the inputs since the last call.
+        agent_user_inputs: list[list[pacai.core.action.Action]] = [[] for _ in self._agent_args]
+
         # Create the initial game state.
         state = self.get_initial_state(rng, board)
 
@@ -156,8 +154,11 @@ class Game(abc.ABC):
 
             logging.debug("Turn %d, agent %d, state: '%s'.", move_count, agent_index, state)
 
+            # Get any user inputs.
+            user_inputs = self._get_user_inputs(agent_index, agent_user_inputs, ui)
+
             # Get the next action from the agent.
-            action_record = isolator.get_action(state)
+            action_record = isolator.get_action(state, user_inputs)
 
             # Execute the next action and update the state.
             state = self.process_action(state, action_record)
@@ -197,7 +198,7 @@ class Game(abc.ABC):
 
         return result
 
-    def _get_next_agent_index(self, tickets: list[pacai.core.agent.Ticket]):
+    def _get_next_agent_index(self, tickets: list[pacai.core.agent.Ticket]) -> int:
         """
         Get the agent that moves next.
         Do this by looking at the agents' tickets and choosing the one with the lowest ticket.
@@ -209,3 +210,19 @@ class Game(abc.ABC):
                 next_index = i
 
         return next_index
+
+    def _get_user_inputs(self, agent_index: int, agent_user_inputs: list[list[pacai.core.action.Action]], ui: pacai.core.ui.UI) -> list[pacai.core.action.Action]:
+        """
+        Add the current user inputs to the running list for each agent,
+        and return (and clear) the inputs for the current agent.
+        """
+
+        new_user_inputs = ui.get_user_inputs()
+
+        for user_inputs in agent_user_inputs:
+            user_inputs += new_user_inputs
+
+        agent_inputs = agent_user_inputs[agent_index]
+        agent_user_inputs[agent_index] = []
+
+        return agent_inputs

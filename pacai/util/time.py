@@ -5,7 +5,11 @@ class Duration(int):
     A Duration represents some length in time in milliseconds.
     """
 
-    pass
+    def to_secs(self) -> float:
+        return self / 1000
+
+    def to_msecs(self) -> int:
+        return self
 
 class Timestamp(int):
     """

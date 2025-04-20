@@ -6,7 +6,7 @@ import random
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.gamestate
-import pacai.core.time
+import pacai.util.time
 
 class AgentIsolator(abc.ABC):
     """
@@ -43,9 +43,10 @@ class AgentIsolator(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.ActionRecord:
+    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.ActionRecord:
         """
         Get the current agent's next action.
+        User inputs may be provided by the UI if available.
         """
 
         pass
@@ -87,8 +88,8 @@ class NoneIsolator(AgentIsolator):
     def __init__(self, **kwargs) -> None:
         self._agents: list[pacai.core.agent.Agent] | None = None
 
-    def init_agents(self, agent_args: list[pacai.core.agent.AgentArguments]) -> None:
-        self._agents = [pacai.core.agent.load(args) for args in agent_args]
+    def init_agents(self, all_agent_args: list[pacai.core.agent.AgentArguments]) -> None:
+        self._agents = [pacai.core.agent.load(agent_args) for agent_args in all_agent_args]
 
     def game_start(self, rng: random.Random, initial_state: pacai.core.gamestate.GameState) -> None:
         if (self._agents is None):
@@ -105,7 +106,7 @@ class NoneIsolator(AgentIsolator):
         for agent in self._agents:
             agent.game_complete(final_state)
 
-    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.ActionRecord:
+    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.ActionRecord:
         if (self._agents is None):
             raise ValueError("Isolator agents has not been initialized.")
 
@@ -115,17 +116,17 @@ class NoneIsolator(AgentIsolator):
         agent = self._agents[state.agent_index]
         crashed = False
 
-        start_time = pacai.core.time.now()
+        start_time = pacai.util.time.now()
 
         try:
-            action = agent.get_action(state)
+            action = agent.get_action(state, user_inputs)
         except Exception as ex:
             logging.warning("Agent '%s' (%d) crashed.", agent.name, state.agent_index, exc_info = ex)
 
             crashed = True
             action = pacai.core.action.STOP
 
-        end_time = pacai.core.time.now()
+        end_time = pacai.util.time.now()
 
         return pacai.core.action.ActionRecord(
                 agent_index = state.agent_index,

@@ -11,16 +11,18 @@ import pacai.pacman.game
 import pacai.pacman.ui.text
 import pacai.util.json
 
+# TODO - Set fps if we have a UserInputAgent and fps is not already set.
+
 def run(args) -> int:
     agent_args = [
-        pacai.core.agent.AgentArguments(name = 'pacai.agents.random.RandomAgent'),
+        pacai.core.agent.AgentArguments(name = 'pacai.agents.userinput.UserInputAgent'),
         pacai.core.agent.AgentArguments(name = 'pacai.agents.random.RandomAgent'),
         pacai.core.agent.AgentArguments(name = 'pacai.agents.random.RandomAgent'),
     ]
 
     board = pacai.core.board.load_path('pacai/boards/medium-classic.txt')
 
-    ui = pacai.pacman.ui.text.Text()
+    ui = pacai.pacman.ui.text.Text(fps = 10)
 
     game = pacai.pacman.game.Game(agent_args)
     result = game.run(board, ui)

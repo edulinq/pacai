@@ -58,6 +58,9 @@ class TextStreamUserInputDevice(pacai.core.ui.UserInputDevice):
         self._input_stream.close()
         self._thread.join()
 
+    def __dict__(self):
+        raise ValueError(f"This class ('{type(self).__qualname__}') cannot be serialized.")
+
 class StdinUserInputDevice(TextStreamUserInputDevice):
     """
     A user input device that gets input from stdin.

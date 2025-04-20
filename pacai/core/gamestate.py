@@ -3,9 +3,6 @@ import abc
 import pacai.core.action
 import pacai.core.board
 
-# TEST - Mutability semantics?
-#      - How will this tie in with isolation level? Will the level be responsible for copies?
-
 # TODO - Do we need to track a "winner" or winning agent?
 
 class GameState(abc.ABC):
