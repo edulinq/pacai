@@ -22,7 +22,7 @@ def run(args) -> int:
 
     board = pacai.core.board.load_path('pacai/boards/medium-classic.txt')
 
-    ui = pacai.pacman.ui.text.Text(fps = 10)
+    ui = pacai.pacman.ui.text.StdioUI(fps = 10)
 
     game = pacai.pacman.game.Game(agent_args)
     result = game.run(board, ui)

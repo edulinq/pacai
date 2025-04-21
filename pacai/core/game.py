@@ -12,7 +12,10 @@ import pacai.core.ui
 class GameResult:
     """ The result of running a game. """
 
-    def __init__(self, id: int, seed: int, agent_args: list[pacai.core.agent.AgentArguments]) -> None:
+    def __init__(self,
+            id: int, seed: int,
+            agent_args: list[pacai.core.agent.AgentArguments],
+            score: int = 0) -> None:
         """
         Create a new game result.
         This class is mutable and will be modified as the game progresses.
@@ -26,13 +29,17 @@ class GameResult:
 
         self.agent_args: list[pacai.core.agent.AgentArguments] = agent_args.copy()
         """ The arguments used to construct each agent. """
-        
+
         self.history: list[pacai.core.action.ActionRecord] = []
         """ The history of actions taken by each agent in this game. """
 
-    def add_action(self, action_record: pacai.core.action.ActionRecord) -> None:
-        """ Add an action to the result's game history. """
+        self.score: int = score
+        """ The score of the game. """
 
+    def update(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> None:
+        """ Update the game result after an agent move. """
+
+        self.score = state.score
         self.history.append(action_record)
 
 class Game(abc.ABC):
@@ -168,8 +175,8 @@ class Game(abc.ABC):
             # Update the UI.
             ui.update(state)
 
-            # Update the move history.
-            result.add_action(action_record)
+            # Update the game result and move history.
+            result.update(state, action_record)
 
             # Check for game ending conditions.
             game_over = self.check_end(state)
