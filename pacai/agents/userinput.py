@@ -21,14 +21,27 @@ class UserInputAgent(pacai.core.agent.Agent):
         """
 
     def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
-        # If actions were provided, take the most recent one.
-        if (len(user_inputs) > 0):
-            self._last_action = user_inputs[-1]
-
-        # If the given action is not legal, then stop.
         legal_actions = state.get_legal_actions()
-        if (self._last_action not in legal_actions):
-            self._last_action = pacai.core.action.STOP
+
+        # If actions were provided, take the most recent one.
+        intended_action = None
+        if (len(user_inputs) > 0):
+            intended_action = user_inputs[-1]
+
+            # If the intended action is not legal, then ignore it.
+            if (intended_action not in legal_actions):
+                intended_action = None
+
+        # If we got no legal input from the user, then assume the last action.
+        if (intended_action is None):
+            intended_action = self._last_action
+
+        # If the action is illegal, then just stop.
+        if (intended_action not in legal_actions):
+            intended_action = pacai.core.action.STOP
+
+        # Remember the last action.
+        self._last_action = intended_action
 
         return self._last_action
 
