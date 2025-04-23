@@ -111,12 +111,14 @@ class SpriteSheet:
         Sprites that represent different versions when there are objects in specific directions.
         """
 
-        self._animation_counts: dict[str, dict[pacai.core.board.Marker, dict[pacai.core.action.Action, int]]] = {}
+        self._animation_counts: dict[str, dict[pacai.core.board.Marker, tuple[pacai.core.action.Action, int]]] = {}
         """
         Keep track of the number of times a marker/action pair has been called for,
         so we can keep track of animations.
         The first key is the "animation key" that will allow multiple sources to use the same SpriteSheet
         and still keep their animations separate.
+        Note that any action subsequent calls with different actions will reset the count
+        (only repeated actions will result in an incrementing count).
         """
 
     def get_sprite(self,
@@ -154,7 +156,7 @@ class SpriteSheet:
             animation_count = self._next_animation_count(marker, action, animation_key)
             animation_frames = self._action_sprites.get(marker, {}).get(action, [])
             if (len(animation_frames) > 0):
-                sprite = animation_frames[animation_count // len(animation_frames)]
+                sprite = animation_frames[animation_count % len(animation_frames)]
         elif (adjacency is not None):
             # Pull from the adjacency sprites, but fallback to the current sprite.
             sprite = self._adjacency_sprites.get(marker, {}).get(adjacency, sprite)
@@ -165,27 +167,36 @@ class SpriteSheet:
         return sprite
 
     def _next_animation_count(self, marker: pacai.core.board.Marker, action: pacai.core.action.Action, animation_key: str | None = None) -> int:
-        """ Get and increment the next animation count for the requested resource. """
+        """
+        Get the next animation count for the requested resource,
+        and manage the existing count
+        (increment for repeated actions, and reset for different actions).
+        """
 
         if (animation_key is None):
             return 0
 
-        current_dict: dict = self._animation_counts
+        if (animation_key not in self._animation_counts):
+            self._animation_counts[animation_key] = {}
 
-        # Descend through the dicts, checking for keys all along the way.
-        for key in [animation_key, marker]:
-            if (key not in current_dict):
-                current_dict[key] = {}
+        animation_keys = self._animation_counts[animation_key]
 
-            current_dict = current_dict[key]
+        if (marker not in animation_keys):
+            animation_keys[marker] = (action, -1)
 
-        if (action not in current_dict):
-            current_dict[action] = 0
+        info = animation_keys[marker]
 
-        value = current_dict[action]
-        current_dict[action] += 1
+        # If we got the same action, increment the animation count.
+        # If we got a different action, reset the count to zero for this new action.
+        if (action == info[0]):
+            info = (action, info[1] + 1)
+        else:
+            info = (action, 0)
 
-        return value
+        # Update the count.
+        animation_keys[marker] = info
+
+        return info[1]
 
     def clear_animation_counts(self, animation_key: str | None = None) -> None:
         """
