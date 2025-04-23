@@ -171,6 +171,7 @@ class Game(abc.ABC):
             state = self.process_action(state, action_record)
             state.last_agent_actions[agent_index] = action_record.action
             state.agent_index = -1
+            state.turn_count += 1
 
             # Update the UI.
             ui.update(state)

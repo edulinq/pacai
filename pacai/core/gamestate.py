@@ -20,6 +20,7 @@ class GameState(abc.ABC):
             game_over: bool = False,
             timeout: bool = False,
             score: int = 0,
+            turn_count: int = 0,
             **kwargs) -> None:
         if (board is None):
             raise ValueError("Cannot construct a game state without a board.")
@@ -44,6 +45,9 @@ class GameState(abc.ABC):
 
         self.score: int = score
         """ The current score of the game. """
+
+        self.turn_count: int = turn_count
+        """ The number of turns (agent actions) that the game has had. """
 
     def get_agent_position(self) -> pacai.core.board.Position | None:
         """ Get the position of the current active agent. """

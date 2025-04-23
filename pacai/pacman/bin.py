@@ -10,14 +10,15 @@ import pacai.core.board
 import pacai.pacman.game
 import pacai.pacman.ui.text
 import pacai.ui.null
+import pacai.ui.tk
 import pacai.util.json
 
 # TODO - Set fps if we have a UserInputAgent and fps is not already set.
 
 def run(args) -> int:
     agent_args = [
-        # pacai.core.agent.AgentArguments(name = 'pacai.agents.userinput.UserInputAgent'),
-        pacai.core.agent.AgentArguments(name = 'pacai.agents.random.RandomAgent'),
+        pacai.core.agent.AgentArguments(name = 'pacai.agents.userinput.UserInputAgent'),
+        # pacai.core.agent.AgentArguments(name = 'pacai.agents.random.RandomAgent'),
         pacai.core.agent.AgentArguments(name = 'pacai.agents.random.RandomAgent'),
         pacai.core.agent.AgentArguments(name = 'pacai.agents.random.RandomAgent'),
     ]
@@ -25,8 +26,10 @@ def run(args) -> int:
     board = pacai.core.board.load_path('pacai/resources/boards/medium-classic.txt')
 
     # ui = pacai.pacman.ui.text.StdioUI(fps = 10, animation_path = 'test.animation')
-    ui = pacai.ui.null.NullUI(animation_path = 'test.webp', animation_skip_frames = 3, animation_fps = 20, animation_optimize = True)
+    # ui = pacai.ui.null.NullUI(animation_path = 'test.webp', animation_skip_frames = 3, animation_fps = 10, animation_optimize = True)
     # ui = pacai.ui.null.NullUI(animation_path = 'test.webp', animation_skip_frames = 3, animation_fps = 5, animation_optimize = False)
+    # ui = pacai.ui.tk.TKUI(fps = 10)
+    ui = pacai.ui.tk.TKUI(fps = 10, animation_path = 'test2.webp', animation_skip_frames = 3, animation_fps = 10, animation_optimize = True)
 
     game = pacai.pacman.game.Game(agent_args, seed = 4)
     result = game.run(board, ui)

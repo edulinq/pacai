@@ -110,6 +110,9 @@ class UI(abc.ABC):
         self._font: PIL.ImageFont.FreeTypeFont = PIL.ImageFont.truetype(font_path, self._sprite_sheet.height + FONT_SIZE_OFFSET)
         """ The font to use for this UI. """
 
+        self._image_cache: dict[int, PIL.Image.Image] = {}
+        """ Cache images (by game state turn count) to avoid redrawing images. """
+
         if (self._animation_path is not None):
             if (os.path.splitext(self._animation_path)[-1] not in ANIMATION_EXTS):
                 raise ValueError("Animation path must have one of the following extensions %s, found '%s'." % (ANIMATION_EXTS, self._animation_path))
@@ -186,10 +189,18 @@ class UI(abc.ABC):
         # with the ideal wait between frames.
         wait_time_ms = ideal_time_between_frames_ms - duration.to_msecs()
         if (wait_time_ms > 0):
-            time.sleep(wait_time_ms / 1000.0)
+            self.sleep(int(wait_time_ms))
 
         # Mark the time this method completed.
         self._last_fps_wait = pacai.util.time.now()
+
+    def sleep(self, sleep_time_ms: int) -> None:
+        """
+        Sleep for the specified number of ms.
+        This is in a method so children can override with any more UI-specific sleep procedures.
+        """
+
+        time.sleep(sleep_time_ms / 1000.0)
 
     def close(self) -> None:
         """ Close the UI and release all owned resources. """
@@ -215,6 +226,10 @@ class UI(abc.ABC):
         This method is typically used for rendering the game to an animation.
         each call to this method is one frame in the animation.
         """
+
+        # First, check the cache for the image.
+        if (state.turn_count in self._image_cache):
+            return self._image_cache[state.turn_count]
 
         if (self._walls_image is None):
             # Height is +1 to leave room for the score.
@@ -263,6 +278,9 @@ class UI(abc.ABC):
         score_text = "Score: %d" % (state.score)
         canvas = PIL.ImageDraw.Draw(image)
         canvas.text(score_image_coordinates, score_text, self._sprite_sheet.text, self._font)
+
+        # Store this image in the cache.
+        self._image_cache[state.turn_count] = image
 
         return image
 

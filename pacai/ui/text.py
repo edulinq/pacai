@@ -141,7 +141,7 @@ class TextUI(pacai.core.ui.UI):
             output_stream: typing.TextIO,
             **kwargs) -> None:
         input_device = TextStreamUserInputDevice(input_stream, **kwargs)
-        super().__init__(input_device, **kwargs)
+        super().__init__(user_input_device = input_device, **kwargs)
 
         self._output_stream: typing.TextIO = output_stream
         """ The stream output will be sent to. """
