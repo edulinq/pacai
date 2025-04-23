@@ -91,6 +91,12 @@ class UI(abc.ABC):
         self._gif_frames: list[PIL.Image.Image] = []
         """ The frames for the gif (one per call to update(). """
 
+        self._walls_image: PIL.Image.Image | None = None
+        """
+        Cache an image that just has the walls drawn.
+        This can be reused as the base image every time we draw an image (since the walls do not change).
+        """
+
         self._sprite_sheet: pacai.core.spritesheet.SpriteSheet = pacai.core.spritesheet.load(sprite_sheet_path)
         """ The sprite sheet to use for this UI. """
 
@@ -190,26 +196,29 @@ class UI(abc.ABC):
         each call to this method is one frame in the gif.
         """
 
-        # TODO(eriq) - Don't write the full walls each time.
+        if (self._walls_image is None):
+            # Height is +1 to leave room for the score.
+            size = (
+                state.board.width * self._sprite_sheet.width,
+                (state.board.height + 1) * self._sprite_sheet.height,
+            )
 
-        # Height is +1 to leave room for the score.
-        size = (
-            state.board.width * self._sprite_sheet.width,
-            (state.board.height + 1) * self._sprite_sheet.height,
-        )
+            # Add in the alpha channel to the background.
+            background_color = list(self._sprite_sheet.background)
+            background_color.append(255)
 
-        # Add in the alpha channel to the background.
-        background_color = list(self._sprite_sheet.background)
-        background_color.append(255)
-
-        image = PIL.Image.new('RGB', size, tuple(background_color))
-        canvas = PIL.ImageDraw.Draw(image)
+            image = PIL.Image.new('RGB', size, tuple(background_color))
+        else:
+            image = self._walls_image.copy()
 
         # Draw wall markers.
         for position in state.board.get_walls():
             adjacency = state.board.get_adjacent_walls(position)
             sprite = self._sprite_sheet.get_sprite(pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
             self._place_sprite(position, sprite, image)
+
+        if (self._walls_image is None):
+            self._walls_image = image.copy()
 
         # Draw non-agent (non-wall) markers.
         for (marker, positions) in state.board._all_objects.items():
@@ -233,6 +242,7 @@ class UI(abc.ABC):
         # Draw the score.
         score_image_coordinates = (0, state.board.height * self._sprite_sheet.height)
         score_text = "Score: %d" % (state.score)
+        canvas = PIL.ImageDraw.Draw(image)
         canvas.text(score_image_coordinates, score_text, self._sprite_sheet.text, self._font)
 
         return image
