@@ -168,14 +168,17 @@ class AdjacencyString(str):
     SOUTH_INDEX = 2
     WEST_INDEX = 3
 
-    def __init__(self, text: str) -> None:
-        text = text.strip().upper()
+    def __new__(cls, raw_text: str) -> 'AdjacencyString':
+        text = super().__new__(cls, raw_text.strip().upper())
+
         if (len(text) != 4):
             raise ValueError(f"AdjacencyString must have exactly four characters, found {len(text)}.")
 
         for char in text:
             if (char not in {AdjacencyString.TRUE, AdjacencyString.FALSE}):
                 raise ValueError(f"AdjacencyString must only have '{AdjacencyString.TRUE}' or '{AdjacencyString.FALSE}', found '{text}'.")
+
+        return text
 
     def north(self) -> bool:
         return (self[AdjacencyString.NORTH_INDEX] == AdjacencyString.TRUE)

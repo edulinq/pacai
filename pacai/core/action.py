@@ -10,7 +10,13 @@ import pacai.util.time
 class Action(str):
     """ An action that an agent is allowed to take. """
 
-    pass
+    def __new__(cls, raw_text: str) -> 'Action':
+        text = super().__new__(cls, raw_text.strip().upper())
+
+        if (len(text) == 0):
+            raise ValueError('Actions must not be empty.')
+
+        return text
 
 class ActionRecord(typing.NamedTuple):
     """

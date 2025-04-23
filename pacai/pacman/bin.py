@@ -26,6 +26,7 @@ def run(args) -> int:
 
     # ui = pacai.pacman.ui.text.StdioUI(fps = 10, animation_path = 'test.animation')
     ui = pacai.ui.null.NullUI(animation_path = 'test.webp', animation_skip_frames = 3, animation_fps = 20, animation_optimize = True)
+    # ui = pacai.ui.null.NullUI(animation_path = 'test.webp', animation_skip_frames = 3, animation_fps = 5, animation_optimize = False)
 
     game = pacai.pacman.game.Game(agent_args, seed = 4)
     result = game.run(board, ui)
