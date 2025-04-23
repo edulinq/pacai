@@ -228,17 +228,16 @@ class UI(abc.ABC):
             background_color.append(255)
 
             image = PIL.Image.new('RGB', size, tuple(background_color))
+
+            # Draw wall markers.
+            for position in state.board.get_walls():
+                adjacency = state.board.get_adjacent_walls(position)
+                sprite = self._sprite_sheet.get_sprite(pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
+                self._place_sprite(position, sprite, image)
+
+            self._walls_image = image.copy()
         else:
             image = self._walls_image.copy()
-
-        # Draw wall markers.
-        for position in state.board.get_walls():
-            adjacency = state.board.get_adjacent_walls(position)
-            sprite = self._sprite_sheet.get_sprite(pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
-            self._place_sprite(position, sprite, image)
-
-        if (self._walls_image is None):
-            self._walls_image = image.copy()
 
         # Draw non-agent (non-wall) markers.
         for (marker, positions) in state.board._all_objects.items():
