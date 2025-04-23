@@ -1,9 +1,27 @@
 import abc
+import os
 import time
+
+import PIL.Image
+import PIL.ImageDraw
+import PIL.ImageFont
 
 import pacai.core.action
 import pacai.core.gamestate
+import pacai.core.spritesheet
 import pacai.util.time
+
+DEFAULT_GIF_FPS: int = 10
+MIN_GIF_FPS: int = 1
+FONT_SIZE_OFFSET: int = -14
+
+THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+DEFAULT_FONT_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'fonts', 'roboto', 'RobotoMono-Regular.ttf')
+DEFAULT_SPRITE_SHEET_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'spritesheets', 'generic.json')
+
+ANIMATION_KEY: str = 'UI.draw_image'
+
+# TODO(eriq) - Draw every x frames? (don't skip the first)
 
 class UserInputDevice(abc.ABC):
     """
@@ -35,6 +53,9 @@ class UI(abc.ABC):
     def __init__(self,
             user_input_device: UserInputDevice | None = None,
             fps: int = -1,
+            gif_path: str | None = None, gif_fps: int = DEFAULT_GIF_FPS,
+            sprite_sheet_path: str = DEFAULT_SPRITE_SHEET_PATH,
+            font_path: str = DEFAULT_FONT_PATH,
             **kwargs) -> None:
         self.user_input_device: UserInputDevice | None = user_input_device
         """ The device to use to get user input. """
@@ -48,6 +69,25 @@ class UI(abc.ABC):
         """
 
         self._last_fps_wait: pacai.util.time.Timestamp | None = None
+        """
+        Keep track of the last time the UI waited to adjust the fps.
+        We need this information to compute the next wait time.
+        """
+
+        self._gif_path: str | None = gif_path
+        """ If specified, create a gif and write it to this location after the game completes. """
+
+        self._gif_fps: int = max(MIN_GIF_FPS, gif_fps)
+        """ The frame rate for the gif. """
+
+        self._gif_frames: list[PIL.Image.Image] = []
+        """ The frames for the gif (one per call to update(). """
+
+        self._sprite_sheet: pacai.core.spritesheet.SpriteSheet = pacai.core.spritesheet.load(sprite_sheet_path)
+        """ The sprite sheet to use for this UI. """
+
+        self._font: PIL.ImageFont.FreeTypeFont = PIL.ImageFont.truetype(font_path, self._sprite_sheet.height + FONT_SIZE_OFFSET)
+        """ The font to use for this UI. """
 
     def update(self, state: pacai.core.gamestate.GameState) -> None:
         """
@@ -56,6 +96,11 @@ class UI(abc.ABC):
         """
 
         self.wait_for_fps()
+
+        if (self._gif_path is not None):
+            image = self.draw_image(state)
+            self._gif_frames.append(image)
+
         self.draw(state)
 
     def game_start(self, initial_state: pacai.core.gamestate.GameState) -> None:
@@ -67,6 +112,16 @@ class UI(abc.ABC):
         """ Update the UI with the game's final state. """
 
         self.update(final_state)
+
+        # Write the gif.
+        if ((self._gif_path is not None) and (len(self._gif_frames) > 0)):
+            ms_per_frame = int(1.0 / self._gif_fps * 1000.0)
+
+            self._gif_frames[0].save(self._gif_path,
+                    save_all = True,
+                    append_images = self._gif_frames,
+                    duration = ms_per_frame,
+                    loop = 0)
 
     def wait_for_fps(self) -> None:
         """
@@ -118,8 +173,79 @@ class UI(abc.ABC):
 
         return self.user_input_device.get_inputs()
 
+    def draw_image(self, state: pacai.core.gamestate.GameState) -> PIL.Image.Image:
+        """
+        Visualize the state of the game as an image.
+        This method is typically used for rendering the game to a gif,
+        each call to this method is one frame in the gif.
+        """
+
+        # TODO(eriq) - Don't write the full walls each time.
+
+        # Height is +1 to leave room for the score.
+        size = (
+            state.board.width * self._sprite_sheet.width,
+            (state.board.height + 1) * self._sprite_sheet.height,
+        )
+
+        # Add in the alpha channel to the background.
+        background_color = list(self._sprite_sheet.background)
+        background_color.append(255)
+
+        image = PIL.Image.new('RGB', size, tuple(background_color))
+        canvas = PIL.ImageDraw.Draw(image)
+
+        # Draw wall markers.
+        for position in state.board.get_walls():
+            adjacency = state.board.get_adjacent_walls(position)
+            sprite = self._sprite_sheet.get_sprite(pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
+            self._place_sprite(position, sprite, image)
+
+        # Draw non-agent (non-wall) markers.
+        for (marker, positions) in state.board._all_objects.items():
+            if (marker.is_wall() or marker.is_agent()):
+                continue
+
+            for position in positions:
+                sprite = self._sprite_sheet.get_sprite(marker, animation_key = ANIMATION_KEY)
+                self._place_sprite(position, sprite, image)
+
+        # Draw agent markers.
+        for (marker, positions) in state.board._all_objects.items():
+            if (not marker.is_agent()):
+                continue
+
+            for position in positions:
+                last_action = state.last_agent_actions.get(marker.get_agent_index(), None)
+                sprite = self._sprite_sheet.get_sprite(marker, action = last_action, animation_key = ANIMATION_KEY)
+                self._place_sprite(position, sprite, image)
+
+        # Draw the score.
+        score_image_coordinates = (0, state.board.height * self._sprite_sheet.height)
+        score_text = "Score: %d" % (state.score)
+        canvas.text(score_image_coordinates, score_text, self._sprite_sheet.text, self._font)
+
+        return image
+
+    def _place_sprite(self, position: pacai.core.board.Position, sprite: PIL.Image.Image, image: PIL.Image.Image):
+        image_coordinates = (position.col * self._sprite_sheet.width, position.row * self._sprite_sheet.height)
+
+        # Overlay the sprite onto the image.
+        # Note that the same image is used as the mask, since sprites will usually have alpha channels
+        # (so the transparent parts will not get drawn).
+        image.paste(sprite, image_coordinates, sprite)
+
     @abc.abstractmethod
     def draw(self, state: pacai.core.gamestate.GameState) -> None:
-        """ Visualize the state of the game to the UI. """
+        """
+        Visualize the state of the game to the UI.
+        This is the typically the main override point for children.
+        Note that how this method visualizes the game completely unrelated
+        to how the draw_image() method works.
+        draw() will render to whatever the specific UI for the child class is,
+        while draw_image() specifically creates an image which will be used for gifs.
+        If the child UI is also image-based than it can leverage draw_image(),
+        but there is no requirement to do that.
+        """
 
         pass

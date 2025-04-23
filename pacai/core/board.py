@@ -8,7 +8,7 @@ import pacai.util.json
 import pacai.util.reflection
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-BOARDS_DIR: str = os.path.join(THIS_DIR, '..', 'boards')
+BOARDS_DIR: str = os.path.join(THIS_DIR, '..', 'resources', 'boards')
 
 SEPARATOR_PATTERN: re.Pattern = re.compile(r'^\s*-{3,}\s*$')
 AGENT_PATTERN: re.Pattern = re.compile(r'^\d$')
@@ -23,6 +23,13 @@ class Marker(str):
     These are similar to a game pieces in a traditional board game (like the top hat or dog in Monopoly).
     Another name for this class could be "Token",
     but that term is already overloaded in Computer Science.
+
+    Markers are used throughout the life of a game to refer to that component on the board.
+    Markers may not be how a component is visually represented when the board is rendered
+    (even when a board is rendered as text),
+    but it will still be the identifier by which a piece is referenced.
+    In a standard board, agents use the identifiers 0-9
+    (and therefore there can be no more than 10 agents on a standard board).
     """
 
     def is_empty(self) -> bool:
@@ -39,6 +46,17 @@ class Marker(str):
         """ Check if the marker is for an agent. """
 
         return (self in AGENT_MARKERS)
+
+    def get_agent_index(self) -> int:
+        """
+        If this marker is an agent, return its index.
+        Otherwise, return -1.
+        """
+
+        if (not self.is_agent()):
+            return -1
+
+        return int(self)
 
 MARKER_EMPTY: Marker = Marker(' ')
 MARKER_WALL: Marker = Marker('%')
@@ -119,12 +137,57 @@ class Position(typing.NamedTuple):
 
         return self.add(offset)
 
+CARDINAL_DIRECTIONS: list[pacai.core.action.Action] = [
+    pacai.core.action.NORTH,
+    pacai.core.action.EAST,
+    pacai.core.action.SOUTH,
+    pacai.core.action.WEST,
+]
+
 CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
     pacai.core.action.NORTH: Position(-1, 0),
     pacai.core.action.EAST: Position(0, 1),
-    pacai.core.action.WEST: Position(0, -1),
     pacai.core.action.SOUTH: Position(1, 0),
+    pacai.core.action.WEST: Position(0, -1),
 }
+
+class AdjacencyString(str):
+    """
+    A string that indicates which directions have something adjacent.
+    This string is always four characters long,
+    which each character being 'T' for true and 'F' for false.
+    The characters are ordered North, East, South, West (NESW).
+    So, 'TFTF' indicates that there are things to the north and south.
+    """
+
+    TRUE = 'T'
+    FALSE = 'F'
+
+    NORTH_INDEX = 0
+    EAST_INDEX = 1
+    SOUTH_INDEX = 2
+    WEST_INDEX = 3
+
+    def __init__(self, text: str) -> None:
+        text = text.strip().upper()
+        if (len(text) != 4):
+            raise ValueError(f"AdjacencyString must have exactly four characters, found {len(text)}.")
+
+        for char in text:
+            if (char not in {AdjacencyString.TRUE, AdjacencyString.FALSE}):
+                raise ValueError(f"AdjacencyString must only have '{AdjacencyString.TRUE}' or '{AdjacencyString.FALSE}', found '{text}'.")
+
+    def north(self) -> bool:
+        return (self[AdjacencyString.NORTH_INDEX] == AdjacencyString.TRUE)
+
+    def east(self) -> bool:
+        return (self[AdjacencyString.EAST_INDEX] == AdjacencyString.TRUE)
+
+    def south(self) -> bool:
+        return (self[AdjacencyString.SOUTH_INDEX] == AdjacencyString.TRUE)
+
+    def west(self) -> bool:
+        return (self[AdjacencyString.WEST_INDEX] == AdjacencyString.TRUE)
 
 class Board:
     """
@@ -191,6 +254,11 @@ class Board:
 
         return self._all_objects.get(marker, set())
 
+    def get_walls(self) -> set[Position]:
+        """ Shortcut for get_marker_positions() with MARKER_WALL. """
+
+        return self.get_marker_positions(MARKER_WALL)
+
     def remove_marker(self, marker: Marker, position: Position) -> None:
         """
         Remove the specified marker from the given position if it exists.
@@ -230,6 +298,29 @@ class Board:
             neighbors.append((action, neighbor))
 
         return neighbors
+
+    def get_adjacency(self, position: Position, marker: Marker) -> AdjacencyString:
+        """
+        Look at the neighbors of the specified position to see if the given marker is adjacent in any direction.
+        An out-of-bounds position always counts as non-adjacent.
+        """
+
+        adjacency = []
+        for direction in CARDINAL_DIRECTIONS:
+            neighbor = position.apply_action(direction)
+
+            adjacent = 'F'
+            if ((marker in self._all_objects) and (neighbor in self._all_objects[marker])):
+                adjacent = 'T'
+
+            adjacency.append(adjacent)
+
+        return AdjacencyString(''.join(adjacency))
+
+    def get_adjacent_walls(self, position: Position) -> AdjacencyString:
+        """ Shortcut for get_adjacency() with MARKER_WALL. """
+
+        return self.get_adjacency(position, MARKER_WALL)
 
     def is_empty(self, position: Position) -> bool:
         """ Check if the given position is empty. """
