@@ -21,8 +21,6 @@ DEFAULT_SPRITE_SHEET_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'spri
 
 ANIMATION_KEY: str = 'UI.draw_image'
 
-# TODO(eriq) - Draw every x frames? (don't skip the first)
-
 class UserInputDevice(abc.ABC):
     """
     This class provides a way for users to convey inputs through a UI.
@@ -53,7 +51,7 @@ class UI(abc.ABC):
     def __init__(self,
             user_input_device: UserInputDevice | None = None,
             fps: int = -1,
-            gif_path: str | None = None, gif_fps: int = DEFAULT_GIF_FPS,
+            gif_path: str | None = None, gif_fps: int = DEFAULT_GIF_FPS, gif_skip_frames: int = 1,
             sprite_sheet_path: str = DEFAULT_SPRITE_SHEET_PATH,
             font_path: str = DEFAULT_FONT_PATH,
             **kwargs) -> None:
@@ -74,11 +72,21 @@ class UI(abc.ABC):
         We need this information to compute the next wait time.
         """
 
+        self._update_count: int = 0
+        """ Keep track of the number of times update() has been called. """
+
         self._gif_path: str | None = gif_path
         """ If specified, create a gif and write it to this location after the game completes. """
 
         self._gif_fps: int = max(MIN_GIF_FPS, gif_fps)
         """ The frame rate for the gif. """
+
+        self._gif_skip_frames: int = max(1, gif_skip_frames)
+        """
+        Skip this many frames between drawing gif frames.
+        This can help speed up gif creation by leaving out less important frames.
+        For example, this can be set to the number of agents to only draw frames after all agents have moved.
+        """
 
         self._gif_frames: list[PIL.Image.Image] = []
         """ The frames for the gif (one per call to update(). """
@@ -89,7 +97,7 @@ class UI(abc.ABC):
         self._font: PIL.ImageFont.FreeTypeFont = PIL.ImageFont.truetype(font_path, self._sprite_sheet.height + FONT_SIZE_OFFSET)
         """ The font to use for this UI. """
 
-    def update(self, state: pacai.core.gamestate.GameState) -> None:
+    def update(self, state: pacai.core.gamestate.GameState, force_draw_image: bool = False) -> None:
         """
         Update the UI with the current state of the game.
         This is the main entry point for the game into the UI.
@@ -97,21 +105,23 @@ class UI(abc.ABC):
 
         self.wait_for_fps()
 
-        if (self._gif_path is not None):
+        if ((self._gif_path is not None) and (force_draw_image or (self._update_count % self._gif_skip_frames == 0))):
             image = self.draw_image(state)
             self._gif_frames.append(image)
 
         self.draw(state)
 
+        self._update_count += 1
+
     def game_start(self, initial_state: pacai.core.gamestate.GameState) -> None:
         """ Initialize the UI with the game's initial state. """
 
-        self.update(initial_state)
+        self.update(initial_state, force_draw_image = True)
 
     def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
         """ Update the UI with the game's final state. """
 
-        self.update(final_state)
+        self.update(final_state, force_draw_image = True)
 
         # Write the gif.
         if ((self._gif_path is not None) and (len(self._gif_frames) > 0)):
