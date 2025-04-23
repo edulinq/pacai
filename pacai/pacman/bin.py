@@ -24,8 +24,8 @@ def run(args) -> int:
 
     board = pacai.core.board.load_path('pacai/resources/boards/medium-classic.txt')
 
-    # ui = pacai.pacman.ui.text.StdioUI(fps = 10, gif_path = 'test.gif')
-    ui = pacai.ui.null.NullUI(gif_path = 'test.gif', gif_skip_frames = 3, gif_fps = 20)
+    # ui = pacai.pacman.ui.text.StdioUI(fps = 10, animation_path = 'test.animation')
+    ui = pacai.ui.null.NullUI(animation_path = 'test.webp', animation_skip_frames = 3, animation_fps = 20, animation_optimize = True)
 
     game = pacai.pacman.game.Game(agent_args, seed = 4)
     result = game.run(board, ui)

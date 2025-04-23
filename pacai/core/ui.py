@@ -11,8 +11,8 @@ import pacai.core.gamestate
 import pacai.core.spritesheet
 import pacai.util.time
 
-DEFAULT_GIF_FPS: int = 10
-MIN_GIF_FPS: int = 1
+DEFAULT_ANIMATION_FPS: int = 10
+MIN_ANIMATION_FPS: int = 1
 FONT_SIZE_OFFSET: int = -14
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
@@ -20,6 +20,9 @@ DEFAULT_FONT_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'fonts', 'rob
 DEFAULT_SPRITE_SHEET_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'spritesheets', 'generic.json')
 
 ANIMATION_KEY: str = 'UI.draw_image'
+
+ANIMATION_EXTS: set[str] = {'.gif', '.webp'}
+""" The allowed extensions for animation files. """
 
 class UserInputDevice(abc.ABC):
     """
@@ -51,7 +54,8 @@ class UI(abc.ABC):
     def __init__(self,
             user_input_device: UserInputDevice | None = None,
             fps: int = -1,
-            gif_path: str | None = None, gif_fps: int = DEFAULT_GIF_FPS, gif_skip_frames: int = 1,
+            animation_path: str | None = None, animation_optimize: bool = False,
+            animation_fps: int = DEFAULT_ANIMATION_FPS, animation_skip_frames: int = 1,
             sprite_sheet_path: str = DEFAULT_SPRITE_SHEET_PATH,
             font_path: str = DEFAULT_FONT_PATH,
             **kwargs) -> None:
@@ -75,21 +79,24 @@ class UI(abc.ABC):
         self._update_count: int = 0
         """ Keep track of the number of times update() has been called. """
 
-        self._gif_path: str | None = gif_path
-        """ If specified, create a gif and write it to this location after the game completes. """
+        self._animation_path: str | None = animation_path
+        """ If specified, create a animation and write it to this location after the game completes. """
 
-        self._gif_fps: int = max(MIN_GIF_FPS, gif_fps)
-        """ The frame rate for the gif. """
+        self._animation_optimize: bool = animation_optimize
+        """ Optimize the animation output to reduce file size. """
 
-        self._gif_skip_frames: int = max(1, gif_skip_frames)
+        self._animation_fps: int = max(MIN_ANIMATION_FPS, animation_fps)
+        """ The frame rate for the animation. """
+
+        self._animation_skip_frames: int = max(1, animation_skip_frames)
         """
-        Skip this many frames between drawing gif frames.
-        This can help speed up gif creation by leaving out less important frames.
+        Skip this many frames between drawing animation frames.
+        This can help speed up animation creation by leaving out less important frames.
         For example, this can be set to the number of agents to only draw frames after all agents have moved.
         """
 
-        self._gif_frames: list[PIL.Image.Image] = []
-        """ The frames for the gif (one per call to update(). """
+        self._animation_frames: list[PIL.Image.Image] = []
+        """ The frames for the animation (one per call to update(). """
 
         self._walls_image: PIL.Image.Image | None = None
         """
@@ -103,6 +110,10 @@ class UI(abc.ABC):
         self._font: PIL.ImageFont.FreeTypeFont = PIL.ImageFont.truetype(font_path, self._sprite_sheet.height + FONT_SIZE_OFFSET)
         """ The font to use for this UI. """
 
+        if (self._animation_path is not None):
+            if (os.path.splitext(self._animation_path)[-1] not in ANIMATION_EXTS):
+                raise ValueError("Animation path must have one of the following extensions %s, found '%s'." % (ANIMATION_EXTS, self._animation_path))
+
     def update(self, state: pacai.core.gamestate.GameState, force_draw_image: bool = False) -> None:
         """
         Update the UI with the current state of the game.
@@ -111,9 +122,9 @@ class UI(abc.ABC):
 
         self.wait_for_fps()
 
-        if ((self._gif_path is not None) and (force_draw_image or (self._update_count % self._gif_skip_frames == 0))):
+        if ((self._animation_path is not None) and (force_draw_image or (self._update_count % self._animation_skip_frames == 0))):
             image = self.draw_image(state)
-            self._gif_frames.append(image)
+            self._animation_frames.append(image)
 
         self.draw(state)
 
@@ -129,15 +140,24 @@ class UI(abc.ABC):
 
         self.update(final_state, force_draw_image = True)
 
-        # Write the gif.
-        if ((self._gif_path is not None) and (len(self._gif_frames) > 0)):
-            ms_per_frame = int(1.0 / self._gif_fps * 1000.0)
+        # Write the animation.
+        if ((self._animation_path is not None) and (len(self._animation_frames) > 0)):
+            ms_per_frame = int(1.0 / self._animation_fps * 1000.0)
 
-            self._gif_frames[0].save(self._gif_path,
-                    save_all = True,
-                    append_images = self._gif_frames,
-                    duration = ms_per_frame,
-                    loop = 0)
+            options = {
+                'save_all': True,
+                'append_images': self._animation_frames,
+                'duration': ms_per_frame,
+                'loop': 0,
+                'optimize': False,
+                'minimize_size': False,
+            }
+
+            if (self._animation_optimize):
+                options['optimize'] = True
+                options['minimize_size'] = True
+
+            self._animation_frames[0].save(self._animation_path, None, **options)
 
     def wait_for_fps(self) -> None:
         """
@@ -192,8 +212,8 @@ class UI(abc.ABC):
     def draw_image(self, state: pacai.core.gamestate.GameState) -> PIL.Image.Image:
         """
         Visualize the state of the game as an image.
-        This method is typically used for rendering the game to a gif,
-        each call to this method is one frame in the gif.
+        This method is typically used for rendering the game to an animation.
+        each call to this method is one frame in the animation.
         """
 
         if (self._walls_image is None):
@@ -263,7 +283,7 @@ class UI(abc.ABC):
         Note that how this method visualizes the game completely unrelated
         to how the draw_image() method works.
         draw() will render to whatever the specific UI for the child class is,
-        while draw_image() specifically creates an image which will be used for gifs.
+        while draw_image() specifically creates an image which will be used for animations.
         If the child UI is also image-based than it can leverage draw_image(),
         but there is no requirement to do that.
         """
