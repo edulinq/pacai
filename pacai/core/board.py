@@ -56,7 +56,7 @@ class Marker(str):
         """
 
         if (not self.is_agent()):
-            return -1
+            raise ValueError(f"Marker value ('{self}') is not an agent index.")
 
         return int(self)
 
@@ -248,6 +248,13 @@ class Board:
 
     def agent_count(self) -> int:
         return len(self._agent_initial_position)
+
+    def agent_indexes(self) -> list[int]:
+        agent_indexes = []
+        for marker in self._agent_initial_position:
+            agent_indexes.append(marker.get_agent_index())
+
+        return agent_indexes
 
     def get(self, position: Position) -> set[Marker]:
         """

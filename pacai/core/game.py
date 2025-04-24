@@ -309,7 +309,7 @@ def init_from_args(
     for remove_agent_index in remove_agent_indexes:
         board.remove_agent(remove_agent_index)
 
-    agent_args = _parse_agent_args(board.agent_count(), args.raw_agent_args, base_agent_args, remove_agent_indexes)
+    agent_args = _parse_agent_args(board.agent_indexes(), args.raw_agent_args, base_agent_args, remove_agent_indexes)
 
     game_args = {
         'board': board,
@@ -328,12 +328,12 @@ def init_from_args(
     return args
 
 def _parse_agent_args(
-        num_agents: int,
+        agent_indexes: list[int],
         raw_args: list[str],
         base_agent_args: dict[int, pacai.core.agent.AgentArguments],
         remove_agent_indexes: list[int]) -> dict[int, pacai.core.agent.AgentArguments]:
     # Initialize with random agents.
-    agent_args = {agent_index: pacai.core.agent.AgentArguments(name = DEFAULT_AGENT) for agent_index in range(num_agents)}
+    agent_args = {agent_index: pacai.core.agent.AgentArguments(name = DEFAULT_AGENT) for agent_index in sorted(agent_indexes)}
 
     # Take any args from the base args.
     for (agent_index, base_agent_arg) in base_agent_args.items():
