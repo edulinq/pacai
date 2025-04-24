@@ -273,6 +273,24 @@ class Board:
 
         return self.get_marker_positions(MARKER_WALL)
 
+    def remove_agent(self, agent_index: int) -> None:
+        """
+        Remove all traces of an agent from the board,
+        this includes markers and initial positions.
+        The agent's position will be replaces with an empty location.
+        """
+
+        if ((agent_index < 0) or (agent_index >= MAX_AGENTS)):
+            return
+
+        marker = Marker(str(agent_index))
+
+        if (marker in self._all_objects):
+            del self._all_objects[marker]
+
+        if (marker in self._agent_initial_position):
+            del self._agent_initial_position[marker]
+
     def remove_marker(self, marker: Marker, position: Position) -> None:
         """
         Remove the specified marker from the given position if it exists.

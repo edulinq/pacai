@@ -19,7 +19,7 @@ class AgentIsolator(abc.ABC):
     """
 
     @abc.abstractmethod
-    def init_agents(self, agent_args: list[pacai.core.agent.AgentArguments]) -> None:
+    def init_agents(self, agent_args: dict[int, pacai.core.agent.AgentArguments]) -> None:
         """
         Initialize the agents this isolator will be responsible for.
         """
@@ -88,30 +88,23 @@ class NoneIsolator(AgentIsolator):
     """
 
     def __init__(self, **kwargs) -> None:
-        self._agents: list[pacai.core.agent.Agent] | None = None
+        self._agents: dict[int, pacai.core.agent.Agent] = {}
 
-    def init_agents(self, all_agent_args: list[pacai.core.agent.AgentArguments]) -> None:
-        self._agents = [pacai.core.agent.load(agent_args) for agent_args in all_agent_args]
+    def init_agents(self, all_agent_args: dict[int, pacai.core.agent.AgentArguments]) -> None:
+        self._agents = {}
+        for (agent_index, agent_args) in all_agent_args.items():
+            self._agents[agent_index] = pacai.core.agent.load(agent_args)
 
     def game_start(self, rng: random.Random, initial_state: pacai.core.gamestate.GameState) -> None:
-        if (self._agents is None):
-            raise ValueError("Isolator agents has not been initialized.")
-
-        for i in range(len(self._agents)):
+        for (agent_index, agent) in self._agents.items():
             suggested_seed = rng.randint(0, 2**64)
-            self._agents[i].game_start(i, suggested_seed, initial_state)
+            agent.game_start(agent_index, suggested_seed, initial_state)
 
     def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
-        if (self._agents is None):
-            raise ValueError("Isolator agents has not been initialized.")
-
-        for agent in self._agents:
+        for agent in self._agents.values():
             agent.game_complete(final_state)
 
     def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.ActionRecord:
-        if (self._agents is None):
-            raise ValueError("Isolator agents has not been initialized.")
-
         if (state.agent_index == -1):
             raise ValueError("Game state does not have an active agent.")
 
@@ -138,7 +131,7 @@ class NoneIsolator(AgentIsolator):
 
 
     def close(self) -> None:
-        self._agents = None
+        self._agents.clear()
 
 # TEST
 # class ProcessIsolator(AgentIsolator):

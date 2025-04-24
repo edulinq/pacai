@@ -13,8 +13,7 @@ __pycache__/
 old/
 temp/
 out*/
-/test-*
-/test.*
+/test*
 
 # Build
 /bin/

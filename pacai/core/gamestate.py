@@ -3,8 +3,6 @@ import abc
 import pacai.core.action
 import pacai.core.board
 
-# TODO - Do we need to track a "winner" or winning agent?
-
 class GameState(abc.ABC):
     """
     The base for all game states in pacai.
