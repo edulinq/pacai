@@ -13,9 +13,13 @@ BOARDS_DIR: str = os.path.join(THIS_DIR, '..', 'resources', 'boards')
 SEPARATOR_PATTERN: re.Pattern = re.compile(r'^\s*-{3,}\s*$')
 AGENT_PATTERN: re.Pattern = re.compile(r'^\d$')
 
+FILE_EXTENSION = '.board'
+
 DEFAULT_BOARD_CLASS: str = 'pacai.core.board.Board'
 
 MAX_AGENTS: int = 10
+
+# TEST - There is an issue here because of how empty is handled. We should not track empty markers.
 
 class Marker(str):
     """
@@ -237,6 +241,9 @@ class Board:
 
     def size(self) -> int:
         return self.height * self.width
+
+    def agent_count(self) -> int:
+        return len(self._agent_initial_position)
 
     def get(self, position: Position) -> set[Marker]:
         """
@@ -460,6 +467,19 @@ class Board:
 
 def load_path(path: str) -> Board:
     """ Load a board from a file. """
+
+    raw_path = path
+
+    # If the path does not exist, try the boards directory.
+    if (not os.path.exists(path)):
+        path = os.path.join(BOARDS_DIR, path)
+
+        # If this path does not have a good extension, add one.
+        if (os.path.splitext(path)[-1] != FILE_EXTENSION):
+            path = path + FILE_EXTENSION
+
+    if (not os.path.exists(path)):
+        raise ValueError(f"Could not find board, path does not exist: '{raw_path}'.")
 
     text = pacai.util.file.read(path, strip = False)
     return load_string(text)

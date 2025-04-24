@@ -1,4 +1,5 @@
 import abc
+import argparse
 import os
 import time
 
@@ -10,9 +11,15 @@ import pacai.core.action
 import pacai.core.gamestate
 import pacai.core.spritesheet
 import pacai.util.time
+import pacai.util.reflection
 
-DEFAULT_ANIMATION_FPS: int = 10
+DEFAULT_FPS: int = 15
+
+DEFAULT_ANIMATION_FPS: int = 15
+DEFAULT_ANIMATION_SKIP_FRAMES: int = 1
 MIN_ANIMATION_FPS: int = 1
+DEFAULT_ANIMATION_OPTIMIZE: bool = False
+
 FONT_SIZE_OFFSET: int = -14
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
@@ -21,8 +28,14 @@ DEFAULT_SPRITE_SHEET_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'spri
 
 ANIMATION_KEY: str = 'UI.draw_image'
 
-ANIMATION_EXTS: set[str] = {'.gif', '.webp'}
+ANIMATION_EXTS: list[str] = ['.gif', '.webp']
 """ The allowed extensions for animation files. """
+
+CLI_UIS: list[str] = [
+    'pacai.ui.null.NullUI',
+    'pacai.ui.text.StdioUI',
+    'pacai.ui.tk.TkUI',
+]
 
 class UserInputDevice(abc.ABC):
     """
@@ -53,9 +66,11 @@ class UI(abc.ABC):
 
     def __init__(self,
             user_input_device: UserInputDevice | None = None,
-            fps: int = -1,
-            animation_path: str | None = None, animation_optimize: bool = False,
-            animation_fps: int = DEFAULT_ANIMATION_FPS, animation_skip_frames: int = 1,
+            fps: int = DEFAULT_FPS,
+            animation_path: str | None = None,
+            animation_optimize: bool = DEFAULT_ANIMATION_OPTIMIZE,
+            animation_fps: int = DEFAULT_ANIMATION_FPS,
+            animation_skip_frames: int = DEFAULT_ANIMATION_SKIP_FRAMES,
             sprite_sheet_path: str = DEFAULT_SPRITE_SHEET_PATH,
             font_path: str = DEFAULT_FONT_PATH,
             **kwargs) -> None:
@@ -306,3 +321,64 @@ class UI(abc.ABC):
         """
 
         pass
+
+def set_cli_args(parser: argparse.ArgumentParser) -> None:
+    """
+    Set common CLI arguments.
+    This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
+    """
+
+    # TODO(eriq) - Default to browser
+    parser.add_argument('--ui', dest = 'ui', metavar = 'UI_CLASS',
+            action = 'store', type = str, default = 'pacai.ui.text.StdioUI',
+            choices = CLI_UIS,
+            help = ('Set the UI/graphics to use (default: %(default)s).'
+                    + ' Choose one of:'
+                    + ' `pacai.ui.null.NullUI` -- Do not show any ui/graphics (best if you want to run fast and just need the result),'
+                    + ' `pacai.ui.text.StdioUI` -- Use stdin/stdout from the terminal,'
+                    + ' `pacai.ui.tk.TkUI` -- Use Tk/tkinter (must already be installed) to open a window.'))
+
+    parser.add_argument('--fps', dest = 'fps',
+            action = 'store', type = int, default = DEFAULT_FPS,
+            help = ('Set the visual speed (frames per second) for UIs (default: %(default)s).'
+                    + ' Lower values are slower, and higher values are faster.'))
+
+    parser.add_argument('--animation-path', dest = 'animation_path',
+            action = 'store', type = str, default = None,
+            help = ('If specified, store an animated recording of the game at the specified location.'
+                    + f" This path must have one of the following extensions: {ANIMATION_EXTS}."))
+
+    parser.add_argument('--animation-fps', dest = 'animation_fps',
+            action = 'store', type = int, default = DEFAULT_ANIMATION_FPS,
+            help = 'Set the fps of the animation (default: %(default)s).')
+
+    parser.add_argument('--animation-skip-frames', dest = 'animation_skip_frames',
+            action = 'store', type = int, default = DEFAULT_ANIMATION_SKIP_FRAMES,
+            help = ('Only include every X frames in the animation.'
+                    + ' The default (1) means that every frame will be included.'
+                    + ' Using higher values can reduce the animations size and processing time'
+                    + ' (since there are fewer frames).'))
+
+    parser.add_argument('--animation-optimize', dest = 'animation_optimize',
+            action = 'store_true', default = DEFAULT_ANIMATION_OPTIMIZE,
+            help = 'Optimize the animation to reduce file size (will take longer) (default: %(default)s).')
+
+def init_from_args(args: argparse.Namespace) -> argparse.Namespace:
+    """
+    Take in args from a parser that was passed to set_cli_args(),
+    and initialize the proper components.
+    A constructed UI will be placed in the `args._ui`.
+    """
+
+    ui_args = {
+        'fps': args.fps,
+        'animation_path': args.animation_path,
+        'animation_fps': args.animation_fps,
+        'animation_skip_frames': args.animation_skip_frames,
+        'animation_optimize': args.animation_optimize,
+    }
+
+    ui = pacai.util.reflection.new_object(args.ui, **ui_args)
+    setattr(args, '_ui', ui)
+
+    return args

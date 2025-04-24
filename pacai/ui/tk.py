@@ -37,9 +37,9 @@ ARROW_CHAR_MAPPING: dict[str, pacai.core.action.Action] = {
 }
 """ A character to action mapping using the arrow keys. """
 
-class TKUserInputDevice(pacai.core.ui.UserInputDevice):
+class TkUserInputDevice(pacai.core.ui.UserInputDevice):
     """
-    Use TK to capture keyboard inputs on the window.
+    Use Tk to capture keyboard inputs on the window.
     """
 
     def __init__(self,
@@ -73,43 +73,43 @@ class TKUserInputDevice(pacai.core.ui.UserInputDevice):
     def _key_release(self, event) -> None:
         pass
 
-class TKUI(pacai.core.ui.UI):
+class TkUI(pacai.core.ui.UI):
     """
-    A UI that uses TK/TKinter to open a window and draw the game in the window.
+    A UI that uses Tk/tkinter to open a window and draw the game in the window.
     Although the `tkinter` package is part of the Python standard library,
-    TK must already be installed on your system.
+    Tk must already be installed on your system.
     See:
      - https://docs.python.org/3/library/tkinter.html
      - https://tkdocs.com/tutorial/install.html
     """
 
     def __init__(self, title: str = 'pacai', **kwargs) -> None:
-        input_device = TKUserInputDevice(**kwargs)
+        input_device = TkUserInputDevice(**kwargs)
         super().__init__(user_input_device = input_device, **kwargs)
 
         if (title != 'pacai'):
             title = 'pacai - %s' % (title)
 
         self._title: str = title
-        """ The title of the TK window. """
+        """ The title of the Tk window. """
 
         self._root: tkinter.Tk = tkinter.Tk(baseName = TK_BASE_NAME)
-        """ The root/base TK element. """
+        """ The root/base Tk element. """
 
         self._canvas: tkinter.Canvas | None = None
-        """ The TK drawing/rendering area. """
+        """ The Tk drawing/rendering area. """
 
         self._image_area: int = -1
-        """ The TK area where images will be rendered. """
+        """ The Tk area where images will be rendered. """
 
         self._height: int = 0
-        """ Height of the TK window. """
+        """ Height of the Tk window. """
 
         self._width: int = 0
-        """ Width of the TK window. """
+        """ Width of the Tk window. """
 
         self._window_closed: bool = False
-        """ Indicate that the TK window has been closed. """
+        """ Indicate that the Tk window has been closed. """
 
     def game_start(self, initial_state: pacai.core.gamestate.GameState) -> None:
         self._init_tk(initial_state)
@@ -123,7 +123,7 @@ class TKUI(pacai.core.ui.UI):
 
     def _init_tk(self, state: pacai.core.gamestate.GameState) -> None:
         """
-        Initialize all the TK components using the initial game state.
+        Initialize all the Tk components using the initial game state.
         """
 
         self._root.protocol('WM_DELETE_WINDOW', self._handle_window_closed)
@@ -142,7 +142,7 @@ class TKUI(pacai.core.ui.UI):
         self._canvas.pack(fill = 'both', expand = True)
 
         # Initialize the user input (keyboard).
-        if (isinstance(self.user_input_device, TKUserInputDevice)):
+        if (isinstance(self.user_input_device, TkUserInputDevice)):
             self.user_input_device.register_root(self._root)
 
     def draw(self, state: pacai.core.gamestate.GameState) -> None:
@@ -172,7 +172,7 @@ class TKUI(pacai.core.ui.UI):
         self._root.after(sleep_time_ms, None)  # type: ignore
 
     def _handle_resize(self, event):
-        """ Handle TK configure (resize) events. """
+        """ Handle Tk configure (resize) events. """
 
         if (self._width == event.width and self._height == event.height):
             return
@@ -192,13 +192,13 @@ class TKUI(pacai.core.ui.UI):
         self._canvas.pack(fill = 'both', expand = True)
 
     def _handle_window_closed(self, event = None):
-        """ Handle TK window close events. """
+        """ Handle Tk window close events. """
 
         self._window_closed = True
 
     def _cleanup(self, exit = True):
         """
-        The TK window has been killed, clean up.
+        The Tk window has been killed, clean up.
         This is one of the rare case where a non-bin will call sys.exit().
         """
 

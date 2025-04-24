@@ -24,6 +24,19 @@ class AgentArguments:
 
         self.other_arguments: dict[str, typing.Any] = kwargs
 
+    def set(self, name: str, value: typing.Any) -> None:
+        if (name == 'name'):
+            self.name = str(value)
+        elif (name == 'move_delay'):
+            self.move_delay = int(value)
+        else:
+            self.other_arguments[name] = value
+
+    def update(self, other: 'AgentArguments') -> None:
+        self.name = other.name
+        self.move_delay = other.move_delay
+        self.other_arguments.update(other.other_arguments)
+
 class Agent(abc.ABC):
     """ The base for all agents in the pacai system. """
 

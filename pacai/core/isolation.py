@@ -76,6 +76,8 @@ class Level(enum.Enum):
         else:
             raise ValueError(f"Unknown isolation level '{self}'.")
 
+LEVELS: list[str] = [item.value for item in Level]
+
 class NoneIsolator(AgentIsolator):
     """
     An isolator that does not do any isolation between the engine and agents.

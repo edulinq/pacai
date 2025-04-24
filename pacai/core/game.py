@@ -1,13 +1,16 @@
 import abc
+import argparse
 import logging
 import random
+import typing
 
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.isolation
 import pacai.core.ui
 
-# TODO(eriq): Clean up the difference between what should be passed in the constructor and run().
+DEFAULT_MAX_MOVES: int = -1
+DEFAULT_AGENT: str = 'pacai.agents.random.RandomAgent'
 
 class GameResult:
     """ The result of running a game. """
@@ -49,9 +52,10 @@ class Game(abc.ABC):
     """
 
     def __init__(self,
+            board: pacai.core.board.Board,
             agent_args: list[pacai.core.agent.AgentArguments],
             isolation_level: pacai.core.isolation.Level = pacai.core.isolation.Level.NONE,
-            max_moves: int = -1,
+            max_moves: int = DEFAULT_MAX_MOVES,
             seed: int | None = None,
             ) -> None:
         """
@@ -66,6 +70,9 @@ class Game(abc.ABC):
 
         self._seed: int = seed
         """ The random seed for this game's RNG. """
+
+        self._board: pacai.core.board.Board = board
+        """ The board this game will be played on. """
 
         self._agent_args: list[pacai.core.agent.AgentArguments] = agent_args
         """ The required information for creating the agents for this game. """
@@ -110,7 +117,7 @@ class Game(abc.ABC):
 
     # TODO(eriq): Validate that the board works for this game (e.g., number of agent positions).
 
-    def run(self, board: pacai.core.board.Board, ui: pacai.core.ui.UI) -> GameResult:
+    def run(self, ui: pacai.core.ui.UI) -> GameResult:
         """
         The main "game loop" for all games.
         One round of the loop will:
@@ -145,7 +152,7 @@ class Game(abc.ABC):
         agent_user_inputs: list[list[pacai.core.action.Action]] = [[] for _ in self._agent_args]
 
         # Create the initial game state.
-        state = self.get_initial_state(rng, board)
+        state = self.get_initial_state(rng, self._board)
 
         # Notify agents about the start of the game.
         isolator.game_start(rng, state)
@@ -234,3 +241,118 @@ class Game(abc.ABC):
         agent_user_inputs[agent_index] = []
 
         return agent_inputs
+
+def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = None) -> None:
+    """
+    Set common CLI arguments.
+    This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
+    """
+
+    parser.add_argument('--board', dest = 'board',
+            action = 'store', type = str, default = default_board,
+            help = ('Play on this board (default: %(default)s).'
+                    + ' This may be the full path to a board, or just a filename.'
+                    + ' If just a filename, than the `pacai/resources/boards` directory will be checked (using a ".board" extension.'))
+
+    parser.add_argument('--seed', dest = 'seed',
+            action = 'store', type = int, default = None,
+            help = 'The random seed for the game (will be randomly generated if not set.')
+
+    parser.add_argument('--max-moves', dest = 'max_moves',
+            action = 'store', type = int, default = DEFAULT_MAX_MOVES,
+            help = 'The maximum number of moves (total for all agents) allowed in this game (-1 for unlimited) (default: %(default)s).')
+
+    parser.add_argument('--isolation', dest = 'isolation_level', metavar = 'LEVEL',
+            action = 'store', type = str, default = pacai.core.isolation.Level.NONE.value,
+            choices = pacai.core.isolation.LEVELS,
+            help = ('Set the agent isolation level for this game (default: %(default)s).'
+                    + ' Choose one of:'
+                    + ' `none` -- Do not make any attempt to isolate the agent code from the game (fastest and least secure),'
+                    + ' `process` -- Run the agent code in a separate process/memory space (offers some protection, but still vulnerable to disk or execution exploits),'
+                    + ' `tcp` -- Open TCP listeners to communicate with agents (most secure, requires additional work to set up agents).'))
+
+    parser.add_argument('--agent-args', dest = 'agent_args',
+            action = 'append', type = str, default = [],
+            help = ('Specify arguments directly to agents.'
+                    + ' The value for this argument must be formatted as "agent_index::key=value[,key=value]",'
+                    + ' for example to set `foo = 1` and `bar = a` for agent 2, we can use:'
+                    + ' `--agent-args 2::foo=1,bar=a`.'
+                    + ' This command may be repeated multiple time (for the same or different agents).'))
+
+    ''' TODO(eriq)
+    parser.add_argument('--save-path', dest = 'save_path',
+            action = 'store', type = str, default = None,
+            help = 'If specified, write the result of this game to the specified location.')
+    '''
+
+    ''' TODO(eriq)
+    parser.add_argument('--replay-path', dest = 'replay_path',
+            action = 'store', type = str, default = None,
+            help = 'If specified, replay the game whose result was saved at the specified path with `--save-path`.')
+    '''
+
+def init_from_args(args: argparse.Namespace, game_class: typing.Type[Game], base_agent_args: list[pacai.core.agent.AgentArguments | None] = []) -> argparse.Namespace:
+    """
+    Take in args from a parser that was passed to set_cli_args(),
+    and initialize the proper components.
+    A constructed UI will be placed in the `args._ui`.
+    """
+
+    if (args.board is None):
+        raise ValueError("No board was specified.")
+
+    board = pacai.core.board.load_path(args.board)
+    agent_args = _parse_agent_args(board.agent_count(), args.agent_args, base_agent_args)
+
+    game_args = {
+        'board': board,
+        'agent_args': agent_args,
+        'isolation_level': pacai.core.isolation.Level(args.isolation_level),
+        'max_moves': args.max_moves,
+        'seed': args.seed,
+    }
+
+    game = game_class(**game_args)
+
+    setattr(args, '_board', board)
+    setattr(args, '_agent_args', agent_args)
+    setattr(args, '_game', game)
+
+    return args
+
+def _parse_agent_args(num_agents: int, raw_args: list[str], base_agent_args: list[pacai.core.agent.AgentArguments | None] = []) -> list[pacai.core.agent.AgentArguments]:
+    # Initialize with random agents.
+    agent_args = [pacai.core.agent.AgentArguments(name = DEFAULT_AGENT) for _ in range(num_agents)]
+
+    # Take any args from the base args.
+    for i in range(min(len(base_agent_args), num_agents)):
+        base_agent_arg = base_agent_args[i]
+        if (base_agent_arg is not None):
+            agent_args[i].update(base_agent_arg)
+
+    # Update with CLI args.
+    for raw_arg in raw_args:
+        raw_arg = raw_arg.strip()
+        if (len(raw_arg) == 0):
+            continue
+
+        parts = raw_arg.split('::', 1)
+        if (len(parts) != 2):
+            raise ValueError(f"Improperly formatted CLI agent argument: '{raw_arg}'.")
+
+        agent_index = int(parts[0])
+        if (agent_index >= len(agent_args)):
+            raise ValueError(f"CLI agent argument has an out-of-bounds agent index. Found {agent_index}, max {len(agent_args)}.")
+
+        args = parts[1]
+        for arg in args.split(','):
+            parts = arg.split('=', 1)
+            if (len(parts) != 2):
+                raise ValueError(f"Improperly formatted CLI agent argument key/value: '{arg}'.")
+
+            key = parts[0].strip()
+            value = parts[1].strip()
+
+            agent_args[agent_index].set(key, value)
+
+    return agent_args
