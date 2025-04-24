@@ -31,28 +31,34 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
             action = 'store', type = str, default = 'pacai.agents.random.RandomAgent',
             help = 'Select the agent type that all ghosts will use (default: %(default)s).')
 
-    ''' TODO(eriq)
     parser.add_argument('--num-ghosts', dest = 'num_ghosts',
             action = 'store', type = int, default = -1,
-            help = ('Set the maximum number of ghosts on the board (default: %(default)s).'
+            help = ('The maximum number of ghosts on the board (default: %(default)s).'
+                    + ' Ghosts with the highest agent index will be removed first.'
                     + ' Board positions that normally spawn the removed agents/ghosts will now be empty.'))
-    '''
 
-def init_from_args(args: argparse.Namespace) -> list[pacai.core.agent.AgentArguments | None]:
+def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent.AgentArguments], list[int]]:
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
     """
 
-    base_agent_args: list[pacai.core.agent.AgentArguments | None] = []
+    base_agent_args: dict[int, pacai.core.agent.AgentArguments] = {}
 
+    # Create base arguments for all possible agents.
     for i in range(pacai.core.board.MAX_AGENTS):
         if (i == 0):
-            base_agent_args.append(pacai.core.agent.AgentArguments(name = args.pacman))
+            base_agent_args[i] = pacai.core.agent.AgentArguments(name = args.pacman)
         else:
-            base_agent_args.append(pacai.core.agent.AgentArguments(name = args.ghosts))
+            base_agent_args[i] = pacai.core.agent.AgentArguments(name = args.ghosts)
 
-    return base_agent_args
+    remove_agent_indexes = []
+
+    if (args.num_ghosts >= 0):
+        for i in range(1 + args.num_ghosts, pacai.core.board.MAX_AGENTS):
+            remove_agent_indexes.append(i)
+
+    return base_agent_args, remove_agent_indexes
 
 
 def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
@@ -62,10 +68,10 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args = pacai.core.log.init_from_args(args)
 
     # Parse pacman-specific options.
-    base_agent_args = init_from_args(args)
+    base_agent_args, remove_agent_indexes = init_from_args(args)
 
     # Parse game arguments.
-    args = pacai.core.game.init_from_args(args, pacai.pacman.game.Game, base_agent_args = base_agent_args)
+    args = pacai.core.game.init_from_args(args, pacai.pacman.game.Game, base_agent_args = base_agent_args, remove_agent_indexes = remove_agent_indexes)
 
     # Parse ui arguments.
     args = pacai.core.ui.init_from_args(args)
