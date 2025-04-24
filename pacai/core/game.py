@@ -271,13 +271,12 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
                     + ' `process` -- Run the agent code in a separate process/memory space (offers some protection, but still vulnerable to disk or execution exploits),'
                     + ' `tcp` -- Open TCP listeners to communicate with agents (most secure, requires additional work to set up agents).'))
 
-    parser.add_argument('--agent-args', dest = 'agent_args',
+    parser.add_argument('--agent-arg', dest = 'raw_agent_args', metavar = 'ARG',
             action = 'append', type = str, default = [],
-            help = ('Specify arguments directly to agents.'
-                    + ' The value for this argument must be formatted as "agent_index::key=value[,key=value]",'
-                    + ' for example to set `foo = 1` and `bar = a` for agent 2, we can use:'
-                    + ' `--agent-args 2::foo=1,bar=a`.'
-                    + ' This command may be repeated multiple time (for the same or different agents).'))
+            help = ('Specify arguments directly to agents (may be used multiple times).'
+                    + ' The value for this argument must be formatted as "agent_index::key=value,...",'
+                    + ' for example to set `foo = 9` for agent 3 and `bar = a` for agent 2, we can use:'
+                    + ' `--agent-arg 3::foo=9 --agent-arg 1::bar=a`.'))
 
     ''' TODO(eriq)
     parser.add_argument('--save-path', dest = 'save_path',
@@ -302,7 +301,7 @@ def init_from_args(args: argparse.Namespace, game_class: typing.Type[Game], base
         raise ValueError("No board was specified.")
 
     board = pacai.core.board.load_path(args.board)
-    agent_args = _parse_agent_args(board.agent_count(), args.agent_args, base_agent_args)
+    agent_args = _parse_agent_args(board.agent_count(), args.raw_agent_args, base_agent_args)
 
     game_args = {
         'board': board,
@@ -344,15 +343,15 @@ def _parse_agent_args(num_agents: int, raw_args: list[str], base_agent_args: lis
         if (agent_index >= len(agent_args)):
             raise ValueError(f"CLI agent argument has an out-of-bounds agent index. Found {agent_index}, max {len(agent_args)}.")
 
-        args = parts[1]
-        for arg in args.split(','):
-            parts = arg.split('=', 1)
-            if (len(parts) != 2):
-                raise ValueError(f"Improperly formatted CLI agent argument key/value: '{arg}'.")
+        raw_pair = parts[1]
 
-            key = parts[0].strip()
-            value = parts[1].strip()
+        parts = raw_pair.split('=', 1)
+        if (len(parts) != 2):
+            raise ValueError(f"Improperly formatted CLI agent argument key/value pair: '{raw_pair}'.")
 
-            agent_args[agent_index].set(key, value)
+        key = parts[0].strip()
+        value = parts[1].strip()
+
+        agent_args[agent_index].set(key, value)
 
     return agent_args
