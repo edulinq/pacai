@@ -295,7 +295,7 @@ def init_from_args(args: argparse.Namespace, game_class: typing.Type[Game], base
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
-    A constructed UI will be placed in the `args._ui`.
+    A board, agent arguments, and game will be placed in `args._board`, `args._agent_args`, and `args._game` respectively.
     """
 
     if (args.board is None):

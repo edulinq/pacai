@@ -10,62 +10,59 @@ import pacai.core.board
 import pacai.core.log
 import pacai.core.ui
 import pacai.pacman.game
-import pacai.pacman.ui.text
-import pacai.ui.null
-import pacai.ui.tk
-import pacai.util.json
-
-# TODO - Set fps if we have a UserInputAgent and fps is not already set.
 
 DEFAULT_BOARD: str = 'medium-classic'
 
 def run(args: argparse.Namespace) -> int:
-
-    # board = pacai.core.board.load_path('pacai/resources/boards/medium-classic.txt')
-
-    # ui = pacai.pacman.ui.text.StdioUI(fps = 10, animation_path = 'test.animation')
-    # ui = pacai.ui.null.NullUI(animation_path = 'test.webp', animation_skip_frames = 3, animation_fps = 10, animation_optimize = True)
-    # ui = pacai.ui.null.NullUI(animation_path = 'test.webp', animation_skip_frames = 3, animation_fps = 5, animation_optimize = False)
-    # ui = pacai.ui.tk.TkUI(fps = 10)
-    # ui = pacai.ui.tk.TkUI(fps = 10, animation_path = 'test2.webp', animation_skip_frames = 3, animation_fps = 10, animation_optimize = True)
-    # game = pacai.pacman.game.Game(board, agent_args, seed = 4)
-
-    result = args._game.run(args._ui)
-
+    args._game.run(args._ui)
     return 0
+
+def set_cli_args(parser: argparse.ArgumentParser) -> None:
+    """
+    Set pacman-specific CLI arguments.
+    This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
+    """
+
+    parser.add_argument('--pacman', dest = 'pacman', metavar  = 'AGENT_TYPE',
+            action = 'store', type = str, default = 'pacai.agents.userinput.UserInputAgent',
+            help = 'Select the agent type that PacMan will use (default: %(default)s).')
+
+    parser.add_argument('--ghosts', dest = 'ghosts', metavar  = 'AGENT_TYPE',
+            action = 'store', type = str, default = 'pacai.agents.random.RandomAgent',
+            help = 'Select the agent type that all ghosts will use (default: %(default)s).')
+
+    ''' TODO(eriq)
+    parser.add_argument('--num-ghosts', dest = 'num_ghosts',
+            action = 'store', type = int, default = -1,
+            help = ('Set the maximum number of ghosts on the board (default: %(default)s).'
+                    + ' Board positions that normally spawn the removed agents/ghosts will now be empty.'))
+    '''
+
+def init_from_args(args: argparse.Namespace) -> list[pacai.core.agent.AgentArguments | None]:
+    """
+    Take in args from a parser that was passed to set_cli_args(),
+    and initialize the proper components.
+    """
+
+    base_agent_args: list[pacai.core.agent.AgentArguments | None] = []
+
+    for i in range(pacai.core.board.MAX_AGENTS):
+        if (i == 0):
+            base_agent_args.append(pacai.core.agent.AgentArguments(name = args.pacman))
+        else:
+            base_agent_args.append(pacai.core.agent.AgentArguments(name = args.ghosts))
+
+    return base_agent_args
+
 
 def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args = parser.parse_args()
 
-    # TEST: Game options (board and agent args as well)? Can check number of agents there and default enough agents (default to random).
-
-    # TEST - Add specific arguments to set pacman and ghost agents.
-    """
-    parser.add_argument('-g', '--ghosts', dest = 'ghost',
-            action = 'store', type = str, default = 'RandomGhost',
-            help = 'use the specified ghostAgent module for the ghosts (default: %(default)s)')
-
-    ''' TODO(eriq)
-    parser.add_argument('--num-ghosts', dest = 'numGhosts',
-            action = 'store', type = int, default = 4,
-            help = 'set the maximum number of ghosts (default: %(default)s)')
-    '''
-
-    parser.add_argument('-p', '--pacman', dest = 'pacman',
-            action = 'store', type = str, default = 'WASDKeyboardAgent',
-            help = 'use the specified pacmanAgent module for pacman (default: %(default)s)')
-    """
-
     # Parse logging arguments.
     args = pacai.core.log.init_from_args(args)
 
-    # TEST
-    base_agent_args: list[pacai.core.agent.AgentArguments | None] = [
-        pacai.core.agent.AgentArguments(name = 'pacai.agents.userinput.UserInputAgent'),
-        # pacai.core.agent.AgentArguments(name = 'pacai.agents.random.RandomAgent'),
-        pacai.core.agent.AgentArguments(name = 'pacai.agents.random.RandomAgent'),
-        pacai.core.agent.AgentArguments(name = 'pacai.agents.random.RandomAgent'),
-    ]
+    # Parse pacman-specific options.
+    base_agent_args = init_from_args(args)
 
     # Parse game arguments.
     args = pacai.core.game.init_from_args(args, pacai.pacman.game.Game, base_agent_args = base_agent_args)
@@ -86,6 +83,9 @@ def _get_parser() -> argparse.ArgumentParser:
 
     # Add UI arguments.
     pacai.core.ui.set_cli_args(parser)
+
+    # Add pacman-specific options.
+    set_cli_args(parser)
 
     return parser
 
