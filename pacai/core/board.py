@@ -19,8 +19,6 @@ DEFAULT_BOARD_CLASS: str = 'pacai.core.board.Board'
 
 MAX_AGENTS: int = 10
 
-# TEST - There is an issue here because of how empty is handled. We should not track empty markers.
-
 class Marker(str):
     """
     A marker represents something that can appear on a board.
@@ -63,6 +61,12 @@ class Marker(str):
         return int(self)
 
 MARKER_EMPTY: Marker = Marker(' ')
+"""
+A marker for an empty location.
+Empty markers are not stored into the board when reading from a string.
+However, empty markers will be placed in grid representations of a board.
+"""
+
 MARKER_WALL: Marker = Marker('%')
 MARKER_AGENT_0: Marker = Marker('0')
 MARKER_AGENT_1: Marker = Marker('1')

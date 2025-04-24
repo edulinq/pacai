@@ -115,8 +115,6 @@ class Game(abc.ABC):
 
         return state.game_over
 
-    # TODO(eriq): Validate that the board works for this game (e.g., number of agent positions).
-
     def run(self, ui: pacai.core.ui.UI) -> GameResult:
         """
         The main "game loop" for all games.
