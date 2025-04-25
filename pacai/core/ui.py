@@ -24,7 +24,7 @@ FONT_SIZE_OFFSET: int = -14
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 DEFAULT_FONT_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'fonts', 'roboto', 'RobotoMono-Regular.ttf')
-DEFAULT_SPRITE_SHEET_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'spritesheets', 'generic.json')
+DEFAULT_SPRITE_SHEET: str = 'generic'
 
 ANIMATION_KEY: str = 'UI.draw_image'
 
@@ -71,7 +71,7 @@ class UI(abc.ABC):
             animation_optimize: bool = DEFAULT_ANIMATION_OPTIMIZE,
             animation_fps: int = DEFAULT_ANIMATION_FPS,
             animation_skip_frames: int = DEFAULT_ANIMATION_SKIP_FRAMES,
-            sprite_sheet_path: str = DEFAULT_SPRITE_SHEET_PATH,
+            sprite_sheet_path: str = DEFAULT_SPRITE_SHEET,
             font_path: str = DEFAULT_FONT_PATH,
             **kwargs) -> None:
         self.user_input_device: UserInputDevice | None = user_input_device
@@ -363,7 +363,7 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
             action = 'store_true', default = DEFAULT_ANIMATION_OPTIMIZE,
             help = 'Optimize the animation to reduce file size (will take longer) (default: %(default)s).')
 
-def init_from_args(args: argparse.Namespace) -> argparse.Namespace:
+def init_from_args(args: argparse.Namespace, additional_args: dict = {}) -> argparse.Namespace:
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
@@ -377,6 +377,8 @@ def init_from_args(args: argparse.Namespace) -> argparse.Namespace:
         'animation_skip_frames': args.animation_skip_frames,
         'animation_optimize': args.animation_optimize,
     }
+
+    ui_args.update(additional_args)
 
     ui = pacai.util.reflection.new_object(args.ui, **ui_args)
     setattr(args, '_ui', ui)

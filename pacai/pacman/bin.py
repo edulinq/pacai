@@ -12,6 +12,7 @@ import pacai.core.ui
 import pacai.pacman.game
 
 DEFAULT_BOARD: str = 'medium-classic'
+DEFAULT_SPRITE_SHEET: str = 'pacman'
 
 def run(args: argparse.Namespace) -> int:
     args._game.run(args._ui)
@@ -74,7 +75,10 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args = pacai.core.game.init_from_args(args, pacai.pacman.game.Game, base_agent_args = base_agent_args, remove_agent_indexes = remove_agent_indexes)
 
     # Parse ui arguments.
-    args = pacai.core.ui.init_from_args(args)
+    additional_ui_args = {
+        'sprite_sheet_path': DEFAULT_SPRITE_SHEET,
+    }
+    args = pacai.core.ui.init_from_args(args, additional_args = additional_ui_args)
 
     return args
 

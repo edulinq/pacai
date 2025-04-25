@@ -209,11 +209,30 @@ class SpriteSheet:
         else:
             self._animation_counts[animation_key] = {}
 
-def load(config_path: str) -> SpriteSheet:
+def load(path: str) -> SpriteSheet:
+    """
+    Load a sprite sheet from a file.
+    If the given path does not exist,
+    try to prefix the path with the standard sprite sheet directory and suffix with the standard extension.
+    """
+
+    raw_path = path
+
+    # If the path does not exist, try the sprite sheets directory.
+    if (not os.path.exists(path)):
+        path = os.path.join(SPRITE_SHEETS_DIR, path)
+
+        # If this path does not have a good extension, add one.
+        if (os.path.splitext(path)[-1] != '.json'):
+            path = path + '.json'
+
+    if (not os.path.exists(path)):
+        raise ValueError(f"Could not find sprite sheet, path does not exist: '{raw_path}'.")
+
     try:
-        return _load(config_path)
+        return _load(path)
     except Exception as ex:
-        raise ValueError(f"Error loading sprite sheet config: '{config_path}'.")
+        raise ValueError(f"Error loading sprite sheet config: '{path}'.")
 
 def _load(config_path: str) -> SpriteSheet:
     config = pacai.util.json.load_path(config_path)

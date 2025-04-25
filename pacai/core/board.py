@@ -495,7 +495,11 @@ class Board:
         return True
 
 def load_path(path: str) -> Board:
-    """ Load a board from a file. """
+    """
+    Load a board from a file.
+    If the given path does not exist,
+    try to prefix the path with the standard board directory and suffix with the standard extension.
+    """
 
     raw_path = path
 
