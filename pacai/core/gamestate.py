@@ -55,6 +55,15 @@ class GameState(abc.ABC):
 
         return self.board.get_agent_position(self.agent_index)
 
+    def get_reverse_action(self, action: pacai.core.action.Action) -> pacai.core.action.Action | None:
+        """
+        Get the reverse of an action, or None if the action has no reverse.
+        By default, "reverse" is just defined in terms of cardinal directions.
+        However, this method exists so that child games can override this definition of "reverse" if necessary.
+        """
+
+        return action.get_reverse_direction()
+
     @abc.abstractmethod
     def get_legal_actions(self) -> list[pacai.core.action.Action]:
         """ Get the moves that the current agent is allowed to make. """

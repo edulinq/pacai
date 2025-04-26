@@ -18,6 +18,14 @@ class Action(str):
 
         return text
 
+    def get_reverse_direction(self) -> typing.Union['Action', None]:
+        """
+        If this action is a cardinal direction, return the reveres direction.
+        Returns None otherwise.
+        """
+
+        return REVERSE_CARDINAL_DIRECTIONS.get(self, None)
+
 class ActionRecord(typing.NamedTuple):
     """
     The result of requesting an action from an agent.
@@ -37,7 +45,36 @@ class ActionRecord(typing.NamedTuple):
     """ Whether or not the agent crashed (e.g., raised an exception) when computing this action. """
 
 NORTH = Action("north")
+""" The action for moving north/up. """
+
 EAST = Action("east")
+""" The action for moving east/right. """
+
 SOUTH = Action("south")
+""" The action for moving south/down. """
+
 WEST = Action("west")
+""" The action for moving west/left. """
+
 STOP = Action("stop")
+"""
+The action for moving stopping and not doing anything.
+This action is often used as a catchall and should always be valid in most games.
+"""
+
+
+CARDINAL_DIRECTIONS: list[Action] = [
+    NORTH,
+    EAST,
+    SOUTH,
+    WEST,
+]
+""" The four main directions. """
+
+REVERSE_CARDINAL_DIRECTIONS: dict[Action, Action] = {
+    NORTH: SOUTH,
+    EAST: WEST,
+    SOUTH: NORTH,
+    WEST: EAST,
+}
+""" The reverse of the four main directions. """

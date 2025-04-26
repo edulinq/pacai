@@ -145,13 +145,6 @@ class Position(typing.NamedTuple):
 
         return self.add(offset)
 
-CARDINAL_DIRECTIONS: list[pacai.core.action.Action] = [
-    pacai.core.action.NORTH,
-    pacai.core.action.EAST,
-    pacai.core.action.SOUTH,
-    pacai.core.action.WEST,
-]
-
 CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
     pacai.core.action.NORTH: Position(-1, 0),
     pacai.core.action.EAST: Position(0, 1),
@@ -345,7 +338,7 @@ class Board:
         """
 
         adjacency = []
-        for direction in CARDINAL_DIRECTIONS:
+        for direction in pacai.core.action.CARDINAL_DIRECTIONS:
             neighbor = position.apply_action(direction)
 
             adjacent = 'F'

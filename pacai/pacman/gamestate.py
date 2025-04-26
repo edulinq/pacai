@@ -31,4 +31,28 @@ class GameState(pacai.core.gamestate.GameState):
         for (action, position) in neighbor_moves:
             actions.append(action)
 
+        # Ghosts have special rules for their actions.
+        if (self.agent_index > 0):
+            self._get_ghost_legal_actions(actions)
+
         return actions
+
+    def _get_ghost_legal_actions(self, actions: list[pacai.core.action.Action]) -> None:
+        """
+        Ghosts cannot stop (unless there are no other actions),
+        and cannot turn around unless they reach a dead end (but can turn 90 degrees at intersections).
+        """
+
+        # Remove stop.
+        if (pacai.core.action.STOP in actions):
+            actions.remove(pacai.core.action.STOP)
+
+        # Remove going backwards unless their are no other actions.
+        last_action = self.last_agent_actions.get(self.agent_index, pacai.core.action.STOP)
+        reverse_direction = self.get_reverse_action(last_action)
+        if ((reverse_direction in actions) and (len(actions) > 1)):
+            actions.remove(reverse_direction)
+
+        # If we are not doing anything, then just stop.
+        if (len(actions) == 0):
+            actions.append(pacai.core.action.STOP)
