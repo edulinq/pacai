@@ -2,6 +2,7 @@ import abc
 import argparse
 import os
 import time
+import typing
 
 import PIL.Image
 import PIL.ImageDraw
@@ -58,6 +59,22 @@ class UserInputDevice(abc.ABC):
 
         pass
 
+class SpriteLookup(typing.Protocol):
+    """
+    A protocol for custom sprite lookups.
+    """
+
+    def __call__(self,
+            state: pacai.core.gamestate.GameState,
+            sprite_sheet: pacai.core.spritesheet.SpriteSheet,
+            **kwargs) -> PIL.Image.Image:
+        """
+        A custom function for looking up sprites from a sprite sheet.
+        Games with special/non-standard situations may need special ways of looking up sprites.
+        """
+
+        pass
+
 class UI(abc.ABC):
     """
     UIs represent the basic way that a game interacts with the user,
@@ -72,6 +89,7 @@ class UI(abc.ABC):
             animation_fps: int = DEFAULT_ANIMATION_FPS,
             animation_skip_frames: int = DEFAULT_ANIMATION_SKIP_FRAMES,
             sprite_sheet_path: str = DEFAULT_SPRITE_SHEET,
+            sprite_lookup_func: SpriteLookup | None = None,
             font_path: str = DEFAULT_FONT_PATH,
             **kwargs) -> None:
         self.user_input_device: UserInputDevice | None = user_input_device
@@ -121,6 +139,9 @@ class UI(abc.ABC):
 
         self._sprite_sheet: pacai.core.spritesheet.SpriteSheet = pacai.core.spritesheet.load(sprite_sheet_path)
         """ The sprite sheet to use for this UI. """
+
+        self._sprite_lookup_func: SpriteLookup | None = sprite_lookup_func
+        """ An optional custom lookup for sprites. """
 
         self._font: PIL.ImageFont.FreeTypeFont = PIL.ImageFont.truetype(font_path, self._sprite_sheet.height + FONT_SIZE_OFFSET)
         """ The font to use for this UI. """
@@ -262,7 +283,7 @@ class UI(abc.ABC):
             # Draw wall markers.
             for position in state.board.get_walls():
                 adjacency = state.board.get_adjacent_walls(position)
-                sprite = self._sprite_sheet.get_sprite(pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
+                sprite = self._get_sprite(state, marker = pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
 
             self._walls_image = image.copy()
@@ -275,7 +296,7 @@ class UI(abc.ABC):
                 continue
 
             for position in positions:
-                sprite = self._sprite_sheet.get_sprite(marker, animation_key = ANIMATION_KEY)
+                sprite = self._get_sprite(state, marker = marker, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
 
         # Draw agent markers.
@@ -285,7 +306,7 @@ class UI(abc.ABC):
 
             for position in positions:
                 last_action = state.last_agent_actions.get(marker.get_agent_index(), None)
-                sprite = self._sprite_sheet.get_sprite(marker, action = last_action, animation_key = ANIMATION_KEY)
+                sprite = self._get_sprite(state, marker = marker, action = last_action, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
 
         # Draw the score.
@@ -298,6 +319,17 @@ class UI(abc.ABC):
         self._image_cache[state.turn_count] = image
 
         return image
+
+    def _get_sprite(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
+        """
+        Get the requested sprite either through the custom sprite lookup,
+        or through the sprite sheet.
+        """
+
+        if (self._sprite_lookup_func is not None):
+            return self._sprite_lookup_func(state, self._sprite_sheet, **kwargs)
+
+        return self._sprite_sheet.get_sprite(**kwargs)
 
     def _place_sprite(self, position: pacai.core.board.Position, sprite: PIL.Image.Image, image: PIL.Image.Image):
         image_coordinates = (position.col * self._sprite_sheet.width, position.row * self._sprite_sheet.height)

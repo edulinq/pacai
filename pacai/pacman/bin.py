@@ -4,15 +4,22 @@ The main executable for running a game of Pac-Man.
 
 import argparse
 import sys
+import typing
+
+import PIL.Image
 
 import pacai.core.agent
 import pacai.core.board
+import pacai.core.gamestate
 import pacai.core.log
+import pacai.core.spritesheet
 import pacai.core.ui
 import pacai.pacman.game
 
 DEFAULT_BOARD: str = 'medium-classic'
 DEFAULT_SPRITE_SHEET: str = 'pacman'
+
+SCARRED_GHOST_MARKER: pacai.core.board.Marker = pacai.core.board.Marker('!')
 
 def run(args: argparse.Namespace) -> int:
     args._game.run(args._ui)
@@ -61,6 +68,14 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
 
     return base_agent_args, remove_agent_indexes
 
+def _sprite_lookup(state: pacai.core.gamestate.GameState, sprite_sheet: pacai.core.spritesheet.SpriteSheet, marker: pacai.core.board.Marker | None = None, **kwargs) -> PIL.Image.Image:
+    """ Pacman requires a special lookup function since ghosts need a special sprite when scarred. """
+
+    state = typing.cast(pacai.pacman.gamestate.GameState, state)
+    if ((state.power_time > 0) and (marker is not None) and (marker.is_agent()) and (marker != pacai.pacman.game.PACMAN_MARKER)):
+        return sprite_sheet.get_sprite(marker = SCARRED_GHOST_MARKER, **kwargs)
+
+    return sprite_sheet.get_sprite(marker = marker, **kwargs)
 
 def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args = parser.parse_args()
@@ -77,6 +92,7 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     # Parse ui arguments.
     additional_ui_args = {
         'sprite_sheet_path': DEFAULT_SPRITE_SHEET,
+        'sprite_lookup_func': _sprite_lookup,
     }
     args = pacai.core.ui.init_from_args(args, additional_args = additional_ui_args)
 

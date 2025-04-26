@@ -122,7 +122,7 @@ class SpriteSheet:
         """
 
     def get_sprite(self,
-            marker: pacai.core.board.Marker,
+            marker: pacai.core.board.Marker | None = None,
             action: pacai.core.action.Action | None = None,
             adjacency: pacai.core.board.AdjacencyString | None = None,
             animation_key: str | None = None,
@@ -148,18 +148,19 @@ class SpriteSheet:
         # Start with the default sprite.
         sprite = self._default_sprite
 
-        # Check for a marker default sprite.
-        sprite = self._default_marker_sprites.get(marker, sprite)
+        if (marker is not None):
+            # Check for a marker default sprite.
+            sprite = self._default_marker_sprites.get(marker, sprite)
 
-        # Check the actions or adjacency for a more specific sprite.
-        if (action is not None):
-            animation_count = self._next_animation_count(marker, action, animation_key)
-            animation_frames = self._action_sprites.get(marker, {}).get(action, [])
-            if (len(animation_frames) > 0):
-                sprite = animation_frames[animation_count % len(animation_frames)]
-        elif (adjacency is not None):
-            # Pull from the adjacency sprites, but fallback to the current sprite.
-            sprite = self._adjacency_sprites.get(marker, {}).get(adjacency, sprite)
+            # Check the actions or adjacency for a more specific sprite.
+            if (action is not None):
+                animation_count = self._next_animation_count(marker, action, animation_key)
+                animation_frames = self._action_sprites.get(marker, {}).get(action, [])
+                if (len(animation_frames) > 0):
+                    sprite = animation_frames[animation_count % len(animation_frames)]
+            elif (adjacency is not None):
+                # Pull from the adjacency sprites, but fallback to the current sprite.
+                sprite = self._adjacency_sprites.get(marker, {}).get(adjacency, sprite)
 
         if (sprite is None):
             raise ValueError("Could not find a matching sprite for action = '%s', adjacency = '%s', key = '%s').", action, adjacency, animation_key)
