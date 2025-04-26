@@ -6,16 +6,28 @@ class GameState(pacai.core.gamestate.GameState):
     """ A game state specific to a standard Pacman game. """
 
     def __init__(self,
-            power_time: int = 0,
             food_count: int = 0,
+            scared_timers: dict[int, int] = {},
             **kwargs) -> None:
         super().__init__(**kwargs)
 
-        self.power_time: int = power_time
-        """ The number of pacman turns the power capsule is active for. """
-
         self.food_count: int = food_count
         """ The number of food pellets on the board. """
+
+        self.scared_timers: dict[int, int] = scared_timers
+        """
+        When pacman consumes a power pellet, each ghost get's scared for a specific amount of time.
+        When a ghost dies their scared timer resets,
+        so all ghosts need an independent timer.
+        """
+
+    def is_scared(self, agent_index: int = -1) -> bool:
+        """ Check if the given agent (or the current agent) is currently scared. """
+
+        if (agent_index == -1):
+            agent_index = self.agent_index
+
+        return self.scared_timers.get(agent_index, 0) > 0
 
     def get_legal_actions(self) -> list[pacai.core.action.Action]:
         if (self.agent_index == -1):

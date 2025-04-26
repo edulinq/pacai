@@ -8,13 +8,13 @@ import pacai.core.game
 import pacai.core.gamestate
 import pacai.pacman.gamestate
 
-# TODO(eriq): Handle ghost scarred speed (halved).
-# TODO(eriq): Handle ghost scarred direction (reverse?).
-
 PACMAN_MARKER: pacai.core.board.Marker = pacai.core.board.MARKER_AGENT_0
 
-POWER_TIME: int = 40
-""" When a Pacman eats a capsule, they are powered up for this number of moves. """
+SCARED_TIME: int = 40
+""" When a Pacman eats a capsule, ghosts get scared for this number of moves. """
+
+SCARED_MOVE_PENALTY: int = 50
+""" Ghost speed gets modified by this constant when scared. """
 
 PACMAN_AGENT_INDEX: int = 0
 """ Every pacman game should have exactly one pacman agent at this index. """
@@ -97,18 +97,25 @@ class Game(pacai.core.game.Game):
                     state.score += BOARD_CLEAR_POINTS
                     state.game_over = True
             elif (interaction_marker == pacai.pacman.board.MARKER_CAPSULE):
-                # Eat a power capsule.
+                # Eat a power capsule, scare all ghosts.
                 state.board.remove_marker(interaction_marker, new_position)
-                state.power_time = POWER_TIME
+
+                # Scare all ghosts.
+                for (agent_index, agent_args) in self._agent_args.items():
+                    if (agent_index == PACMAN_AGENT_INDEX):
+                        continue
+
+                    state.scared_timers[agent_index] = SCARED_TIME
+                    agent_args.move_delay += SCARED_MOVE_PENALTY
             elif (interaction_marker.is_agent()):
                 # Interact with a ghost.
 
-                if (state.power_time > 0):
-                    # The power capsule is active, pacman eats the ghost.
+                if (state.is_scared(interaction_marker.get_agent_index())):
+                    # The ghost is scared, pacman eats the ghost.
+                    self._kill_ghost(state, interaction_marker.get_agent_index())
                     state.board.remove_marker(interaction_marker, new_position)
-                    state.score += GHOST_POINTS
                 else:
-                    # The power capsule is not active, the ghost eats pacman.
+                    # The ghost is not scared, the ghost eats pacman.
                     state.score += LOSE_POINTS
                     died = True
 
@@ -121,10 +128,6 @@ class Game(pacai.core.game.Game):
 
         # Pacman always loses a point each turn.
         state.score -= TIME_PENALTY
-
-        # Decrement the power timer.
-        if (state.power_time > 0):
-            state.power_time -= 1
 
     def _process_ghost_turn(self, state: pacai.pacman.gamestate.GameState, action: pacai.core.action.Action) -> None:
         """
@@ -159,12 +162,12 @@ class Game(pacai.core.game.Game):
             if (interaction_marker == PACMAN_MARKER):
                 # Interact with pacman.
 
-                if (state.power_time > 0):
-                    # The power capsule is active, pacman eats the ghost.
-                    state.score += GHOST_POINTS
+                if (state.is_scared()):
+                    # The ghost is scared, pacman eats the ghost.
+                    self._kill_ghost(state, state.agent_index)
                     died = True
                 else:
-                    # The power capsule is not active, the ghost eats pacman.
+                    # The ghost is not scared, the ghost eats pacman.
                     state.score += LOSE_POINTS
                     state.board.remove_marker(interaction_marker, new_position)
 
@@ -174,3 +177,32 @@ class Game(pacai.core.game.Game):
         # Move the agent to the new location if it did not die.
         if (not died):
             state.board.place_marker(agent_marker, new_position)
+
+        # Decrement the scared timer.
+        if (state.agent_index in state.scared_timers):
+            state.scared_timers[state.agent_index] -= 1
+
+            if (state.scared_timers[state.agent_index] <= 0):
+                self._stop_scared(state, state.agent_index)
+
+    def _kill_ghost(self, state: pacai.pacman.gamestate.GameState, agent_index: int) -> None:
+        """ Set the non-board state for killing a ghost. """
+
+        # Add points.
+        state.score += GHOST_POINTS
+
+        # Reset the last action.
+        state.last_agent_actions[agent_index] = pacai.core.action.STOP
+
+        # The ghost is no longer scared.
+        self._stop_scared(state, agent_index)
+
+    def _stop_scared(self, state: pacai.pacman.gamestate.GameState, agent_index: int) -> None:
+        """ Stop a ghost from being scared. """
+
+        # Reset the scared timer.
+        if (agent_index in state.scared_timers):
+            del state.scared_timers[agent_index]
+
+        # Reset speed.
+        self._agent_args[agent_index].move_delay -= SCARED_MOVE_PENALTY

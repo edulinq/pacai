@@ -19,7 +19,7 @@ import pacai.pacman.game
 DEFAULT_BOARD: str = 'medium-classic'
 DEFAULT_SPRITE_SHEET: str = 'pacman'
 
-SCARRED_GHOST_MARKER: pacai.core.board.Marker = pacai.core.board.Marker('!')
+SCARED_GHOST_MARKER: pacai.core.board.Marker = pacai.core.board.Marker('!')
 
 def run(args: argparse.Namespace) -> int:
     args._game.run(args._ui)
@@ -69,11 +69,11 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
     return base_agent_args, remove_agent_indexes
 
 def _sprite_lookup(state: pacai.core.gamestate.GameState, sprite_sheet: pacai.core.spritesheet.SpriteSheet, marker: pacai.core.board.Marker | None = None, **kwargs) -> PIL.Image.Image:
-    """ Pacman requires a special lookup function since ghosts need a special sprite when scarred. """
+    """ Pacman requires a special lookup function since ghosts need a special sprite when scared. """
 
     state = typing.cast(pacai.pacman.gamestate.GameState, state)
-    if ((state.power_time > 0) and (marker is not None) and (marker.is_agent()) and (marker != pacai.pacman.game.PACMAN_MARKER)):
-        return sprite_sheet.get_sprite(marker = SCARRED_GHOST_MARKER, **kwargs)
+    if ((marker is not None) and (marker.is_agent()) and (marker != pacai.pacman.game.PACMAN_MARKER) and (state.is_scared(marker.get_agent_index()))):
+        return sprite_sheet.get_sprite(marker = SCARED_GHOST_MARKER, **kwargs)
 
     return sprite_sheet.get_sprite(marker = marker, **kwargs)
 

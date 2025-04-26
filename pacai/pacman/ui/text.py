@@ -23,8 +23,8 @@ class StdioUI(pacai.ui.text.StdioUI):
             return 'X'
         elif (marker.is_agent()):
             # Note that pacman has already been checked for.
-            if (state.power_time > 0):
-                # The ghost is scarred.
+            if (state.scared_timers.get(marker.get_agent_index(), 0) > 0):
+                # The ghost is scared.
                 return 'ᗢ'
 
             return 'ᗣ'
