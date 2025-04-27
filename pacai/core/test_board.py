@@ -7,8 +7,9 @@ import pacai.test.base
 class BoardTest(pacai.test.base.BaseTest):
     # Load all the known/included boards.
     def test_load_default_boards(self):
-        for path in glob.glob(os.path.join(pacai.core.board.BOARDS_DIR, '*.txt')):
-            pacai.core.board.load_path(path)
+        for path in glob.glob(os.path.join(pacai.core.board.BOARDS_DIR, '*.board')):
+            with self.subTest(msg = path):
+                pacai.core.board.load_path(path)
 
     def test_load_test_boards(self):
         # [(board, expected error substring), ...]

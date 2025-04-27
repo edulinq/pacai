@@ -16,7 +16,7 @@ import pacai.core.spritesheet
 import pacai.core.ui
 import pacai.pacman.game
 
-DEFAULT_BOARD: str = 'medium-classic'
+DEFAULT_BOARD: str = 'classic-medium'
 DEFAULT_SPRITE_SHEET: str = 'pacman'
 
 SCARED_GHOST_MARKER: pacai.core.board.Marker = pacai.core.board.Marker('!')
