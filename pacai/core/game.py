@@ -1,5 +1,6 @@
 import abc
 import argparse
+import copy
 import logging
 import random
 import typing
@@ -18,7 +19,9 @@ class GameResult:
     def __init__(self,
             id: int, seed: int,
             agent_args: dict[int, pacai.core.agent.AgentArguments],
-            score: int = 0) -> None:
+            score: int = 0,
+            winning_agent_index: int = -1,
+            **kwargs) -> None:
         """
         Create a new game result.
         This class is mutable and will be modified as the game progresses.
@@ -38,6 +41,12 @@ class GameResult:
 
         self.score: int = score
         """ The score of the game. """
+
+        self.winning_agent_index: int = winning_agent_index
+        """
+        The agent that is considered the "winner" of this game.
+        Games may interpret this value in different ways.
+        """
 
     def update(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> None:
         """ Update the game result after an agent move. """
@@ -114,6 +123,13 @@ class Game(abc.ABC):
         """
 
         return state.game_over
+
+    def game_complete(self, state: pacai.core.gamestate.GameState, result: GameResult) -> None:
+        """
+        Make any last adjustments to the game result after the game is over.
+        """
+
+        pass
 
     def run(self, ui: pacai.core.ui.UI) -> GameResult:
         """
@@ -198,6 +214,9 @@ class Game(abc.ABC):
         # Notify agents about the end of this game.
         isolator.game_complete(state)
 
+        # All the game to make final updates to the result.
+        self.game_complete(state, result)
+
         # Update the UI.
         ui.game_complete(state)
 
@@ -248,6 +267,10 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
                     + ' This may be the full path to a board, or just a filename.'
                     + ' If just a filename, than the `pacai/resources/boards` directory will be checked (using a ".board" extension.'))
 
+    parser.add_argument('--num-games', dest = 'num_games',
+            action = 'store', type = int, default = 1,
+            help = 'The number of games to play (default: %(default)s).')
+
     parser.add_argument('--seed', dest = 'seed',
             action = 'store', type = int, default = None,
             help = 'The random seed for the game (will be randomly generated if not set.')
@@ -296,11 +319,23 @@ def init_from_args(
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
-    A board, agent arguments, and game will be placed in `args._board`, `args._agent_args`, and `args._game` respectively.
+    This will create a number of games (and related resources) depending on `--num-games`.
+    Each of these resources will be placed in their respective list at
+    `args._boards`, `args._agent_args`, or `args._games`.
     """
 
     if (args.board is None):
         raise ValueError("No board was specified.")
+
+    if (args.num_games <= 0):
+        raise ValueError(f"At least one game must be played, {args.num_games} was specified.")
+
+    # Establish an RNG to generate seeds for each game using the given seed.
+    seed = args.seed
+    if (seed is None):
+        seed = random.randint(0, 2**64)
+
+    rng = random.Random(seed)
 
     board = pacai.core.board.load_path(args.board)
 
@@ -311,19 +346,29 @@ def init_from_args(
 
     agent_args = _parse_agent_args(board.agent_indexes(), args.raw_agent_args, base_agent_args, remove_agent_indexes)
 
-    game_args = {
-        'board': board,
-        'agent_args': agent_args,
-        'isolation_level': pacai.core.isolation.Level(args.isolation_level),
-        'max_moves': args.max_moves,
-        'seed': args.seed,
-    }
+    all_boards = []
+    all_agent_args = []
+    all_games = []
 
-    game = game_class(**game_args)
+    for _ in range(args.num_games):
+        game_seed = rng.randint(0, 2**64)
 
-    setattr(args, '_board', board)
-    setattr(args, '_agent_args', agent_args)
-    setattr(args, '_game', game)
+        all_boards.append(copy.deepcopy(board))
+        all_agent_args.append(copy.deepcopy(agent_args))
+
+        game_args = {
+            'board': all_boards[-1],
+            'agent_args': all_agent_args[-1],
+            'isolation_level': pacai.core.isolation.Level(args.isolation_level),
+            'max_moves': args.max_moves,
+            'seed': game_seed,
+        }
+
+        all_games.append(game_class(**game_args))
+
+    setattr(args, '_boards', all_boards)
+    setattr(args, '_agent_args', all_agent_args)
+    setattr(args, '_games', all_games)
 
     return args
 

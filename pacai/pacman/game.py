@@ -19,6 +19,12 @@ SCARED_MOVE_PENALTY: int = 50
 PACMAN_AGENT_INDEX: int = 0
 """ Every pacman game should have exactly one pacman agent at this index. """
 
+FIRST_GHOST_AGENT_INDEX: int = 1
+"""
+Ghost indexes start here.
+This value may just be used as a placeholder to represent the "ghost team".
+"""
+
 TIME_PENALTY: int = 1
 """ Number of points lost each round. """
 
@@ -59,6 +65,13 @@ class Game(pacai.core.game.Game):
             self._process_ghost_turn(state, action_record.action)
 
         return state
+
+    def game_complete(self, state: pacai.core.gamestate.GameState, result: pacai.core.game.GameResult) -> None:
+        state = typing.cast(pacai.pacman.gamestate.GameState, state)
+        if (state.food_count == 0):
+            result.winning_agent_index = PACMAN_AGENT_INDEX
+        else:
+            result.winning_agent_index = FIRST_GHOST_AGENT_INDEX
 
     def _process_pacman_turn(self, state: pacai.pacman.gamestate.GameState, action: pacai.core.action.Action) -> None:
         """

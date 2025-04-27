@@ -3,6 +3,7 @@ The main executable for running a game of Pac-Man.
 """
 
 import argparse
+import logging
 import sys
 import typing
 
@@ -22,7 +23,19 @@ DEFAULT_SPRITE_SHEET: str = 'pacman'
 SCARED_GHOST_MARKER: pacai.core.board.Marker = pacai.core.board.Marker('!')
 
 def run(args: argparse.Namespace) -> int:
-    args._game.run(args._ui)
+    results = []
+    for i in range(len(args._games)):
+        results.append(args._games[i].run(args._ui))
+
+    scores = [result.score for result in results]
+    wins = [(result.winning_agent_index == pacai.pacman.game.PACMAN_AGENT_INDEX) for result in results]
+    winRate = wins.count(True) / float(len(wins))
+
+    logging.info('Average Score: %s', sum(scores) / float(len(scores)))
+    logging.info('Scores:        %s', ', '.join([str(score) for score in scores]))
+    logging.info('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
+    logging.info('Record:        %s', ', '.join([['Loss', 'Win'][int(win)] for win in wins]))
+
     return 0
 
 def set_cli_args(parser: argparse.ArgumentParser) -> None:
@@ -83,18 +96,18 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     # Parse logging arguments.
     args = pacai.core.log.init_from_args(args)
 
-    # Parse pacman-specific options.
-    base_agent_args, remove_agent_indexes = init_from_args(args)
-
-    # Parse game arguments.
-    args = pacai.core.game.init_from_args(args, pacai.pacman.game.Game, base_agent_args = base_agent_args, remove_agent_indexes = remove_agent_indexes)
-
     # Parse ui arguments.
     additional_ui_args = {
         'sprite_sheet_path': DEFAULT_SPRITE_SHEET,
         'sprite_lookup_func': _sprite_lookup,
     }
     args = pacai.core.ui.init_from_args(args, additional_args = additional_ui_args)
+
+    # Parse pacman-specific options.
+    base_agent_args, remove_agent_indexes = init_from_args(args)
+
+    # Parse game arguments.
+    args = pacai.core.game.init_from_args(args, pacai.pacman.game.Game, base_agent_args = base_agent_args, remove_agent_indexes = remove_agent_indexes)
 
     return args
 
@@ -104,11 +117,11 @@ def _get_parser() -> argparse.ArgumentParser:
     # Add logging arguments.
     pacai.core.log.set_cli_args(parser)
 
-    # Add game arguments.
-    pacai.core.game.set_cli_args(parser, default_board = DEFAULT_BOARD)
-
     # Add UI arguments.
     pacai.core.ui.set_cli_args(parser)
+
+    # Add game arguments.
+    pacai.core.game.set_cli_args(parser, default_board = DEFAULT_BOARD)
 
     # Add pacman-specific options.
     set_cli_args(parser)
