@@ -19,11 +19,6 @@ def init(level: str = DEFAULT_LOGGING_LEVEL, format: str = DEFAULT_LOGGING_FORMA
 
     logging.basicConfig(level = level, format = format, force = True)
 
-    # Ignore logging from third-party libraries.
-    logging.getLogger("git").setLevel(logging.WARNING)
-    logging.getLogger("markdown_it").setLevel(logging.WARNING)
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-
 def set_cli_args(parser: argparse.ArgumentParser) -> None:
     """
     Set common CLI arguments.
