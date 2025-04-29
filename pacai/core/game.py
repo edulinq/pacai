@@ -64,7 +64,7 @@ class Game(abc.ABC):
             board: pacai.core.board.Board,
             agent_args: dict[int, pacai.core.agentinfo.AgentInfo],
             isolation_level: pacai.core.isolation.Level = pacai.core.isolation.Level.NONE,
-            max_moves: int = DEFAULT_MAX_MOVES,
+            max_turns: int = DEFAULT_MAX_MOVES,
             seed: int | None = None,
             ) -> None:
         """
@@ -92,7 +92,7 @@ class Game(abc.ABC):
         self._isolation_level: pacai.core.isolation.Level = isolation_level
         """ The isolation level to use for this game. """
 
-        self._max_moves: int = max_moves
+        self._max_turns: int = max_turns
         """
         The total number of moves (between all agents) allowed for this game.
         If -1, unlimited moves are allowed.
@@ -169,7 +169,7 @@ class Game(abc.ABC):
         # Start the UI.
         ui.game_start(state)
 
-        while ((self._max_moves < 0) or (state.turn_count < self._max_moves)):
+        while ((self._max_turns < 0) or (state.turn_count < self._max_turns)):
             logging.debug("Turn %d, agent %d.", state.turn_count, state.agent_index)
 
             # Get any user inputs.
@@ -195,6 +195,7 @@ class Game(abc.ABC):
         # Check if this game ended naturally or in a timeout.
         if (not state.game_over):
             state.timeout = True
+            state.game_over = True
 
         # Notify agents about the end of this game.
         isolator.game_complete(state)
@@ -247,9 +248,9 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
             action = 'store', type = int, default = None,
             help = 'The random seed for the game (will be randomly generated if not set.')
 
-    parser.add_argument('--max-moves', dest = 'max_moves',
+    parser.add_argument('--max-turns', dest = 'max_turns',
             action = 'store', type = int, default = DEFAULT_MAX_MOVES,
-            help = 'The maximum number of moves (total for all agents) allowed in this game (-1 for unlimited) (default: %(default)s).')
+            help = 'The maximum number of turns/moves (total for all agents) allowed in this game (-1 for unlimited) (default: %(default)s).')
 
     parser.add_argument('--isolation', dest = 'isolation_level', metavar = 'LEVEL',
             action = 'store', type = str, default = pacai.core.isolation.Level.NONE.value,
@@ -332,7 +333,7 @@ def init_from_args(
             'board': all_boards[-1],
             'agent_args': all_agent_args[-1],
             'isolation_level': pacai.core.isolation.Level(args.isolation_level),
-            'max_moves': args.max_moves,
+            'max_turns': args.max_turns,
             'seed': game_seed,
         }
 
