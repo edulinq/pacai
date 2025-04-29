@@ -19,6 +19,9 @@ def init(level: str = DEFAULT_LOGGING_LEVEL, format: str = DEFAULT_LOGGING_FORMA
 
     logging.basicConfig(level = level, format = format, force = True)
 
+    # Ignore logging from third-party libraries.
+    logging.getLogger("PIL").setLevel(logging.WARNING)
+
 def set_cli_args(parser: argparse.ArgumentParser) -> None:
     """
     Set common CLI arguments.

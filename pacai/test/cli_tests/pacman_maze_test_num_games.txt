@@ -9,7 +9,7 @@
     ]
 }
 ---
-<LOG_TIME> [INFO    ] - bin.py:34 -- Average Score: 442.3
-<LOG_TIME> [INFO    ] - bin.py:35 -- Scores:        502, 430, 453, 376, 436, 501, 403, 427, 444, 451
-<LOG_TIME> [INFO    ] - bin.py:36 -- Win Rate:      10/10 (1.00)
-<LOG_TIME> [INFO    ] - bin.py:37 -- Record:        Win, Win, Win, Win, Win, Win, Win, Win, Win, Win
+<LOG_PREFIX> -- Average Score: 442.3
+<LOG_PREFIX> -- Scores:        502, 430, 453, 376, 436, 501, 403, 427, 444, 451
+<LOG_PREFIX> -- Win Rate:      10/10 (1.00)
+<LOG_PREFIX> -- Record:        Win, Win, Win, Win, Win, Win, Win, Win, Win, Win

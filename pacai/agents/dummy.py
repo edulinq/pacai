@@ -11,9 +11,3 @@ class DummyAgent(pacai.core.agent.Agent):
 
     def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
         return pacai.core.action.STOP
-
-    def game_start(self, agent_index: int, suggested_seed: int, initial_state: pacai.core.gamestate.GameState) -> None:
-        pass
-
-    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
-        pass

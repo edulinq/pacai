@@ -5,6 +5,7 @@ import random
 
 import pacai.core.action
 import pacai.core.agent
+import pacai.core.agentinfo
 import pacai.core.gamestate
 import pacai.util.time
 
@@ -19,7 +20,7 @@ class AgentIsolator(abc.ABC):
     """
 
     @abc.abstractmethod
-    def init_agents(self, agent_args: dict[int, pacai.core.agent.AgentArguments]) -> None:
+    def init_agents(self, agent_args: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
         """
         Initialize the agents this isolator will be responsible for.
         """
@@ -90,7 +91,7 @@ class NoneIsolator(AgentIsolator):
     def __init__(self, **kwargs) -> None:
         self._agents: dict[int, pacai.core.agent.Agent] = {}
 
-    def init_agents(self, all_agent_args: dict[int, pacai.core.agent.AgentArguments]) -> None:
+    def init_agents(self, all_agent_args: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
         self._agents = {}
         for (agent_index, agent_args) in all_agent_args.items():
             self._agents[agent_index] = pacai.core.agent.load(agent_args)

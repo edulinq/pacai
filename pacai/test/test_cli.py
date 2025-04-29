@@ -19,10 +19,10 @@ TEST_CASE_SEP: str = '---'
 DATA_DIR_ID: str = '__DATA_DIR__'
 TEMP_DIR_ID: str = '__TEMP_DIR__'
 
-DEFAULT_OUTPUT_CHECK: str = 'content_equals_ignore_log_time'
+DEFAULT_OUTPUT_CHECK: str = 'content_equals_normalize_logs'
 
-TIME_REGEX = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d+'
-TIME_REPLACEMENT = '<LOG_TIME>'
+LOG_PREFIX_REGEX = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d+ \[\S+ *\] - .*\.py:\d+ -- '
+LOG_PREFIX_REPLACEMENT = '<LOG_PREFIX> -- '
 
 class CLITest(pacai.test.base.BaseTest):
     """
@@ -196,14 +196,14 @@ def content_equals(test: CLITest, expected: str, actual: str, **kwargs) -> None:
 
     test.assertEqual(expected, actual)
 
-def content_equals_ignore_log_time(test: CLITest, expected: str, actual: str, **kwargs) -> None:
+def content_equals_normalize_logs(test: CLITest, expected: str, actual: str, **kwargs) -> None:
     """
-    Rewrite the output to normalize any logs,
+    Rewrite the output to normalize any logs entries,
     then check for equality using a simple string comparison.
     """
 
-    expected = re.sub(TIME_REGEX, TIME_REPLACEMENT, expected, flags = re.MULTILINE)
-    actual = re.sub(TIME_REGEX, TIME_REPLACEMENT, actual, flags = re.MULTILINE)
+    expected = re.sub(LOG_PREFIX_REGEX, LOG_PREFIX_REPLACEMENT, expected, flags = re.MULTILINE)
+    actual = re.sub(LOG_PREFIX_REGEX, LOG_PREFIX_REPLACEMENT, actual, flags = re.MULTILINE)
 
     content_equals(test, expected, actual)
 

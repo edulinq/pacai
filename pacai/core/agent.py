@@ -1,46 +1,16 @@
 import abc
+import random
 import typing
 
 import pacai.core.action
+import pacai.core.agentinfo
 import pacai.core.gamestate
 import pacai.util.reflection
-
-DEFAULT_MOVE_DELAY: int = 100
-""" The default delay between agent moves. """
-
-class AgentArguments:
-    def __init__(self, name: str = '',
-            move_delay: int = DEFAULT_MOVE_DELAY,
-            **kwargs) -> None:
-        name = name.strip()
-        if (len(name) == 0):
-            raise ValueError("Agent name cannot be empty.")
-
-        if (move_delay <= 0):
-            raise ValueError("Agent move delay must be > 0.")
-
-        self.name: str = name
-        self.move_delay: int = move_delay
-
-        self.other_arguments: dict[str, typing.Any] = kwargs
-
-    def set(self, name: str, value: typing.Any) -> None:
-        if (name == 'name'):
-            self.name = str(value)
-        elif (name == 'move_delay'):
-            self.move_delay = int(value)
-        else:
-            self.other_arguments[name] = value
-
-    def update(self, other: 'AgentArguments') -> None:
-        self.name = other.name
-        self.move_delay = other.move_delay
-        self.other_arguments.update(other.other_arguments)
 
 class Agent(abc.ABC):
     """ The base for all agents in the pacai system. """
 
-    def __init__(self, agent_args: AgentArguments, *args, **kwargs) -> None:
+    def __init__(self, agent_args: pacai.core.agentinfo.AgentInfo, *args, **kwargs) -> None:
         self.name: str = agent_args.name
         """ The name of this agent. """
 
@@ -54,6 +24,13 @@ class Agent(abc.ABC):
         For example, an agent with a move delay of 50 will move twice as often as an agent with a move delay of 100.
         """
 
+        self._rng: random.Random = random.Random()
+        """
+        The RNG this agent should use whenever it wants randomness.
+        This object will be constructed right away,
+        but will be recreated with the suggested seed from the game engine during game_start().
+        """
+
     @abc.abstractmethod
     def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
         """
@@ -64,7 +41,6 @@ class Agent(abc.ABC):
 
         pass
 
-    @abc.abstractmethod
     def game_start(self, agent_index: int, suggested_seed: int, initial_state: pacai.core.gamestate.GameState) -> None:
         """
         Notify this agent that the game is about to start.
@@ -74,9 +50,8 @@ class Agent(abc.ABC):
         Calls to this method may be subject to a timeout.
         """
 
-        pass
+        self._rng = random.Random(suggested_seed)
 
-    @abc.abstractmethod
     def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
         """
         Notify this agent that the game has concluded.
@@ -85,33 +60,25 @@ class Agent(abc.ABC):
 
         pass
 
-class Ticket(typing.NamedTuple):
+@typing.runtime_checkable
+class EvaluationFunction(typing.Protocol):
     """
-    An agent's Ticket determines when they will move next.
-    A ticket is a tuple of three values: (next move time, last move time, number of moves).
-    The agent with the lowest ticket (starting with the first value and moving to the next on a tie) gets to move next.
-    All "time" values represented by a ticket are abstract and do not relate to any actual time units.
+    A function that an agent can use to score a game state.
     """
 
-    next_time: int
-    """ The next time the ticket is allowed to move. """
+    def __call__(self, state: pacai.core.gamestate.GameState) -> float:
+        """
+        Compute a score for a state that an agent can use to decide actions.
+        """
 
-    last_time: int
-    """ The last time that the agent moved. """
+        pass
 
-    num_moves: int
-    """ The total number of times this agent has moved so far. """
+def base_eval(state: pacai.core.gamestate.GameState) -> float:
+    """ The most basic evaluation function, which just uses the state's current score. """
 
-    def next(self, move_delay: int) -> 'Ticket':
-        """ Get the next ticket in the sequence for this agent. """
+    return float(state.score)
 
-        return Ticket(
-            next_time = self.next_time + move_delay,
-            last_time = self.next_time,
-            num_moves = self.num_moves + 1,
-        )
-
-def load(agent_args: AgentArguments) -> Agent:
+def load(agent_args: pacai.core.agentinfo.AgentInfo) -> Agent:
     agent = pacai.util.reflection.new_object(agent_args.name, agent_args)
 
     if (not isinstance(agent, Agent)):

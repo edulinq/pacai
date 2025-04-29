@@ -6,7 +6,7 @@ import random
 import typing
 
 import pacai.core.action
-import pacai.core.agent
+import pacai.core.agentinfo
 import pacai.core.isolation
 import pacai.core.ui
 
@@ -18,7 +18,7 @@ class GameResult:
 
     def __init__(self,
             id: int, seed: int,
-            agent_args: dict[int, pacai.core.agent.AgentArguments],
+            agent_args: dict[int, pacai.core.agentinfo.AgentInfo],
             score: int = 0,
             winning_agent_index: int = -1,
             **kwargs) -> None:
@@ -33,7 +33,7 @@ class GameResult:
         self.seed: int = seed
         """ The seed used for the game. """
 
-        self.agent_args: dict[int, pacai.core.agent.AgentArguments] = agent_args.copy()
+        self.agent_args: dict[int, pacai.core.agentinfo.AgentInfo] = agent_args.copy()
         """ The arguments used to construct each agent. """
 
         self.history: list[pacai.core.action.ActionRecord] = []
@@ -62,7 +62,7 @@ class Game(abc.ABC):
 
     def __init__(self,
             board: pacai.core.board.Board,
-            agent_args: dict[int, pacai.core.agent.AgentArguments],
+            agent_args: dict[int, pacai.core.agentinfo.AgentInfo],
             isolation_level: pacai.core.isolation.Level = pacai.core.isolation.Level.NONE,
             max_moves: int = DEFAULT_MAX_MOVES,
             seed: int | None = None,
@@ -83,7 +83,7 @@ class Game(abc.ABC):
         self._board: pacai.core.board.Board = board
         """ The board this game will be played on. """
 
-        self._agent_args: dict[int, pacai.core.agent.AgentArguments] = agent_args
+        self._agent_args: dict[int, pacai.core.agentinfo.AgentInfo] = agent_args
         """ The required information for creating the agents for this game. """
 
         if (len(self._agent_args) == 0):
@@ -99,19 +99,22 @@ class Game(abc.ABC):
         """
 
     @abc.abstractmethod
-    def get_initial_state(self, rng: random.Random, board: pacai.core.board.Board) -> pacai.core.gamestate.GameState:
+    def get_initial_state(self, rng: random.Random, board: pacai.core.board.Board, agents_args: dict[int, pacai.core.agentinfo.AgentInfo]) -> pacai.core.gamestate.GameState:
         """ Create the initial state for this game. """
 
         pass
 
-    @abc.abstractmethod
-    def process_action(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> pacai.core.gamestate.GameState:
+    def process_turn(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> pacai.core.gamestate.GameState:
         """
         Process the given move and return an updated game state.
         The returned game state may be a copy or modified version of the passed in game state.
         """
 
-        pass
+        if (action_record.action not in state.get_legal_actions()):
+            raise ValueError(f"Illegal action for agent {state.agent_index}: '{action_record.action}'.")
+
+        state.process_turn(action_record.action)
+        return state
 
     def check_end(self, state: pacai.core.gamestate.GameState) -> bool:
         """
@@ -145,11 +148,6 @@ class Game(abc.ABC):
         isolator = self._isolation_level.get_isolator()
         isolator.init_agents(self._agent_args)
 
-        # Assign initial tickets to all the agents.
-        tickets: dict[int, pacai.core.agent.Ticket] = {}
-        for (agent_index, agent_args) in self._agent_args.items():
-            tickets[agent_index] = pacai.core.agent.Ticket(agent_index + agent_args.move_delay, 0, 0)
-
         # Keep track of what happens during this game.
         result_id = rng.randint(0, 2**64)
         result = GameResult(result_id, self._seed, self._agent_args)
@@ -162,7 +160,8 @@ class Game(abc.ABC):
             agent_user_inputs[agent_index] = []
 
         # Create the initial game state.
-        state = self.get_initial_state(rng, self._board)
+        state = self.get_initial_state(rng, self._board, self._agent_args)
+        state.game_start()
 
         # Notify agents about the start of the game.
         isolator.game_start(rng, state)
@@ -170,25 +169,17 @@ class Game(abc.ABC):
         # Start the UI.
         ui.game_start(state)
 
-        move_count = 0
-        while ((self._max_moves < 0) or (move_count < self._max_moves)):
-            # Choose the next agent to move.
-            current_agent_index = self._get_next_agent_index(tickets)
-            state.agent_index = current_agent_index
-
-            logging.debug("Turn %d, agent %d, state: '%s'.", move_count, current_agent_index, state)
+        while ((self._max_moves < 0) or (state.turn_count < self._max_moves)):
+            logging.debug("Turn %d, agent %d.", state.turn_count, state.agent_index)
 
             # Get any user inputs.
-            user_inputs = self._get_user_inputs(current_agent_index, agent_user_inputs, ui)
+            user_inputs = self._get_user_inputs(state.agent_index, agent_user_inputs, ui)
 
             # Get the next action from the agent.
             action_record = isolator.get_action(state, user_inputs)
 
             # Execute the next action and update the state.
-            state = self.process_action(state, action_record)
-            state.last_agent_actions[current_agent_index] = action_record.action
-            state.agent_index = -1
-            state.turn_count += 1
+            state = self.process_turn(state, action_record)
 
             # Update the UI.
             ui.update(state)
@@ -200,12 +191,6 @@ class Game(abc.ABC):
             game_over = self.check_end(state)
             if (game_over):
                 break
-
-            # Issue the current agent a new ticket.
-            tickets[current_agent_index] = tickets[current_agent_index].next(self._agent_args[current_agent_index].move_delay)
-
-            # Increment the move count.
-            move_count += 1
 
         # Check if this game ended naturally or in a timeout.
         if (not state.game_over):
@@ -225,19 +210,6 @@ class Game(abc.ABC):
         ui.close()
 
         return result
-
-    def _get_next_agent_index(self, tickets: dict[int, pacai.core.agent.Ticket]) -> int:
-        """
-        Get the agent that moves next.
-        Do this by looking at the agents' tickets and choosing the one with the lowest ticket.
-        """
-
-        next_index = -1
-        for (agent_index, ticket) in tickets.items():
-            if ((next_index == -1) or (ticket < tickets[next_index])):
-                next_index = agent_index
-
-        return next_index
 
     def _get_user_inputs(self, agent_index: int, agent_user_inputs: dict[int, list[pacai.core.action.Action]], ui: pacai.core.ui.UI) -> list[pacai.core.action.Action]:
         """
@@ -314,7 +286,7 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
 def init_from_args(
         args: argparse.Namespace,
         game_class: typing.Type[Game],
-        base_agent_args: dict[int, pacai.core.agent.AgentArguments] = {},
+        base_agent_args: dict[int, pacai.core.agentinfo.AgentInfo] = {},
         remove_agent_indexes: list[int] = []) -> argparse.Namespace:
     """
     Take in args from a parser that was passed to set_cli_args(),
@@ -375,10 +347,10 @@ def init_from_args(
 def _parse_agent_args(
         agent_indexes: list[int],
         raw_args: list[str],
-        base_agent_args: dict[int, pacai.core.agent.AgentArguments],
-        remove_agent_indexes: list[int]) -> dict[int, pacai.core.agent.AgentArguments]:
+        base_agent_args: dict[int, pacai.core.agentinfo.AgentInfo],
+        remove_agent_indexes: list[int]) -> dict[int, pacai.core.agentinfo.AgentInfo]:
     # Initialize with random agents.
-    agent_args = {agent_index: pacai.core.agent.AgentArguments(name = DEFAULT_AGENT) for agent_index in sorted(agent_indexes)}
+    agent_args = {agent_index: pacai.core.agentinfo.AgentInfo(name = DEFAULT_AGENT) for agent_index in sorted(agent_indexes)}
 
     # Take any args from the base args.
     for (agent_index, base_agent_arg) in base_agent_args.items():

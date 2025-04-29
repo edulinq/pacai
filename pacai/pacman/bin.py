@@ -9,13 +9,14 @@ import typing
 
 import PIL.Image
 
-import pacai.core.agent
+import pacai.core.agentinfo
 import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.log
 import pacai.core.spritesheet
 import pacai.core.ui
 import pacai.pacman.game
+import pacai.pacman.gamestate
 
 DEFAULT_BOARD: str = 'classic-medium'
 DEFAULT_SPRITE_SHEET: str = 'pacman'
@@ -28,7 +29,7 @@ def run(args: argparse.Namespace) -> int:
         results.append(args._games[i].run(args._ui))
 
     scores = [result.score for result in results]
-    wins = [(result.winning_agent_index == pacai.pacman.game.PACMAN_AGENT_INDEX) for result in results]
+    wins = [(result.winning_agent_index == pacai.pacman.gamestate.PACMAN_AGENT_INDEX) for result in results]
     winRate = wins.count(True) / float(len(wins))
 
     logging.info('Average Score: %s', sum(scores) / float(len(scores)))
@@ -58,20 +59,20 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
                     + ' Ghosts with the highest agent index will be removed first.'
                     + ' Board positions that normally spawn the removed agents/ghosts will now be empty.'))
 
-def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent.AgentArguments], list[int]]:
+def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agentinfo.AgentInfo], list[int]]:
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
     """
 
-    base_agent_args: dict[int, pacai.core.agent.AgentArguments] = {}
+    base_agent_args: dict[int, pacai.core.agentinfo.AgentInfo] = {}
 
     # Create base arguments for all possible agents.
     for i in range(pacai.core.board.MAX_AGENTS):
         if (i == 0):
-            base_agent_args[i] = pacai.core.agent.AgentArguments(name = args.pacman)
+            base_agent_args[i] = pacai.core.agentinfo.AgentInfo(name = args.pacman)
         else:
-            base_agent_args[i] = pacai.core.agent.AgentArguments(name = args.ghosts)
+            base_agent_args[i] = pacai.core.agentinfo.AgentInfo(name = args.ghosts)
 
     remove_agent_indexes = []
 
@@ -85,7 +86,7 @@ def _sprite_lookup(state: pacai.core.gamestate.GameState, sprite_sheet: pacai.co
     """ Pacman requires a special lookup function since ghosts need a special sprite when scared. """
 
     state = typing.cast(pacai.pacman.gamestate.GameState, state)
-    if ((marker is not None) and (marker.is_agent()) and (marker != pacai.pacman.game.PACMAN_MARKER) and (state.is_scared(marker.get_agent_index()))):
+    if ((marker is not None) and (marker.is_agent()) and (marker != pacai.pacman.gamestate.PACMAN_MARKER) and (state.is_scared(marker.get_agent_index()))):
         return sprite_sheet.get_sprite(marker = SCARED_GHOST_MARKER, **kwargs)
 
     return sprite_sheet.get_sprite(marker = marker, **kwargs)

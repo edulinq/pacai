@@ -8,22 +8,22 @@ THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
 class TicketTest(pacai.test.base.BaseTest):
     def test_class_reference_base(self):
-        # [(text, expected error substring, (filename, module_name, class_name)), ...]
+        # [(text, expected error substring, (filename, module_name, short_name)), ...]
         test_cases = [
             (
-                'reflection.ClassReference',
+                'reflection.Reference',
                 None,
-                (None, 'reflection', 'ClassReference'),
+                (None, 'reflection', 'Reference'),
             ),
             (
-                'pacai.util.reflection.ClassReference',
+                'pacai.util.reflection.Reference',
                 None,
-                (None, 'pacai.util.reflection', 'ClassReference'),
+                (None, 'pacai.util.reflection', 'Reference'),
             ),
             (
-                'pacai/util/reflection.py:ClassReference',
+                'pacai/util/reflection.py:Reference',
                 None,
-                ('pacai/util/reflection.py', None, 'ClassReference'),
+                ('pacai/util/reflection.py', None, 'Reference'),
             ),
 
             # Errors
@@ -40,21 +40,21 @@ class TicketTest(pacai.test.base.BaseTest):
             ),
             (
                 ':',
-                'without a class name',
+                'without a short name',
                 None,
             ),
             (
                 'test.py:',
-                'without a class name',
+                'without a short name',
                 None,
             ),
             (
-                'ClassReference',
-                'Cannot specify a class name alone',
+                'Reference',
+                'Cannot specify a short name alone',
                 None,
             ),
             (
-                'pacai/util/reflection.py:pacai.util.reflection.ClassReference',
+                'pacai/util/reflection.py:pacai.util.reflection.Reference',
                 'both a filepath and module name',
                 None,
             ),
@@ -64,7 +64,7 @@ class TicketTest(pacai.test.base.BaseTest):
             (text, error_substring, expected_parts) = test_cases[i]
             with self.subTest(msg = f"Case {i}:"):
                 try:
-                    class_ref = pacai.util.reflection.ClassReference(text)
+                    reference = pacai.util.reflection.Reference(text)
                 except Exception as ex:
                     if (error_substring is None):
                         self.fail(f"Unexpected error: '{str(ex)}'.")
@@ -75,11 +75,11 @@ class TicketTest(pacai.test.base.BaseTest):
                 if (error_substring is not None):
                     self.fail(f"Did not get expected error: '{error_substring}'.")
 
-                actual_parts = (class_ref.filepath, class_ref.module_name, class_ref.class_name)
+                actual_parts = (reference.filepath, reference.module_name, reference.short_name)
                 self.assertEqual(expected_parts, actual_parts)
 
     def test_new_object_base(self):
-        # [(class_ref, expected error substring, args, kwargs, expected_count), ...]
+        # [(reference, expected error substring, args, kwargs, expected_count), ...]
         test_cases = [
             (
                 'pacai.util.test_reflection.TestClass',
@@ -127,7 +127,7 @@ class TicketTest(pacai.test.base.BaseTest):
             # Errors
 
             (
-                'reflection.ClassReference',
+                'reflection.Reference',
                 "Unable to locate module 'reflection'",
                 [],
                 {},
@@ -143,10 +143,10 @@ class TicketTest(pacai.test.base.BaseTest):
         ]
 
         for i in range(len(test_cases)):
-            (class_ref, error_substring, args, kwargs, expected_count) = test_cases[i]
+            (reference, error_substring, args, kwargs, expected_count) = test_cases[i]
             with self.subTest(msg = f"Case {i}:"):
                 try:
-                    actual = pacai.util.reflection.new_object(class_ref, *args, **kwargs)
+                    actual = pacai.util.reflection.new_object(reference, *args, **kwargs)
                 except Exception as ex:
                     if (error_substring is None):
                         self.fail(f"Unexpected error: '{str(ex)}'.")

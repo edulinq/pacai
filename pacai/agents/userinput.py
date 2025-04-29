@@ -2,6 +2,7 @@ import time
 
 import pacai.core.action
 import pacai.core.agent
+import pacai.core.agentinfo
 import pacai.core.gamestate
 
 class UserInputAgent(pacai.core.agent.Agent):
@@ -10,7 +11,7 @@ class UserInputAgent(pacai.core.agent.Agent):
     """
 
     def __init__(self,
-            agent_args: pacai.core.agent.AgentArguments,
+            agent_args: pacai.core.agentinfo.AgentInfo,
             **kwargs) -> None:
         super().__init__(agent_args, *kwargs)
 
@@ -44,13 +45,3 @@ class UserInputAgent(pacai.core.agent.Agent):
         self._last_action = intended_action
 
         return self._last_action
-
-    def game_start(self, agent_index: int, suggested_seed: int, initial_state: pacai.core.gamestate.GameState) -> None:
-        """ Do nothing. """
-
-        pass
-
-    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
-        """ Do nothing. """
-
-        pass

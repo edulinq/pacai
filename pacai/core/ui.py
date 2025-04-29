@@ -305,7 +305,7 @@ class UI(abc.ABC):
                 continue
 
             for position in positions:
-                last_action = state.last_agent_actions.get(marker.get_agent_index(), None)
+                last_action = state.last_actions.get(marker.get_agent_index(), None)
                 sprite = self._get_sprite(state, marker = marker, action = last_action, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
 
