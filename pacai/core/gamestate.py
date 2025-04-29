@@ -80,13 +80,27 @@ class GameState(abc.ABC):
         # Choose the first agent to move.
         self.agent_index = self.get_next_agent_index()
 
-    def get_agent_position(self) -> pacai.core.board.Position | None:
-        """ Get the position of the current active agent. """
+    def get_agent_position(self, agent_index: int | None = None) -> pacai.core.board.Position | None:
+        """ Get the position of the specified agent (or current agent if no agent is specified). """
+
+        if (agent_index is None):
+            agent_index = self.agent_index
 
         if (self.agent_index < 0):
             raise ValueError("No agent is active, cannot get position.")
 
         return self.board.get_agent_position(self.agent_index)
+
+    def get_agent_last_action(self, agent_index: int | None = None) -> pacai.core.action.Action | None:
+        """ Get the last action of the specified agent (or current agent if no agent is specified). """
+
+        if (agent_index is None):
+            agent_index = self.agent_index
+
+        if (self.agent_index < 0):
+            raise ValueError("No agent is active, cannot get position.")
+
+        return self.last_actions.get(agent_index, None)
 
     def get_reverse_action(self, action: pacai.core.action.Action) -> pacai.core.action.Action | None:
         """
