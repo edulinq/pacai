@@ -10,11 +10,11 @@ import pacai.util.reflection
 class Agent(abc.ABC):
     """ The base for all agents in the pacai system. """
 
-    def __init__(self, agent_args: pacai.core.agentinfo.AgentInfo, *args, **kwargs) -> None:
-        self.name: str = agent_args.name
+    def __init__(self, agent_info: pacai.core.agentinfo.AgentInfo, *args, **kwargs) -> None:
+        self.name: str = agent_info.name
         """ The name of this agent. """
 
-        self.move_delay: int = agent_args.move_delay
+        self.move_delay: int = agent_info.move_delay
         """
         The delay between moves for this agent.
         This value is abstract and has not real units,
@@ -78,10 +78,15 @@ def base_eval(state: pacai.core.gamestate.GameState) -> float:
 
     return float(state.score)
 
-def load(agent_args: pacai.core.agentinfo.AgentInfo) -> Agent:
-    agent = pacai.util.reflection.new_object(agent_args.name, agent_args)
+def load(agent_info: pacai.core.agentinfo.AgentInfo) -> Agent:
+    """
+    Construct a new agent object using the given agent info.
+    The name of the agent will be used as a reference to (e.g., name of) the agent's class.
+    """
+
+    agent = pacai.util.reflection.new_object(agent_info.name, agent_info)
 
     if (not isinstance(agent, Agent)):
-        raise ValueError(f"Loaded class is not an agent: '{agent_args.name}'.")
+        raise ValueError(f"Loaded class is not an agent: '{agent_info.name}'.")
 
     return agent

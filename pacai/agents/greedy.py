@@ -1,9 +1,14 @@
 import pacai.core.action
 import pacai.core.agent
+import pacai.core.agentinfo
 import pacai.core.gamestate
 import pacai.util.reflection
 
-DEFAULT_EVAL_FUNC_REF: str = 'pacai.core.agent.base_eval'
+EVAL_FUNC_KEY: str = 'eval_func'
+""" The key for the evaluation function inside the agent info's extra arguments. """
+
+DEFAULT_EVAL_FUNC_REF: pacai.util.reflection.Reference = pacai.util.reflection.Reference('pacai.core.agent.base_eval')
+""" The default evaluation function to use. """
 
 class GreedyAgent(pacai.core.agent.Agent):
     """
@@ -11,12 +16,13 @@ class GreedyAgent(pacai.core.agent.Agent):
     If multiple moves have the same score, this agent will just randomly choose between them.
     """
 
-    def __init__(self, *args, eval_func: str = DEFAULT_EVAL_FUNC_REF, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, agent_info: pacai.core.agentinfo.AgentInfo, *args, **kwargs) -> None:
+        super().__init__(agent_info, *args, **kwargs)
 
-        eval_func_object = pacai.util.reflection.fetch(eval_func)
+        eval_func_name = agent_info.extra_arguments.get(EVAL_FUNC_KEY, DEFAULT_EVAL_FUNC_REF)
+        eval_func_object = pacai.util.reflection.fetch(eval_func_name)
         if (not isinstance(eval_func_object, pacai.core.agent.EvaluationFunction)):
-            raise ValueError(f"Evaluation function '{eval_func}' is not a pacai.core.agent.EvaluationFunction.")
+            raise ValueError(f"Evaluation function '{eval_func_name}' is not a pacai.core.agent.EvaluationFunction.")
 
         self._evaluation_function: pacai.core.agent.EvaluationFunction = eval_func_object
         """ The evaluation function that agent will use to assess game states. """

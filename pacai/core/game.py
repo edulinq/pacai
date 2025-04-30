@@ -18,7 +18,7 @@ class GameResult:
 
     def __init__(self,
             id: int, seed: int,
-            agent_args: dict[int, pacai.core.agentinfo.AgentInfo],
+            agent_infos: dict[int, pacai.core.agentinfo.AgentInfo],
             score: int = 0,
             winning_agent_index: int = -1,
             **kwargs) -> None:
@@ -33,8 +33,8 @@ class GameResult:
         self.seed: int = seed
         """ The seed used for the game. """
 
-        self.agent_args: dict[int, pacai.core.agentinfo.AgentInfo] = agent_args.copy()
-        """ The arguments used to construct each agent. """
+        self.agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = agent_infos.copy()
+        """ The info used to construct each agent. """
 
         self.history: list[pacai.core.action.ActionRecord] = []
         """ The history of actions taken by each agent in this game. """
@@ -62,7 +62,7 @@ class Game(abc.ABC):
 
     def __init__(self,
             board: pacai.core.board.Board,
-            agent_args: dict[int, pacai.core.agentinfo.AgentInfo],
+            agent_infos: dict[int, pacai.core.agentinfo.AgentInfo],
             isolation_level: pacai.core.isolation.Level = pacai.core.isolation.Level.NONE,
             max_turns: int = DEFAULT_MAX_MOVES,
             seed: int | None = None,
@@ -83,10 +83,10 @@ class Game(abc.ABC):
         self._board: pacai.core.board.Board = board
         """ The board this game will be played on. """
 
-        self._agent_args: dict[int, pacai.core.agentinfo.AgentInfo] = agent_args
+        self._agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = agent_infos
         """ The required information for creating the agents for this game. """
 
-        if (len(self._agent_args) == 0):
+        if (len(self._agent_infos) == 0):
             raise ValueError("No agents provided.")
 
         self._isolation_level: pacai.core.isolation.Level = isolation_level
@@ -99,7 +99,7 @@ class Game(abc.ABC):
         """
 
     @abc.abstractmethod
-    def get_initial_state(self, rng: random.Random, board: pacai.core.board.Board, agents_args: dict[int, pacai.core.agentinfo.AgentInfo]) -> pacai.core.gamestate.GameState:
+    def get_initial_state(self, rng: random.Random, board: pacai.core.board.Board, agent_infos: dict[int, pacai.core.agentinfo.AgentInfo]) -> pacai.core.gamestate.GameState:
         """ Create the initial state for this game. """
 
         pass
@@ -146,21 +146,21 @@ class Game(abc.ABC):
 
         # Initialize the agent isolator.
         isolator = self._isolation_level.get_isolator()
-        isolator.init_agents(self._agent_args)
+        isolator.init_agents(self._agent_infos)
 
         # Keep track of what happens during this game.
         result_id = rng.randint(0, 2**64)
-        result = GameResult(result_id, self._seed, self._agent_args)
+        result = GameResult(result_id, self._seed, self._agent_infos)
 
         # Keep track of all the user inputs since the last time an agent moved.
         # Note that we need to keep track for all agents,
         # since the UI will only tell us the inputs since the last call.
         agent_user_inputs: dict[int, list[pacai.core.action.Action]] = {}
-        for (agent_index, agent_args) in self._agent_args.items():
+        for agent_index in self._agent_infos:
             agent_user_inputs[agent_index] = []
 
         # Create the initial game state.
-        state = self.get_initial_state(rng, self._board, self._agent_args)
+        state = self.get_initial_state(rng, self._board, self._agent_infos)
         state.game_start()
 
         # Notify agents about the start of the game.
@@ -264,7 +264,7 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
     parser.add_argument('--agent-arg', dest = 'raw_agent_args', metavar = 'ARG',
             action = 'append', type = str, default = [],
             help = ('Specify arguments directly to agents (may be used multiple times).'
-                    + ' The value for this argument must be formatted as "agent_index::key=value,...",'
+                    + ' The value for this argument must be formatted as "agent_index::key=value",'
                     + ' for example to set `foo = 9` for agent 3 and `bar = a` for agent 2, we can use:'
                     + ' `--agent-arg 3::foo=9 --agent-arg 1::bar=a`.'))
 
@@ -287,14 +287,14 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
 def init_from_args(
         args: argparse.Namespace,
         game_class: typing.Type[Game],
-        base_agent_args: dict[int, pacai.core.agentinfo.AgentInfo] = {},
+        base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {},
         remove_agent_indexes: list[int] = []) -> argparse.Namespace:
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
     This will create a number of games (and related resources) depending on `--num-games`.
     Each of these resources will be placed in their respective list at
-    `args._boards`, `args._agent_args`, or `args._games`.
+    `args._boards`, `args._agent_infos`, or `args._games`.
     """
 
     if (args.board is None):
@@ -317,21 +317,21 @@ def init_from_args(
     for remove_agent_index in remove_agent_indexes:
         board.remove_agent(remove_agent_index)
 
-    agent_args = _parse_agent_args(board.agent_indexes(), args.raw_agent_args, base_agent_args, remove_agent_indexes)
+    agent_infos = _parse_agent_infos(board.agent_indexes(), args.raw_agent_args, base_agent_infos, remove_agent_indexes)
 
     all_boards = []
-    all_agent_args = []
+    all_agent_infos = []
     all_games = []
 
     for _ in range(args.num_games):
         game_seed = rng.randint(0, 2**64)
 
         all_boards.append(copy.deepcopy(board))
-        all_agent_args.append(copy.deepcopy(agent_args))
+        all_agent_infos.append(copy.deepcopy(agent_infos))
 
         game_args = {
             'board': all_boards[-1],
-            'agent_args': all_agent_args[-1],
+            'agent_infos': all_agent_infos[-1],
             'isolation_level': pacai.core.isolation.Level(args.isolation_level),
             'max_turns': args.max_turns,
             'seed': game_seed,
@@ -340,23 +340,23 @@ def init_from_args(
         all_games.append(game_class(**game_args))
 
     setattr(args, '_boards', all_boards)
-    setattr(args, '_agent_args', all_agent_args)
+    setattr(args, '_agent_infos', all_agent_infos)
     setattr(args, '_games', all_games)
 
     return args
 
-def _parse_agent_args(
+def _parse_agent_infos(
         agent_indexes: list[int],
         raw_args: list[str],
-        base_agent_args: dict[int, pacai.core.agentinfo.AgentInfo],
+        base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo],
         remove_agent_indexes: list[int]) -> dict[int, pacai.core.agentinfo.AgentInfo]:
     # Initialize with random agents.
-    agent_args = {agent_index: pacai.core.agentinfo.AgentInfo(name = DEFAULT_AGENT) for agent_index in sorted(agent_indexes)}
+    agent_info = {agent_index: pacai.core.agentinfo.AgentInfo(name = DEFAULT_AGENT) for agent_index in sorted(agent_indexes)}
 
     # Take any args from the base args.
-    for (agent_index, base_agent_arg) in base_agent_args.items():
-        if (agent_index in agent_args):
-            agent_args[agent_index].update(base_agent_arg)
+    for (agent_index, base_agent_info) in base_agent_infos.items():
+        if (agent_index in agent_info):
+            agent_info[agent_index].update(base_agent_info)
 
     # Update with CLI args.
     for raw_arg in raw_args:
@@ -369,7 +369,7 @@ def _parse_agent_args(
             raise ValueError(f"Improperly formatted CLI agent argument: '{raw_arg}'.")
 
         agent_index = int(parts[0])
-        if (agent_index not in agent_args):
+        if (agent_index not in agent_info):
             raise ValueError(f"CLI agent argument has an unknown agent index: {agent_index}.")
 
         raw_pair = parts[1]
@@ -381,11 +381,11 @@ def _parse_agent_args(
         key = parts[0].strip()
         value = parts[1].strip()
 
-        agent_args[agent_index].set(key, value)
+        agent_info[agent_index].set(key, value)
 
     # Remove specified agents.
     for remove_agent_index in remove_agent_indexes:
-        if (remove_agent_index in agent_args):
-            del agent_args[remove_agent_index]
+        if (remove_agent_index in agent_info):
+            del agent_info[remove_agent_index]
 
-    return agent_args
+    return agent_info

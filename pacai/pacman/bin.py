@@ -65,14 +65,14 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
     and initialize the proper components.
     """
 
-    base_agent_args: dict[int, pacai.core.agentinfo.AgentInfo] = {}
+    base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {}
 
     # Create base arguments for all possible agents.
     for i in range(pacai.core.board.MAX_AGENTS):
         if (i == 0):
-            base_agent_args[i] = pacai.core.agentinfo.AgentInfo(name = args.pacman)
+            base_agent_infos[i] = pacai.core.agentinfo.AgentInfo(name = args.pacman)
         else:
-            base_agent_args[i] = pacai.core.agentinfo.AgentInfo(name = args.ghosts)
+            base_agent_infos[i] = pacai.core.agentinfo.AgentInfo(name = args.ghosts)
 
     remove_agent_indexes = []
 
@@ -80,7 +80,7 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
         for i in range(1 + args.num_ghosts, pacai.core.board.MAX_AGENTS):
             remove_agent_indexes.append(i)
 
-    return base_agent_args, remove_agent_indexes
+    return base_agent_infos, remove_agent_indexes
 
 def _sprite_lookup(state: pacai.core.gamestate.GameState, sprite_sheet: pacai.core.spritesheet.SpriteSheet, marker: pacai.core.board.Marker | None = None, **kwargs) -> PIL.Image.Image:
     """ Pacman requires a special lookup function since ghosts need a special sprite when scared. """
@@ -105,10 +105,10 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args = pacai.core.ui.init_from_args(args, additional_args = additional_ui_args)
 
     # Parse pacman-specific options.
-    base_agent_args, remove_agent_indexes = init_from_args(args)
+    base_agent_infos, remove_agent_indexes = init_from_args(args)
 
     # Parse game arguments.
-    args = pacai.core.game.init_from_args(args, pacai.pacman.game.Game, base_agent_args = base_agent_args, remove_agent_indexes = remove_agent_indexes)
+    args = pacai.core.game.init_from_args(args, pacai.pacman.game.Game, base_agent_infos = base_agent_infos, remove_agent_indexes = remove_agent_indexes)
 
     return args
 

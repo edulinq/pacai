@@ -20,7 +20,7 @@ class AgentIsolator(abc.ABC):
     """
 
     @abc.abstractmethod
-    def init_agents(self, agent_args: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
+    def init_agents(self, agent_infoss: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
         """
         Initialize the agents this isolator will be responsible for.
         """
@@ -91,10 +91,10 @@ class NoneIsolator(AgentIsolator):
     def __init__(self, **kwargs) -> None:
         self._agents: dict[int, pacai.core.agent.Agent] = {}
 
-    def init_agents(self, all_agent_args: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
+    def init_agents(self, all_agent_infoss: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
         self._agents = {}
-        for (agent_index, agent_args) in all_agent_args.items():
-            self._agents[agent_index] = pacai.core.agent.load(agent_args)
+        for (agent_index, agent_info) in all_agent_infoss.items():
+            self._agents[agent_index] = pacai.core.agent.load(agent_info)
 
     def game_start(self, rng: random.Random, initial_state: pacai.core.gamestate.GameState) -> None:
         for (agent_index, agent) in self._agents.items():

@@ -15,8 +15,8 @@ class Game(pacai.core.game.Game):
     def get_initial_state(self,
             rng: random.Random,
             board: pacai.core.board.Board,
-            agents_args: dict[int, pacai.core.agentinfo.AgentInfo]) -> pacai.core.gamestate.GameState:
-        state = pacai.pacman.gamestate.GameState(board = board, agents_args = agents_args)
+            agent_infos: dict[int, pacai.core.agentinfo.AgentInfo]) -> pacai.core.gamestate.GameState:
+        state = pacai.pacman.gamestate.GameState(board = board, agent_infos = agent_infos)
         state.food_count = len(state.board.get_marker_positions(pacai.pacman.board.MARKER_PELLET))
         return state
 

@@ -22,7 +22,7 @@ class GameState(abc.ABC):
             timeout: bool = False,
             score: int = 0,
             turn_count: int = 0,
-            agents_args: dict[int, pacai.core.agentinfo.AgentInfo] = {},
+            agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {},
             **kwargs) -> None:
         if (board is None):
             raise ValueError("Cannot construct a game state without a board.")
@@ -64,8 +64,8 @@ class GameState(abc.ABC):
         """
 
         # Initialize data from agent arguments.
-        for (agent_index, agent_args) in agents_args.items():
-            self.move_delays[agent_index] = agent_args.move_delay
+        for (agent_index, agent_info) in agent_infos.items():
+            self.move_delays[agent_index] = agent_info.move_delay
 
     def game_start(self):
         """
