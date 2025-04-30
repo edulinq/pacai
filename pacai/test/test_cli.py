@@ -51,6 +51,7 @@ class CLITest(pacai.test.base.BaseTest):
         options, expected_output = _read_test_file(path)
 
         temp_dir = os.path.join(CLITest._base_temp_dir, test_name)
+        os.makedirs(temp_dir, exist_ok = True)
 
         module_name = options['cli']
         exit_status = options.get('exit_status', 0)

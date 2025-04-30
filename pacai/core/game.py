@@ -2,6 +2,7 @@ import abc
 import argparse
 import copy
 import logging
+import os
 import random
 import typing
 
@@ -9,6 +10,7 @@ import pacai.core.action
 import pacai.core.agentinfo
 import pacai.core.isolation
 import pacai.core.ui
+import pacai.util.json
 
 DEFAULT_MAX_MOVES: int = -1
 DEFAULT_AGENT: str = 'pacai.agents.random.RandomAgent'
@@ -66,6 +68,7 @@ class Game(abc.ABC):
             isolation_level: pacai.core.isolation.Level = pacai.core.isolation.Level.NONE,
             max_turns: int = DEFAULT_MAX_MOVES,
             seed: int | None = None,
+            save_path: str | None = None,
             ) -> None:
         """
         Construct a game.
@@ -97,6 +100,9 @@ class Game(abc.ABC):
         The total number of moves (between all agents) allowed for this game.
         If -1, unlimited moves are allowed.
         """
+
+        self._save_path: str | None = save_path
+        """ Where to save the results of this game. """
 
     @abc.abstractmethod
     def get_initial_state(self, rng: random.Random, board: pacai.core.board.Board, agent_infos: dict[int, pacai.core.agentinfo.AgentInfo]) -> pacai.core.gamestate.GameState:
@@ -206,6 +212,10 @@ class Game(abc.ABC):
         isolator.close()
         ui.close()
 
+        if (self._save_path is not None):
+            logging.info(f"Saving results to '{self._save_path}'.")
+            pacai.util.json.dump_path(result, self._save_path)
+
         return result
 
     def _get_user_inputs(self, agent_index: int, agent_user_inputs: dict[int, list[pacai.core.action.Action]], ui: pacai.core.ui.UI) -> list[pacai.core.action.Action]:
@@ -268,11 +278,10 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
             action = 'append', type = int, default = [],
             help = 'Remove this agent from the board before starting (may be used multiple times).')
 
-    ''' TODO(eriq)
     parser.add_argument('--save-path', dest = 'save_path',
             action = 'store', type = str, default = None,
-            help = 'If specified, write the result of this game to the specified location.')
-    '''
+            help = ('If specified, write the result of this game to the specified location.'
+                    + ' This file can be replayed with `--replay-path`.'))
 
     ''' TODO(eriq)
     parser.add_argument('--replay-path', dest = 'replay_path',
@@ -315,15 +324,23 @@ def init_from_args(
 
     agent_infos = _parse_agent_infos(board.agent_indexes(), args.raw_agent_args, base_agent_infos, remove_agent_indexes)
 
+    base_save_path = args.save_path
+
     all_boards = []
     all_agent_infos = []
     all_games = []
 
-    for _ in range(args.num_games):
+    for i in range(args.num_games):
         game_seed = rng.randint(0, 2**64)
 
         all_boards.append(copy.deepcopy(board))
         all_agent_infos.append(copy.deepcopy(agent_infos))
+
+        # Suffix the save path if there is more than one game.
+        save_path = base_save_path
+        if ((save_path is not None) and (args.num_games > 1)):
+            parts = os.path.splitext(save_path)
+            save_path = "%s_%03d%s" % (parts[0], i, parts[1])
 
         game_args = {
             'board': all_boards[-1],
@@ -331,6 +348,7 @@ def init_from_args(
             'isolation_level': pacai.core.isolation.Level(args.isolation_level),
             'max_turns': args.max_turns,
             'seed': game_seed,
+            'save_path': save_path,
         }
 
         all_games.append(game_class(**game_args))

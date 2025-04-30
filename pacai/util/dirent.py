@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import uuid
 
-def get_temp_path(prefix = '', suffix = '', rm = True):
+def get_temp_path(prefix: str = '', suffix: str = '', rm: bool = True) -> str:
     """
     Get a path to a valid (but not currently existing) temp dirent.
     If rm is True, then the dirent will be attempted to be deleted on exit
@@ -20,7 +20,7 @@ def get_temp_path(prefix = '', suffix = '', rm = True):
 
     return path
 
-def remove(path):
+def remove(path: str) -> None:
     if (not os.path.exists(path)):
         return
 
@@ -31,10 +31,10 @@ def remove(path):
     else:
         raise ValueError("Unknown type of dirent: '%s'." % (path))
 
-def move(source, dest):
+def move(source: str, dest: str) -> None:
     shutil.move(source, dest)
 
-def copy(source, dest, dirs_exist_ok = False):
+def copy(source: str, dest: str, dirs_exist_ok: bool = False) -> None:
     """
     Copy a file or directory into dest.
     If source is a file, then dest can be a file or dir.
@@ -54,7 +54,7 @@ def copy(source, dest, dirs_exist_ok = False):
 
         shutil.copytree(source, dest, dirs_exist_ok = dirs_exist_ok)
 
-def copy_contents(source, dest):
+def copy_contents(source: str, dest: str) -> None:
     """
     Copy a file or the contents of a directory (excluding the top-level directory) into dest.
     For a file: `cp source dest/`

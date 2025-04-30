@@ -5,10 +5,11 @@ and strict when writing (using vanilla JSON).
 """
 
 import json
+import typing
 
 import json5
 
-def _custom_handle(obj):
+def _custom_handle(obj: typing.Any) -> dict[str, typing.Any]:
     """
     Handle objects that are not JSON serializable by default.
     This will usually mean just calling vars() on the object.
@@ -16,7 +17,7 @@ def _custom_handle(obj):
 
     return vars(obj)
 
-def load(file_obj, strict = False, **kwargs):
+def load(file_obj: typing.TextIO, strict: bool = False, **kwargs) -> dict[str, typing.Any]:
     """
     Load a file object/handler as JSON.
     If strict is set, then use standard Python JSON,
@@ -28,7 +29,7 @@ def load(file_obj, strict = False, **kwargs):
 
     return json5.load(file_obj, **kwargs)
 
-def loads(text, strict = False, **kwargs):
+def loads(text: str, strict: bool = False, **kwargs) -> dict[str, typing.Any]:
     """
     Load a string as JSON.
     If strict is set, then use standard Python JSON,
@@ -40,7 +41,7 @@ def loads(text, strict = False, **kwargs):
 
     return json5.loads(text, **kwargs)
 
-def load_path(path, **kwargs):
+def load_path(path: str, **kwargs) -> dict[str, typing.Any]:
     """
     Load a file path as JSON.
     If strict is set, then use standard Python JSON,
@@ -53,17 +54,17 @@ def load_path(path, **kwargs):
     except Exception as ex:
         raise ValueError(f"Failed to read JSON file '{path}'.") from ex
 
-def dump(data, file_obj, default = _custom_handle, **kwargs):
+def dump(data: typing.Any, file_obj: typing.TextIO, default: typing.Callable | None = _custom_handle, **kwargs) -> None:
     """ Dump an object as a JSON file object. """
 
-    return json.dump(data, file_obj, default = default, **kwargs)
+    json.dump(data, file_obj, default = default, **kwargs)
 
-def dumps(data, default = _custom_handle, **kwargs):
+def dumps(data: typing.Any, default: typing.Callable | None = _custom_handle, **kwargs) -> None:
     """ Dump an object as a JSON string. """
 
-    return json.dumps(data, default = default, **kwargs)
+    json.dumps(data, default = default, **kwargs)
 
-def dump_path(data, path, **kwargs):
+def dump_path(data: typing.Any, path: str, **kwargs) -> None:
     """ Dump an object as a JSON file. """
 
     with open(path, 'w') as file:
