@@ -31,16 +31,15 @@ jobs:
 
       - name: Install Dependencies
         shell: bash
-        run: |
-            pip install -r requirements.txt -r requirements-dev.txt
+        run: pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Check Python Version Compatibility
         shell: bash
-        run: vermin --no-tips --no-parse-comments --target=3.10- --violations pacai
+        run: scripts/check_python_version.sh
 
       - name: Check Types
         shell: bash
-        run: ./scripts/check_types.py
+        run: ./scripts/check_types.sh
 
       - name: Run Tests
         shell: bash

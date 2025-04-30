@@ -102,8 +102,6 @@ class Game(abc.ABC):
     def get_initial_state(self, rng: random.Random, board: pacai.core.board.Board, agent_infos: dict[int, pacai.core.agentinfo.AgentInfo]) -> pacai.core.gamestate.GameState:
         """ Create the initial state for this game. """
 
-        pass
-
     def process_turn(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> pacai.core.gamestate.GameState:
         """
         Process the given move and return an updated game state.
@@ -131,8 +129,6 @@ class Game(abc.ABC):
         """
         Make any last adjustments to the game result after the game is over.
         """
-
-        pass
 
     def run(self, ui: pacai.core.ui.UI) -> GameResult:
         """

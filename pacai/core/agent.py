@@ -39,8 +39,6 @@ class Agent(abc.ABC):
         Calls to this method may be subject to a timeout.
         """
 
-        pass
-
     def game_start(self, agent_index: int, suggested_seed: int, initial_state: pacai.core.gamestate.GameState) -> None:
         """
         Notify this agent that the game is about to start.
@@ -58,8 +56,6 @@ class Agent(abc.ABC):
         Agents should use this as an opportunity to make any final calculations and close any game-related resources.
         """
 
-        pass
-
 @typing.runtime_checkable
 class EvaluationFunction(typing.Protocol):
     """
@@ -70,8 +66,6 @@ class EvaluationFunction(typing.Protocol):
         """
         Compute a score for a state that an agent can use to decide actions.
         """
-
-        pass
 
 def base_eval(state: pacai.core.gamestate.GameState) -> float:
     """ The most basic evaluation function, which just uses the state's current score. """

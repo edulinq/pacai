@@ -265,7 +265,10 @@ def _load(config_path: str) -> SpriteSheet:
 
     return SpriteSheet(height, width, background, text, default_sprite, default_marker_sprites, action_sprites, adjacency_sprites)
 
-def _fetch_marker_sprites(sprites: list[list[PIL.Image.Image]], marker_sprites: dict) -> tuple[PIL.Image.Image | None, dict[pacai.core.action.Action, list[PIL.Image.Image]], dict[pacai.core.board.AdjacencyString, PIL.Image.Image]]:
+def _fetch_marker_sprites(
+        sprites: list[list[PIL.Image.Image]],
+        marker_sprites: dict
+        ) -> tuple[PIL.Image.Image | None, dict[pacai.core.action.Action, list[PIL.Image.Image]], dict[pacai.core.board.AdjacencyString, PIL.Image.Image]]:
     default_sprite: PIL.Image.Image | None = None
     action_sprites: dict[pacai.core.action.Action, list[PIL.Image.Image]] = {}
     adjacency_sprites: dict[pacai.core.board.AdjacencyString, PIL.Image.Image] = {}

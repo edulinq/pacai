@@ -20,12 +20,10 @@ class AgentIsolator(abc.ABC):
     """
 
     @abc.abstractmethod
-    def init_agents(self, agent_infoss: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
+    def init_agents(self, agent_infos: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
         """
         Initialize the agents this isolator will be responsible for.
         """
-
-        pass
 
     @abc.abstractmethod
     def game_start(self, rng: random.Random, initial_state: pacai.core.gamestate.GameState) -> None:
@@ -33,15 +31,11 @@ class AgentIsolator(abc.ABC):
         Pass along the initial game state to each agent and all them the allotted time to start.
         """
 
-        pass
-
     @abc.abstractmethod
     def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
         """
         Notify all agents that the game is over.
         """
-
-        pass
 
     @abc.abstractmethod
     def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.ActionRecord:
@@ -50,17 +44,15 @@ class AgentIsolator(abc.ABC):
         User inputs may be provided by the UI if available.
         """
 
-        pass
-
     @abc.abstractmethod
     def close(self) -> None:
         """
         Close the isolator and release all owned resources.
         """
 
-        pass
-
 class Level(enum.Enum):
+    """ An enum representing the different isolation levels supported by the engine. """
+
     NONE = 'none'
     PROCESS = 'process'
     TCP = 'tcp'
@@ -68,14 +60,18 @@ class Level(enum.Enum):
     def get_isolator(self, **kwargs) -> AgentIsolator:
         """ Get an isolator matching the given level. """
 
+        isolator = None
+
         if (self == Level.NONE):
-            return NoneIsolator(**kwargs)
+            isolator = NoneIsolator(**kwargs)
         elif (self == Level.PROCESS):
-            return ProcessIsolator(**kwargs)
+            isolator = ProcessIsolator(**kwargs)
         elif (self == Level.TCP):
-            return TCPIsolator(**kwargs)
+            isolator = TCPIsolator(**kwargs)
         else:
             raise ValueError(f"Unknown isolation level '{self}'.")
+
+        return isolator
 
 LEVELS: list[str] = [item.value for item in Level]
 
@@ -85,15 +81,15 @@ class NoneIsolator(AgentIsolator):
     All agents will be run in the same thread (and therefore processes space).
     This is the simplest and fastest of all isolators, but offers the least control and protection.
     Agents cannot be timed out (since they run on the same thread).
-    Agents can also access any memory or disk that the core engine has access to.
+    Agents can also access any memory, disk, or permissions that the core engine has access to.
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         self._agents: dict[int, pacai.core.agent.Agent] = {}
 
-    def init_agents(self, all_agent_infoss: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
+    def init_agents(self, agent_infos: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
         self._agents = {}
-        for (agent_index, agent_info) in all_agent_infoss.items():
+        for (agent_index, agent_info) in agent_infos.items():
             self._agents[agent_index] = pacai.core.agent.load(agent_info)
 
     def game_start(self, rng: random.Random, initial_state: pacai.core.gamestate.GameState) -> None:
@@ -137,9 +133,18 @@ class NoneIsolator(AgentIsolator):
 # TEST
 # class ProcessIsolator(AgentIsolator):
 class ProcessIsolator(NoneIsolator):
-    pass
+    """
+    An isolator that runs agents in their own process.
+    This is a fairly quick and simple way to ensure agents cannot access the same memory space as the game engine.
+    Agents will still have access to the same disk and permissions as the game engine.
+    """
 
 # TEST
 # class TCPIsolator(AgentIsolator):
 class TCPIsolator(NoneIsolator):
-    pass
+    """
+    An isolator that opens TCP sockets for agents to connect on.
+    This requires agents to have outside orchestration for connecting to the game sever.
+    This allows agents from other machines (possibly virtual) to play in this game.
+    This allows for the possibility of agents being fully isolated from the game engine.
+    """

@@ -52,12 +52,8 @@ class UserInputDevice(abc.ABC):
         The last input in the returned list should be the most recent input.
         """
 
-        pass
-
     def close(self) -> None:
         """ Close the user input channel and release all owned resources. """
-
-        pass
 
 class SpriteLookup(typing.Protocol):
     """
@@ -72,8 +68,6 @@ class SpriteLookup(typing.Protocol):
         A custom function for looking up sprites from a sprite sheet.
         Games with special/non-standard situations may need special ways of looking up sprites.
         """
-
-        pass
 
 class UI(abc.ABC):
     """
@@ -351,8 +345,6 @@ class UI(abc.ABC):
         If the child UI is also image-based than it can leverage draw_image(),
         but there is no requirement to do that.
         """
-
-        pass
 
 def set_cli_args(parser: argparse.ArgumentParser) -> None:
     """

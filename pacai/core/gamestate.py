@@ -167,10 +167,6 @@ class GameState(abc.ABC):
     def get_legal_actions(self) -> list[pacai.core.action.Action]:
         """ Get the moves that the current agent is allowed to make. """
 
-        pass
-
     @abc.abstractmethod
     def _apply_action(self, action: pacai.core.action.Action) -> None:
         """ Apply the given action to this state. """
-
-        pass
