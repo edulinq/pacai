@@ -1,12 +1,14 @@
 import abc
 import copy
+import typing
 
 import pacai.core.action
 import pacai.core.agentinfo
 import pacai.core.board
 import pacai.core.ticket
+import pacai.util.json
 
-class GameState(abc.ABC):
+class GameState(pacai.util.json.DictConverter):
     """
     The base for all game states in pacai.
     A game state should contain all the information about the current state of the game.
@@ -20,9 +22,12 @@ class GameState(abc.ABC):
             agent_index: int = -1,
             game_over: bool = False,
             timeout: bool = False,
+            last_actions: dict[int, pacai.core.action.Action] | None = None,
             score: int = 0,
             turn_count: int = 0,
-            agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {},
+            move_delays: dict[int, int] | None = None,
+            tickets: dict[int, pacai.core.ticket.Ticket] | None = None,
+            agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] | None = None,
             **kwargs) -> None:
         if (board is None):
             raise ValueError("Cannot construct a game state without a board.")
@@ -42,7 +47,10 @@ class GameState(abc.ABC):
         self.timeout: bool = timeout
         """ Indicates that the game ended in a timeout. """
 
-        self.last_actions: dict[int, pacai.core.action.Action] = {}
+        if (last_actions is None):
+            last_actions = {}
+
+        self.last_actions: dict[int, pacai.core.action.Action] = last_actions
         """ Keep track of the last action that each agent made. """
 
         self.score: int = score
@@ -51,21 +59,28 @@ class GameState(abc.ABC):
         self.turn_count: int = turn_count
         """ The number of turns (agent actions) that the game has had. """
 
-        self.move_delays: dict[int, int] = {}
+        if (move_delays is None):
+            move_delays = {}
+
+        self.move_delays: dict[int, int] = move_delays
         """
         The current move delay for each agent.
         Every agent should always have a move delay.
         """
 
-        self.tickets: dict[int, pacai.core.ticket.Ticket] = {}
+        if (tickets is None):
+            tickets = {}
+
+        self.tickets: dict[int, pacai.core.ticket.Ticket] = tickets
         """
         The current ticket for each agent.
         Every agent should always have a ticket once the game starts (even if it is not taking a move).
         """
 
-        # Initialize data from agent arguments.
-        for (agent_index, agent_info) in agent_infos.items():
-            self.move_delays[agent_index] = agent_info.move_delay
+        # Initialize data from agent arguments if not enough info is provided.
+        if ((len(self.move_delays) == 0) and (agent_infos is not None)):
+            for (agent_index, agent_info) in agent_infos.items():
+                self.move_delays[agent_index] = agent_info.move_delay
 
     def game_start(self):
         """
@@ -158,10 +173,29 @@ class GameState(abc.ABC):
 
         next_index = -1
         for (agent_index, ticket) in self.tickets.items():
-            if ((next_index == -1) or (ticket < self.tickets[next_index])):
+            if ((next_index == -1) or (ticket.is_before(self.tickets[next_index]))):
                 next_index = agent_index
 
         return next_index
+
+    def to_dict(self) -> dict[str, typing.Any]:
+        data = vars(self).copy()
+
+        data['board'] = self.board.to_dict()
+        data['last_actions'] = {agent_index: str(action) for (agent_index, action) in sorted(self.last_actions.items())}
+        data['tickets'] = {agent_index: ticket.to_dict() for (agent_index, ticket) in sorted(self.tickets.items())}
+
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        data = data.copy()
+
+        data['board'] = pacai.core.board.Board.from_dict(data['board'])
+        data['last_actions'] = {int(agent_index): pacai.core.action.Action(action) for (agent_index, action) in data['last_actions'].items()}
+        data['tickets'] = {int(agent_index): pacai.core.ticket.Ticket.from_dict(ticket) for (agent_index, ticket) in data['tickets'].items()}
+
+        return cls(**data)
 
     @abc.abstractmethod
     def get_legal_actions(self) -> list[pacai.core.action.Action]:

@@ -1,7 +1,10 @@
 import pacai.core.action
 import pacai.core.agentinfo
 import pacai.core.game
-import pacai.core.isolation
+import pacai.core.isolation.level
+import pacai.core.test_board
+import pacai.core.ticket
+import pacai.pacman.gamestate
 import pacai.test.base
 import pacai.util.json
 import pacai.util.reflection
@@ -95,7 +98,7 @@ class JSONTest(pacai.test.base.BaseTest):
                     {0: pacai.core.agentinfo.AgentInfo(name = 'a.b')},
                     seed = 4,
                     max_turns = 4,
-                    isolation_level = pacai.core.isolation.Level.PROCESS
+                    isolation_level = pacai.core.isolation.level.Level.PROCESS
                 ),
                 {
                     "seed": 4,
@@ -173,7 +176,7 @@ class JSONTest(pacai.test.base.BaseTest):
                         {0: pacai.core.agentinfo.AgentInfo(name = 'a.b')},
                         seed = 4,
                         max_turns = 4,
-                        isolation_level = pacai.core.isolation.Level.PROCESS
+                        isolation_level = pacai.core.isolation.level.Level.PROCESS
                     ),
                     start_time = pacai.util.time.Timestamp(12345),
                     history = [
@@ -218,6 +221,162 @@ class JSONTest(pacai.test.base.BaseTest):
                     ],
                     "score": 0,
                     "winning_agent_index": -1
+                },
+                None,
+            ),
+
+            (
+                pacai.core.ticket.Ticket(1, 2, 3),
+                {
+                    'next_time': 1,
+                    'last_time': 2,
+                    'num_moves': 3,
+                },
+                None,
+            ),
+
+            (
+                pacai.core.ticket.Ticket(1, 2, 3),
+                {
+                    'next_time': 1,
+                    'last_time': 2,
+                    'num_moves': 3,
+                },
+                None,
+            ),
+
+            (
+                pacai.core.board.Position(1, 2),
+                {
+                    "row": 1,
+                    "col": 2,
+                },
+                None
+            ),
+
+            (
+                pacai.core.board.load_string('test', pacai.core.test_board.TEST_BOARD_AGENT),
+                {
+                    'source': 'test',
+                    'markers': {
+                        " ": " ",
+                        "%": "%",
+                        "0": "0",
+                        "1": "1",
+                        "2": "2",
+                        "3": "3",
+                        "4": "4",
+                        "5": "5",
+                        "6": "6",
+                        "7": "7",
+                        "8": "8",
+                        "9": "9"
+                    },
+                    'height': 3,
+                    'width': 3,
+                    '_all_objects': {
+                        "%": [
+                            {"row": 0, "col": 0},
+                            {"row": 0, "col": 1},
+                            {"row": 0, "col": 2},
+                            {"row": 1, "col": 0},
+                            {"row": 1, "col": 2},
+                            {"row": 2, "col": 0},
+                            {"row": 2, "col": 1},
+                            {"row": 2, "col": 2},
+                        ],
+                        "0": [
+                            {"row": 1, "col": 1},
+                        ],
+                    },
+                    '_agent_initial_position': {
+                        "0": {"row": 1, "col": 1},
+                    }
+                },
+                None,
+            ),
+
+            (
+                pacai.pacman.gamestate.GameState(
+                    board = pacai.core.board.load_string('test', pacai.core.test_board.TEST_BOARD_AGENT),
+                    last_actions = {
+                        0: pacai.core.action.STOP,
+                        1: pacai.core.action.NORTH,
+                    },
+                    move_delays = {
+                        0: 10,
+                        1: 11,
+                    },
+                    tickets = {
+                        0: pacai.core.ticket.Ticket(1, 2, 3),
+                        1: pacai.core.ticket.Ticket(4, 5, 6),
+                    }
+                ),
+                {
+                    "board": {
+                        'source': 'test',
+                        'markers': {
+                            " ": " ",
+                            "%": "%",
+                            "0": "0",
+                            "1": "1",
+                            "2": "2",
+                            "3": "3",
+                            "4": "4",
+                            "5": "5",
+                            "6": "6",
+                            "7": "7",
+                            "8": "8",
+                            "9": "9"
+                        },
+                        'height': 3,
+                        'width': 3,
+                        '_all_objects': {
+                            "%": [
+                                {"row": 0, "col": 0},
+                                {"row": 0, "col": 1},
+                                {"row": 0, "col": 2},
+                                {"row": 1, "col": 0},
+                                {"row": 1, "col": 2},
+                                {"row": 2, "col": 0},
+                                {"row": 2, "col": 1},
+                                {"row": 2, "col": 2},
+                            ],
+                            "0": [
+                                {"row": 1, "col": 1},
+                            ],
+                        },
+                        '_agent_initial_position': {
+                            "0": {"row": 1, "col": 1},
+                        }
+                    },
+                    'last_actions': {
+                        0: "STOP",
+                        1: "NORTH",
+                    },
+                    'move_delays': {
+                        0: 10,
+                        1: 11,
+                    },
+                    'tickets': {
+                        0: {
+                            'next_time': 1,
+                            'last_time': 2,
+                            'num_moves': 3,
+                        },
+                        1: {
+                            'next_time': 4,
+                            'last_time': 5,
+                            'num_moves': 6,
+                        },
+                    },
+                    "agent_index": -1,
+                    "game_over": False,
+                    "timeout": False,
+                    "score": 0,
+                    "turn_count": 0,
+                    "food_count": 0,
+                    "scared_timers": {},
                 },
                 None,
             ),

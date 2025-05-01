@@ -18,4 +18,4 @@ class TicketTest(pacai.test.base.BaseTest):
         for i in range(len(test_cases)):
             (lower_ticket, higher_ticket) = test_cases[i]
             with self.subTest(msg = f"Case {i}: {lower_ticket} < {higher_ticket}"):
-                self.assertTrue((lower_ticket < higher_ticket))
+                self.assertTrue((lower_ticket.is_before(higher_ticket)))

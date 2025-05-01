@@ -100,18 +100,21 @@ BASE_MARKERS: dict[str, Marker] = {
 for agent_marker in AGENT_MARKERS:
     BASE_MARKERS[agent_marker] = agent_marker
 
-class Position(typing.NamedTuple):
+class Position(pacai.util.json.DictConverter):
     """
     A 2-dimension location.
     The first value represent row/y/height,
     and the second value represents col/x/width.
     """
 
-    row: int
-    """ The row / y / height of this position. """
+    def __init__(self,
+            row: int,
+            col: int) -> None:
+        self.row: int = row
+        """ The row / y / height of this position. """
 
-    col: int
-    """ The col / x / width of this position. """
+        self.col: int = col
+        """ The col / x / width of this position. """
 
     def to_index(self, width: int) -> int:
         """ Convert this position into a 1-dimension index. """
@@ -144,6 +147,26 @@ class Position(typing.NamedTuple):
             return self
 
         return self.add(offset)
+
+    def __lt__(self, other: 'Position') -> bool:
+        return (self.row, self.col) < (other.row, other.col)
+
+    def __eq__(self, other: object) -> bool:
+        if (not isinstance(other, Position)):
+            return False
+
+        return (self.row == other.row) and (self.col == other.col)
+
+    def __hash__(self) -> int:
+        return (self.row, self.col).__hash__()
+
+    def to_dict(self) -> dict[str, typing.Any]:
+        return vars(self).copy()
+
+    @classmethod
+    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        data = data.copy()
+        return Position(**data)
 
 CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
     pacai.core.action.NORTH: Position(-1, 0),
@@ -193,7 +216,7 @@ class AdjacencyString(str):
     def west(self) -> bool:
         return (self[AdjacencyString.WEST_INDEX] == AdjacencyString.TRUE)
 
-class Board:
+class Board(pacai.util.json.DictConverter):
     """
     A board represents the positional components of a game.
     For example, a board contains the agents, walls and collectable items.
@@ -213,32 +236,71 @@ class Board:
 
     def __init__(self,
             source: str,
-            board_text: str,
-            additional_markers: list[str] = [],
+            board_text: str | None = None,
+            markers: dict[str, Marker] | None = None,
+            additional_markers: list[str] | None = None,
             strip: bool = True,
+            _height: int | None = None,
+            _width: int | None = None,
+            _all_objects: dict[Marker, set[Position]] | None = None,
+            _agent_initial_position: dict[Marker, Position] | None = None,
             **kwargs) -> None:
+        """
+        Construct a board.
+        The board details will either be parsed from `board_text` is provided,
+        or taken directly from the given underscore arguments.
+        """
+
         self.source: str = source
         """ Where this board was loaded from. """
 
-        self._markers: dict[str, Marker] = BASE_MARKERS.copy()
+        if (markers is None):
+            markers = BASE_MARKERS.copy()
+
+        self._markers: dict[str, Marker] = markers
         """ Map the text for a marker to the actual marker. """
 
-        for marker in additional_markers:
-            self._markers[marker] = Marker(marker)
+        if (additional_markers is not None):
+            for marker in additional_markers:
+                self._markers[marker] = Marker(marker)
 
-        height, width, all_objects, agents = self._process_text(board_text, strip = strip)
-
-        self.height: int = height
+        self.height: int = -1
         """ The height (number of rows, "y") of the board. """
 
-        self.width: int = width
+        self.width: int = -1
         """ The width (number of columns, "x") of the board. """
 
-        self._all_objects: dict[Marker, set[Position]] = all_objects
+        self._all_objects: dict[Marker, set[Position]] = {}
         """ All the objects that appear on the board. """
 
-        self._agent_initial_position: dict[Marker, Position] = agents
+        self._agent_initial_position: dict[Marker, Position] = {}
         """ Keep track of where each agent started. """
+
+        # The board text has been provided, parse the data from it.
+        if (board_text is not None):
+            height, width, all_objects, agents = self._process_text(board_text, strip = strip)
+
+            self.height = height
+            self.width = width
+            self._all_objects = all_objects
+            self._agent_initial_position = agents
+        else:
+            # No board text has been provided, all attributes must be provided.
+            checks = [
+                (_height, 'height'),
+                (_width, 'width'),
+                (_all_objects, 'objects'),
+                (_agent_initial_position, 'agent initial positions'),
+            ]
+
+            for (value, label) in checks:
+                if (value is None):
+                    raise ValueError(f"Board {label} cannot be empty when the board text is not supplied.")
+
+            self.height = _height  # type: ignore
+            self.width = _width  # type: ignore
+            self._all_objects = _all_objects  # type: ignore
+            self._agent_initial_position = _agent_initial_position  # type: ignore
 
     def size(self) -> int:
         return self.height * self.width
@@ -490,6 +552,31 @@ class Board:
             return False
 
         return True
+
+    def to_dict(self) -> dict[str, typing.Any]:
+        return {
+            'source': self.source,
+            'markers': {key: str(marker) for (key, marker) in sorted(self._markers.items())},
+            'height': self.height,
+            'width': self.width,
+            '_all_objects': {str(marker): [position.to_dict() for position in sorted(objects)] for (marker, objects) in sorted(self._all_objects.items())},
+            '_agent_initial_position': {str(marker): position.to_dict() for (marker, position) in sorted(self._agent_initial_position.items())},
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        all_objects: dict[Marker, set[Position]] = {}
+        for (raw_marker, raw_positions) in data['_all_objects'].items():
+            all_objects[Marker(raw_marker)] = set([Position.from_dict(raw_position) for raw_position in raw_positions])
+
+        return Board(
+            source = data['source'],
+            markers = {key: Marker(marker) for (key, marker) in data['markers'].items()},
+            _height = data['height'],
+            _width = data['width'],
+            _all_objects = all_objects,
+            _agent_initial_position = {Marker(raw_marker): Position.from_dict(raw_position) for (raw_marker, raw_position) in data['_agent_initial_position'].items()},
+        )
 
 def load_path(path: str) -> Board:
     """

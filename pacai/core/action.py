@@ -51,21 +51,12 @@ class ActionRecord(pacai.util.json.DictConverter):
         """ Whether or not the agent crashed (e.g., raised an exception) when computing this action. """
 
     def to_dict(self) -> dict[str, typing.Any]:
-        return {
-            'agent_index': self.agent_index,
-            'action': self.action,
-            'duration': self.duration,
-            'crashed': self.crashed,
-        }
+        return vars(self).copy()
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return ActionRecord(
-            agent_index = data['agent_index'],
-            action = data['action'],
-            duration = data['duration'],
-            crashed = data['crashed'],
-        )
+        data = data.copy()
+        return ActionRecord(**data)
 
 NORTH = Action("north")
 """ The action for moving north/up. """

@@ -8,7 +8,7 @@ import typing
 
 import pacai.core.action
 import pacai.core.agentinfo
-import pacai.core.isolation
+import pacai.core.isolation.level
 import pacai.core.ui
 import pacai.util.json
 
@@ -23,7 +23,7 @@ class GameInfo(pacai.util.json.DictConverter):
     def __init__(self,
             board_source: str,
             agent_infos: dict[int, pacai.core.agentinfo.AgentInfo],
-            isolation_level: pacai.core.isolation.Level = pacai.core.isolation.Level.NONE,
+            isolation_level: pacai.core.isolation.level.Level = pacai.core.isolation.level.Level.NONE,
             max_turns: int = DEFAULT_MAX_TURNS,
             seed: int | None = None,
             ) -> None:
@@ -42,7 +42,7 @@ class GameInfo(pacai.util.json.DictConverter):
         if (len(self.agent_infos) == 0):
             raise ValueError("No agents provided.")
 
-        self.isolation_level: pacai.core.isolation.Level = isolation_level
+        self.isolation_level: pacai.core.isolation.level.Level = isolation_level
         """ The isolation level to use for this game. """
 
         self.max_turns: int = max_turns
@@ -66,7 +66,7 @@ class GameInfo(pacai.util.json.DictConverter):
             seed = data.get('seed', None),
             board_source = data['board_source'],
             agent_infos = {int(id): pacai.core.agentinfo.AgentInfo.from_dict(raw_info) for (id, raw_info) in data['agent_infos'].items()},
-            isolation_level = pacai.core.isolation.Level(data.get('isolation_level', pacai.core.isolation.Level.NONE.value)),
+            isolation_level = pacai.core.isolation.level.Level(data.get('isolation_level', pacai.core.isolation.level.Level.NONE.value)),
             max_turns = data.get('max_turns', DEFAULT_MAX_TURNS))
 
 class GameResult(pacai.util.json.DictConverter):
@@ -328,8 +328,8 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
             help = 'The maximum number of turns/moves (total for all agents) allowed in this game (-1 for unlimited) (default: %(default)s).')
 
     parser.add_argument('--isolation', dest = 'isolation_level', metavar = 'LEVEL',
-            action = 'store', type = str, default = pacai.core.isolation.Level.NONE.value,
-            choices = pacai.core.isolation.LEVELS,
+            action = 'store', type = str, default = pacai.core.isolation.level.Level.NONE.value,
+            choices = pacai.core.isolation.level.LEVELS,
             help = ('Set the agent isolation level for this game (default: %(default)s).'
                     + ' Choose one of:'
                     + ' `none` -- Do not make any attempt to isolate the agent code from the game (fastest and least secure),'
@@ -413,7 +413,7 @@ def init_from_args(
         game_info = GameInfo(
                 board.source,
                 all_agent_infos[-1],
-                isolation_level = pacai.core.isolation.Level(args.isolation_level),
+                isolation_level = pacai.core.isolation.level.Level(args.isolation_level),
                 max_turns = args.max_turns,
                 seed = game_seed
         )
