@@ -11,7 +11,7 @@ class Agent(abc.ABC):
     """ The base for all agents in the pacai system. """
 
     def __init__(self, agent_info: pacai.core.agentinfo.AgentInfo, *args, **kwargs) -> None:
-        self.name: str = agent_info.name
+        self.name: pacai.util.reflection.Reference = agent_info.name
         """ The name of this agent. """
 
         self.move_delay: int = agent_info.move_delay

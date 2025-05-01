@@ -55,7 +55,7 @@ class TicketTest(pacai.test.base.BaseTest):
             ),
             (
                 'pacai/util/reflection.py:pacai.util.reflection.Reference',
-                'both a filepath and module name',
+                'both a file path and module name',
                 None,
             ),
         ]
@@ -75,7 +75,7 @@ class TicketTest(pacai.test.base.BaseTest):
                 if (error_substring is not None):
                     self.fail(f"Did not get expected error: '{error_substring}'.")
 
-                actual_parts = (reference.filepath, reference.module_name, reference.short_name)
+                actual_parts = (reference.file_path, reference.module_name, reference.short_name)
                 self.assertEqual(expected_parts, actual_parts)
 
     def test_new_object_base(self):
