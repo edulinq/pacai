@@ -1,4 +1,7 @@
+import pacai.core.action
 import pacai.core.agentinfo
+import pacai.core.game
+import pacai.core.isolation
 import pacai.test.base
 import pacai.util.json
 import pacai.util.reflection
@@ -57,6 +60,164 @@ class JSONTest(pacai.test.base.BaseTest):
                     'extra_arguments': {
                         'foo': 'bar',
                     },
+                },
+                None,
+            ),
+
+            (
+                pacai.core.game.GameInfo(
+                    'source',
+                    {0: pacai.core.agentinfo.AgentInfo(name = 'a.b')},
+                    seed = 4,
+                ),
+                {
+                    "seed": 4,
+                    "board_source": "source",
+                    "agent_infos": {
+                        0: {
+                            "name": {
+                                "file_path": None,
+                                "module_name": "a",
+                                "short_name": "b"
+                            },
+                            "move_delay": 100,
+                            "extra_arguments": {}
+                        }
+                    },
+                    "isolation_level": "none",
+                    "max_turns": -1
+                },
+                None,
+            ),
+            (
+                pacai.core.game.GameInfo(
+                    'source',
+                    {0: pacai.core.agentinfo.AgentInfo(name = 'a.b')},
+                    seed = 4,
+                    max_turns = 4,
+                    isolation_level = pacai.core.isolation.Level.PROCESS
+                ),
+                {
+                    "seed": 4,
+                    "board_source": "source",
+                    "agent_infos": {
+                        0: {
+                            "name": {
+                                "file_path": None,
+                                "module_name": "a",
+                                "short_name": "b"
+                            },
+                            "move_delay": 100,
+                            "extra_arguments": {}
+                        }
+                    },
+                    "isolation_level": "process",
+                    "max_turns": 4
+                },
+                None,
+            ),
+
+            (
+                pacai.core.action.ActionRecord(1, pacai.core.action.STOP, pacai.util.time.Duration(10), False),
+                {
+                    "agent_index": 1,
+                    "action": "STOP",
+                    "duration": 10,
+                    "crashed": False,
+                },
+                None,
+            ),
+
+            (
+                pacai.core.game.GameResult(
+                    1234,
+                    pacai.core.game.GameInfo(
+                        'source',
+                        {0: pacai.core.agentinfo.AgentInfo(name = 'a.b')},
+                        seed = 4,
+                    ),
+                    start_time = pacai.util.time.Timestamp(12345),
+                ),
+                {
+                    "id": 1234,
+                    "game_info": {
+                        "seed": 4,
+                        "board_source": "source",
+                        "agent_infos": {
+                            0: {
+                                "name": {
+                                    "file_path": None,
+                                    "module_name": "a",
+                                    "short_name": "b"
+                                },
+                                "move_delay": 100,
+                                "extra_arguments": {}
+                            }
+                        },
+                        "isolation_level": "none",
+                        "max_turns": -1,
+                    },
+                    "start_time": 12345,
+                    "end_time": None,
+                    "history": [],
+                    "score": 0,
+                    "winning_agent_index": -1
+                },
+                None,
+            ),
+            (
+                pacai.core.game.GameResult(
+                    1234,
+                    pacai.core.game.GameInfo(
+                        'source',
+                        {0: pacai.core.agentinfo.AgentInfo(name = 'a.b')},
+                        seed = 4,
+                        max_turns = 4,
+                        isolation_level = pacai.core.isolation.Level.PROCESS
+                    ),
+                    start_time = pacai.util.time.Timestamp(12345),
+                    history = [
+                        pacai.core.action.ActionRecord(1, pacai.core.action.STOP, pacai.util.time.Duration(10), False),
+                        pacai.core.action.ActionRecord(2, pacai.core.action.NORTH, pacai.util.time.Duration(20), True),
+                    ],
+                ),
+                {
+                    "id": 1234,
+                    "game_info": {
+                        "seed": 4,
+                        "board_source": "source",
+                        "agent_infos": {
+                            0: {
+                                "name": {
+                                    "file_path": None,
+                                    "module_name": "a",
+                                    "short_name": "b"
+                                },
+                                "move_delay": 100,
+                                "extra_arguments": {}
+                            }
+                        },
+                        "isolation_level": "process",
+                        "max_turns": 4,
+                    },
+                    "start_time": 12345,
+                    "end_time": None,
+                    "history": [
+                        {
+                            "agent_index": 1,
+                            "action": "STOP",
+                            "duration": 10,
+                            "crashed": False,
+                        },
+                        {
+                            "agent_index": 2,
+                            "action": "NORTH",
+                            "duration": 20,
+                            "crashed": True,
+                        },
+                    ],
+                    "score": 0,
+                    "winning_agent_index": -1
                 },
                 None,
             ),

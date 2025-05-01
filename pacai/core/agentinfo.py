@@ -15,7 +15,7 @@ class AgentInfo(pacai.util.json.DictConverter):
 
     def __init__(self,
             name: str | pacai.util.reflection.Reference = '',
-            move_delay: int = DEFAULT_MOVE_DELAY,
+            move_delay: int | None = DEFAULT_MOVE_DELAY,
             extra_arguments: dict[str, typing.Any] | None = None,
             **kwargs) -> None:
         if (isinstance(name, str)):
@@ -23,6 +23,9 @@ class AgentInfo(pacai.util.json.DictConverter):
 
         self.name: pacai.util.reflection.Reference = name
         """ The name of the agent's class (as a reflection refernce). """
+
+        if (move_delay is None):
+            move_delay = DEFAULT_MOVE_DELAY
 
         if (move_delay <= 0):
             raise ValueError("Agent move delay must be > 0.")

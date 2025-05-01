@@ -1,15 +1,12 @@
 {
     "cli": "pacai.pacman.bin",
     "arguments": [
-        "--seed", "4",
-        "--board", "maze-test",
-        "--pacman", "pacai.agents.random.RandomAgent",
         "--ui", "pacai.ui.null.NullUI",
-        "--save-path", "__TEMP_DIR__(test.json)"
+        "--replay-path", "__DATA_DIR__(maze-test-random-replay.json)"
     ]
 }
 ---
-<LOG_PREFIX> -- Saving results to '__TEMP_DIR__(test.json)'.
+<LOG_PREFIX> -- Loading replay from '__DATA_DIR__(maze-test-random-replay.json)'.
 <LOG_PREFIX> -- Average Score: 502.0
 <LOG_PREFIX> -- Scores:        502
 <LOG_PREFIX> -- Win Rate:      1/1 (1.00)

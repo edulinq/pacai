@@ -40,7 +40,7 @@ class BoardTest(pacai.test.base.BaseTest):
             (text_board, error_substring) = test_cases[i]
             with self.subTest(msg = f"Case {i}:"):
                 try:
-                    pacai.core.board.load_string(text_board)
+                    pacai.core.board.load_string('test', text_board)
                 except Exception as ex:
                     if (error_substring is None):
                         self.fail(f"Unexpected error: '{str(ex)}'.")

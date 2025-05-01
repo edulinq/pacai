@@ -86,10 +86,16 @@ def load_path(path: str, **kwargs) -> dict[str, typing.Any]:
     except Exception as ex:
         raise ValueError(f"Failed to read JSON file '{path}'.") from ex
 
-def loads_object(text: str, cls: typing.Type[DictConverter], strict: bool = False, **kwargs) -> DictConverter:
+def loads_object(text: str, cls: typing.Type[DictConverter], **kwargs) -> DictConverter:
     """ Load a JSON string into an object (which is a subclass of DictConverter). """
 
-    data = loads(text, strict = strict)
+    data = loads(text, **kwargs)
+    return cls.from_dict(data)
+
+def load_object_path(path: str, cls: typing.Type[DictConverter], **kwargs) -> DictConverter:
+    """ Load a JSON file into an object (which is a subclass of DictConverter). """
+
+    data = load_path(path, **kwargs)
     return cls.from_dict(data)
 
 def dump(data: typing.Any, file_obj: typing.TextIO, default: typing.Callable | None = _custom_handle, **kwargs) -> None:

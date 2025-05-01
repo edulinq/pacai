@@ -12,10 +12,10 @@ class Board(pacai.core.board.Board):
     and capsules ('o').
     """
 
-    def __init__(self, board_text: str, additional_markers: list[str] = [], **kwargs) -> None:
+    def __init__(self, *args, additional_markers: list[str] = [], **kwargs) -> None:
         additional_markers += [
             MARKER_PELLET,
             MARKER_CAPSULE,
         ]
 
-        super().__init__(board_text, additional_markers = additional_markers, **kwargs)
+        super().__init__(*args, additional_markers = additional_markers, **kwargs)  # type: ignore

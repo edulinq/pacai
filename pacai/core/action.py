@@ -5,6 +5,7 @@ Default actions are provided, but custom actions can be easily created.
 
 import typing
 
+import pacai.util.json
 import pacai.util.time
 
 class Action(str):
@@ -26,23 +27,45 @@ class Action(str):
 
         return REVERSE_CARDINAL_DIRECTIONS.get(self, None)
 
-class ActionRecord(typing.NamedTuple):
+class ActionRecord(pacai.util.json.DictConverter):
     """
     The result of requesting an action from an agent.
     Aside from the action, this also includes timing and crashing information.
     """
 
-    agent_index: int
-    """ The index of the agent making this action. """
+    def __init__(self,
+            agent_index: int,
+            action: Action,
+            duration: pacai.util.time.Duration,
+            crashed: bool) -> None:
+        self.agent_index: int = agent_index
+        """ The index of the agent making this action. """
 
-    action: Action
-    """ The action returned by the agent (or pacai.core.action.STOP on a crash). """
+        self.action: Action = action
+        """ The action returned by the agent (or pacai.core.action.STOP on a crash). """
 
-    duration: pacai.util.time.Duration
-    """ The duration (in MS) the agent took to compute this action. """
+        self.duration: pacai.util.time.Duration = duration
+        """ The duration (in MS) the agent took to compute this action. """
 
-    crashed: bool
-    """ Whether or not the agent crashed (e.g., raised an exception) when computing this action. """
+        self.crashed: bool = crashed
+        """ Whether or not the agent crashed (e.g., raised an exception) when computing this action. """
+
+    def to_dict(self) -> dict[str, typing.Any]:
+        return {
+            'agent_index': self.agent_index,
+            'action': self.action,
+            'duration': self.duration,
+            'crashed': self.crashed,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        return ActionRecord(
+            agent_index = data['agent_index'],
+            action = data['action'],
+            duration = data['duration'],
+            crashed = data['crashed'],
+        )
 
 NORTH = Action("north")
 """ The action for moving north/up. """

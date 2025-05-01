@@ -212,10 +212,14 @@ class Board:
     """
 
     def __init__(self,
+            source: str,
             board_text: str,
             additional_markers: list[str] = [],
             strip: bool = True,
             **kwargs) -> None:
+        self.source: str = source
+        """ Where this board was loaded from. """
+
         self._markers: dict[str, Marker] = BASE_MARKERS.copy()
         """ Map the text for a marker to the actual marker. """
 
@@ -508,9 +512,9 @@ def load_path(path: str) -> Board:
         raise ValueError(f"Could not find board, path does not exist: '{raw_path}'.")
 
     text = pacai.util.file.read(path, strip = False)
-    return load_string(text)
+    return load_string(raw_path, text)
 
-def load_string(text: str) -> Board:
+def load_string(source: str, text: str) -> Board:
     """ Load a board from a string. """
 
     separator_index = -1
@@ -536,4 +540,4 @@ def load_string(text: str) -> Board:
         options = pacai.util.json.loads(options_text)
 
     board_class = options.get('class', DEFAULT_BOARD_CLASS)
-    return pacai.util.reflection.new_object(board_class, board_text, **options)
+    return pacai.util.reflection.new_object(board_class, source, board_text, **options)
