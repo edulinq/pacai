@@ -5,13 +5,21 @@ import pacai.core.board
 import pacai.test.base
 
 class BoardTest(pacai.test.base.BaseTest):
+    """
+    Test the core board class.
+    """
+
     # Load all the known/included boards.
     def test_load_default_boards(self):
+        """ Test that all the boards in the default board directory load. """
+
         for path in glob.glob(os.path.join(pacai.core.board.BOARDS_DIR, '*.board')):
             with self.subTest(msg = path):
                 pacai.core.board.load_path(path)
 
     def test_load_test_boards(self):
+        """ Test that specially constructed boards load. """
+
         # [(board, expected error substring), ...]
         test_cases = [
             (TEST_BOARD_NO_SEP, None),
@@ -36,7 +44,7 @@ class BoardTest(pacai.test.base.BaseTest):
             (TEST_BOARD_ERROR_DUP_AGENTS, 'Duplicate agents'),
         ]
 
-        for i in range(len(test_cases)):
+        for (i, test_case) in enumerate(test_cases):
             (text_board, error_substring) = test_cases[i]
             with self.subTest(msg = f"Case {i}:"):
                 try:

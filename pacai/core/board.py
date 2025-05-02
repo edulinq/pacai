@@ -205,15 +205,23 @@ class AdjacencyString(str):
         return text
 
     def north(self) -> bool:
+        """ Check if there is an adjacency to the north. """
+
         return (self[AdjacencyString.NORTH_INDEX] == AdjacencyString.TRUE)
 
     def east(self) -> bool:
+        """ Check if there is an adjacency to the east. """
+
         return (self[AdjacencyString.EAST_INDEX] == AdjacencyString.TRUE)
 
     def south(self) -> bool:
+        """ Check if there is an adjacency to the south. """
+
         return (self[AdjacencyString.SOUTH_INDEX] == AdjacencyString.TRUE)
 
     def west(self) -> bool:
+        """ Check if there is an adjacency to the west. """
+
         return (self[AdjacencyString.WEST_INDEX] == AdjacencyString.TRUE)
 
 class Board(pacai.util.json.DictConverter):
@@ -243,7 +251,7 @@ class Board(pacai.util.json.DictConverter):
             _height: int | None = None,
             _width: int | None = None,
             _all_objects: dict[Marker, set[Position]] | None = None,
-            _agent_initial_position: dict[Marker, Position] | None = None,
+            _agent_initial_positions: dict[Marker, Position] | None = None,
             **kwargs) -> None:
         """
         Construct a board.
@@ -273,7 +281,7 @@ class Board(pacai.util.json.DictConverter):
         self._all_objects: dict[Marker, set[Position]] = {}
         """ All the objects that appear on the board. """
 
-        self._agent_initial_position: dict[Marker, Position] = {}
+        self._agent_initial_positions: dict[Marker, Position] = {}
         """ Keep track of where each agent started. """
 
         # The board text has been provided, parse the data from it.
@@ -283,14 +291,14 @@ class Board(pacai.util.json.DictConverter):
             self.height = height
             self.width = width
             self._all_objects = all_objects
-            self._agent_initial_position = agents
+            self._agent_initial_positions = agents
         else:
             # No board text has been provided, all attributes must be provided.
             checks = [
                 (_height, 'height'),
                 (_width, 'width'),
                 (_all_objects, 'objects'),
-                (_agent_initial_position, 'agent initial positions'),
+                (_agent_initial_positions, 'agent initial positions'),
             ]
 
             for (value, label) in checks:
@@ -300,17 +308,29 @@ class Board(pacai.util.json.DictConverter):
             self.height = _height  # type: ignore
             self.width = _width  # type: ignore
             self._all_objects = _all_objects  # type: ignore
-            self._agent_initial_position = _agent_initial_position  # type: ignore
+            self._agent_initial_positions = _agent_initial_positions  # type: ignore
 
     def size(self) -> int:
+        """ Get the total number of places in this board. """
+
         return self.height * self.width
 
     def agent_count(self) -> int:
-        return len(self._agent_initial_position)
+        """
+        Return the number of agents supported by this board.
+        This counts the number of initial position seen for agents when the board was first parsed.
+        """
+
+        return len(self._agent_initial_positions)
 
     def agent_indexes(self) -> list[int]:
+        """
+        Get the indexes for all the agents supposed by this board.
+        The reported agents are agents supported by the board, not just agents currently on the board.
+        """
+
         agent_indexes = []
-        for marker in self._agent_initial_position:
+        for marker in self._agent_initial_positions:
             agent_indexes.append(marker.get_agent_index())
 
         return agent_indexes
@@ -354,8 +374,8 @@ class Board(pacai.util.json.DictConverter):
         if (marker in self._all_objects):
             del self._all_objects[marker]
 
-        if (marker in self._agent_initial_position):
-            del self._agent_initial_position[marker]
+        if (marker in self._agent_initial_positions):
+            del self._agent_initial_positions[marker]
 
     def remove_marker(self, marker: Marker, position: Position) -> None:
         """
@@ -460,9 +480,12 @@ class Board(pacai.util.json.DictConverter):
         """
 
         marker = Marker(str(agent_index))
-        return self._agent_initial_position.get(marker, None)
+        return self._agent_initial_positions.get(marker, None)
 
-    def _process_text(self, board_text: str, strip: bool = True) -> tuple[int, int, dict[Marker, set[Position]], dict[Marker, Position]]:
+    def _process_text(self,
+            board_text: str,
+            strip: bool = True,
+            ) -> tuple[int, int, dict[Marker, set[Position]], dict[Marker, Position]]:
         """
         Parse out a board from text.
         """
@@ -480,8 +503,7 @@ class Board(pacai.util.json.DictConverter):
         all_objects: dict[Marker, set[Position]] = {}
         agents: dict[Marker, Position] = {}
 
-        for row in range(len(lines)):
-            line = lines[row]
+        for (row, line) in enumerate(lines):
             if (strip):
                 line = line.strip()
 
@@ -491,10 +513,10 @@ class Board(pacai.util.json.DictConverter):
             if (width != len(line)):
                 raise ValueError(f"Unexpected width ({len(line)}) for row at index {row}. Expected {width}.")
 
-            for col in range(len(line)):
-                marker = self._markers.get(line[col], None)
+            for (col, char) in enumerate(line):
+                marker = self._markers.get(char, None)
                 if (marker is None):
-                    raise ValueError(f"Unknown marker '{line[col]}' found at position ({row}, {col}).")
+                    raise ValueError(f"Unknown marker '{char}' found at position ({row}, {col}).")
 
                 if (marker.is_empty()):
                     continue
@@ -547,27 +569,39 @@ class Board(pacai.util.json.DictConverter):
 
         if ((position.row < 0) or (position.col < 0) or (position.row >= self.height) or (position.col >= self.width)):
             if (throw):
-                raise ValueError("Position ('%s') is out-of-bounds.", str(position))
+                raise ValueError(f"Position ('{str(position)}') is out-of-bounds.")
 
             return False
 
         return True
 
     def to_dict(self) -> dict[str, typing.Any]:
+        all_objects = {}
+        for (marker, positions) in sorted(self._all_objects.items()):
+            all_objects[str(marker)] = [position.to_dict() for position in sorted(positions)]
+
+        agent_initial_positions = {}
+        for (marker, position) in sorted(self._agent_initial_positions.items()):
+            agent_initial_positions[str(marker)] = position.to_dict()
+
         return {
             'source': self.source,
             'markers': {key: str(marker) for (key, marker) in sorted(self._markers.items())},
             'height': self.height,
             'width': self.width,
-            '_all_objects': {str(marker): [position.to_dict() for position in sorted(objects)] for (marker, objects) in sorted(self._all_objects.items())},
-            '_agent_initial_position': {str(marker): position.to_dict() for (marker, position) in sorted(self._agent_initial_position.items())},
+            '_all_objects': all_objects,
+            '_agent_initial_positions': agent_initial_positions,
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
         all_objects: dict[Marker, set[Position]] = {}
         for (raw_marker, raw_positions) in data['_all_objects'].items():
-            all_objects[Marker(raw_marker)] = set([Position.from_dict(raw_position) for raw_position in raw_positions])
+            all_objects[Marker(raw_marker)] = {Position.from_dict(raw_position) for raw_position in raw_positions}
+
+        agent_initial_positions = {}
+        for (raw_marker, raw_position) in data['_agent_initial_positions'].items():
+            agent_initial_positions[Marker(raw_marker)] = Position.from_dict(raw_position)
 
         return Board(
             source = data['source'],
@@ -575,7 +609,7 @@ class Board(pacai.util.json.DictConverter):
             _height = data['height'],
             _width = data['width'],
             _all_objects = all_objects,
-            _agent_initial_position = {Marker(raw_marker): Position.from_dict(raw_position) for (raw_marker, raw_position) in data['_agent_initial_position'].items()},
+            _agent_initial_positions = agent_initial_positions,
         )
 
 def load_path(path: str) -> Board:
@@ -607,8 +641,8 @@ def load_string(source: str, text: str) -> Board:
     separator_index = -1
     lines = text.split("\n")
 
-    for i in range(len(lines)):
-        if (SEPARATOR_PATTERN.match(lines[i])):
+    for (i, line) in enumerate(lines):
+        if (SEPARATOR_PATTERN.match(line)):
             separator_index = i
             break
 
@@ -617,8 +651,8 @@ def load_string(source: str, text: str) -> Board:
         options_text = ''
         board_text = "\n".join(lines)
     else:
-        options_text = "\n".join(lines[:i])
-        board_text = "\n".join(lines[(i + 1):])
+        options_text = "\n".join(lines[:separator_index])
+        board_text = "\n".join(lines[(separator_index + 1):])
 
     options_text = options_text.strip()
     if (len(options_text) == 0):

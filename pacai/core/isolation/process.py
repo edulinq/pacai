@@ -1,6 +1,5 @@
 import logging
 import multiprocessing
-import platform
 import random
 import sys
 
@@ -64,10 +63,13 @@ class ProcessIsolator(pacai.core.isolation.isolator.AgentIsolator):
             queue.put((MESSAGE_TYPE_START, (agent_index, suggested_seed, initial_state)), False)
 
     def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
-        for (agent_index, queue) in self._agent_message_queues.items():
+        for queue in self._agent_message_queues.values():
             queue.put((MESSAGE_TYPE_COMPLETE, final_state), False)
 
-    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.ActionRecord:
+    def get_action(self,
+            state: pacai.core.gamestate.GameState,
+            user_inputs: list[pacai.core.action.Action],
+            ) -> pacai.core.action.ActionRecord:
         message_queue = self._agent_message_queues[state.agent_index]
         action_queue = self._agent_action_queues[state.agent_index]
 
@@ -139,7 +141,11 @@ def _agent_handler(
     while (not message_queue.empty()):
         message_queue.get(False)
 
-def _get_action(agent: pacai.core.agent.Agent, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.ActionRecord:
+def _get_action(
+        agent: pacai.core.agent.Agent,
+        state: pacai.core.gamestate.GameState,
+        user_inputs: list[pacai.core.action.Action],
+        ) -> pacai.core.action.ActionRecord:
     crashed = False
 
     start_time = pacai.util.time.now()

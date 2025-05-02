@@ -289,7 +289,7 @@ class JSONTest(pacai.test.base.BaseTest):
                             {"row": 1, "col": 1},
                         ],
                     },
-                    '_agent_initial_position': {
+                    '_agent_initial_positions': {
                         "0": {"row": 1, "col": 1},
                     }
                 },
@@ -346,7 +346,7 @@ class JSONTest(pacai.test.base.BaseTest):
                                 {"row": 1, "col": 1},
                             ],
                         },
-                        '_agent_initial_position': {
+                        '_agent_initial_positions': {
                             "0": {"row": 1, "col": 1},
                         }
                     },
