@@ -21,6 +21,11 @@ def get_temp_path(prefix: str = '', suffix: str = '', rm: bool = True) -> str:
     return path
 
 def remove(path: str) -> None:
+    """
+    Remove the given dirent.
+    If the dirent does not exist, don't do anything.
+    """
+
     if (not os.path.exists(path)):
         return
 
@@ -29,9 +34,11 @@ def remove(path: str) -> None:
     elif (os.path.isdir(path)):
         shutil.rmtree(path)
     else:
-        raise ValueError("Unknown type of dirent: '%s'." % (path))
+        raise ValueError(f"Unknown type of dirent: '{path}'.")
 
 def move(source: str, dest: str) -> None:
+    """ Move the given dirent. """
+
     shutil.move(source, dest)
 
 def copy(source: str, dest: str, dirs_exist_ok: bool = False) -> None:

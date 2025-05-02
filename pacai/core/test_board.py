@@ -9,7 +9,6 @@ class BoardTest(pacai.test.base.BaseTest):
     Test the core board class.
     """
 
-    # Load all the known/included boards.
     def test_load_default_boards(self):
         """ Test that all the boards in the default board directory load. """
 
@@ -45,7 +44,7 @@ class BoardTest(pacai.test.base.BaseTest):
         ]
 
         for (i, test_case) in enumerate(test_cases):
-            (text_board, error_substring) = test_cases[i]
+            (text_board, error_substring) = test_case
             with self.subTest(msg = f"Case {i}:"):
                 try:
                     pacai.core.board.load_string('test', text_board)

@@ -52,10 +52,10 @@ class Reference(pacai.util.json.DictConverter):
             module_name = '.'.join(parts[0:-1]).strip()
 
         if ((file_path is not None) and (module_name is not None)):
-            raise ValueError("Cannot specify both a file path and module name for reflection reference: '%s'.", text)
+            raise ValueError(f"Cannot specify both a file path and module name for reflection reference: '{text}'.")
 
         if ((file_path is None) and (module_name is None)):
-            raise ValueError("Cannot specify a short name alone, need a file_path or module name for reflection reference: '%s'.", text)
+            raise ValueError(f"Cannot specify a short name alone, need a file_path or module name for reflection reference: '{text}'.")
 
         self.file_path: str | None = file_path
         """ The file_path component of the reflection reference (or None). """
@@ -71,6 +71,11 @@ class Reference(pacai.util.json.DictConverter):
 
     @staticmethod
     def build_string(short_name: str, file_path: str | None, module_name: str | None) -> str:
+        """
+        Build a string representation from the given components.
+        The output should be able to be used as an argument to construct a Reference.
+        """
+
         text = short_name
 
         if (module_name is not None):
@@ -118,14 +123,16 @@ def _import_module(reference):
     This may involve importing files.
     """
 
+    # Load from a path.
     if (reference.file_path is not None):
         temp_module_name = str(uuid.uuid4()).replace('-', '')
         spec = importlib.util.spec_from_file_location(temp_module_name, reference.file_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
-    else:
-        try:
-            return importlib.import_module(reference.module_name)
-        except ImportError:
-            raise ValueError(f"Unable to locate module '{reference.module_name}'.")
+
+    # Load from a module name.
+    try:
+        return importlib.import_module(reference.module_name)
+    except ImportError as ex:
+        raise ValueError(f"Unable to locate module '{reference.module_name}'.") from ex

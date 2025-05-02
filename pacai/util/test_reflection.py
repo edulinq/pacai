@@ -6,8 +6,12 @@ import pacai.util.reflection
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
-class TicketTest(pacai.test.base.BaseTest):
+class ReflectionTest(pacai.test.base.BaseTest):
+    """ Test reflection functionality. """
+
     def test_class_reference_base(self):
+        """ Test creating (not instantiating) reflection referneces. """
+
         # [(text, expected error substring, (filename, module_name, short_name)), ...]
         test_cases = [
             (
@@ -60,8 +64,8 @@ class TicketTest(pacai.test.base.BaseTest):
             ),
         ]
 
-        for i in range(len(test_cases)):
-            (text, error_substring, expected_parts) = test_cases[i]
+        for (i, test_case) in enumerate(test_cases):
+            (text, error_substring, expected_parts) = test_case
             with self.subTest(msg = f"Case {i}:"):
                 try:
                     reference = pacai.util.reflection.Reference(text)
@@ -79,45 +83,47 @@ class TicketTest(pacai.test.base.BaseTest):
                 self.assertEqual(expected_parts, actual_parts)
 
     def test_new_object_base(self):
+        """ Test creating new objects from reflection references. """
+
         # [(reference, expected error substring, args, kwargs, expected_count), ...]
         test_cases = [
             (
-                'pacai.util.test_reflection.TestClass',
+                'pacai.util.test_reflection._TestClass',
                 None,
                 [],
                 {},
                 0,
             ),
             (
-                'pacai/util/test_reflection.py:TestClass',
+                'pacai/util/test_reflection.py:_TestClass',
                 None,
                 [],
                 {},
                 0,
             ),
             (
-                'pacai.util.test_reflection.TestClass',
+                'pacai.util.test_reflection._TestClass',
                 None,
                 [1],
                 {},
                 1,
             ),
             (
-                'pacai.util.test_reflection.TestClass',
+                'pacai.util.test_reflection._TestClass',
                 None,
                 [],
                 {'count': 2},
                 2,
             ),
             (
-                'pacai.util.test_reflection.TestClass',
+                'pacai.util.test_reflection._TestClass',
                 None,
                 [],
                 {'other': 3},
                 0,
             ),
             (
-                'pacai.util.test_reflection.TestClass',
+                'pacai.util.test_reflection._TestClass',
                 None,
                 [4],
                 {'other': 5},
@@ -134,7 +140,7 @@ class TicketTest(pacai.test.base.BaseTest):
                 None,
             ),
             (
-                'pacai.util.test_reflection.TestClass',
+                'pacai.util.test_reflection._TestClass',
                 'got multiple values for argument',
                 [1],
                 {'count': 2},
@@ -142,8 +148,8 @@ class TicketTest(pacai.test.base.BaseTest):
             ),
         ]
 
-        for i in range(len(test_cases)):
-            (reference, error_substring, args, kwargs, expected_count) = test_cases[i]
+        for (i, test_case) in enumerate(test_cases):
+            (reference, error_substring, args, kwargs, expected_count) = test_case
             with self.subTest(msg = f"Case {i}:"):
                 try:
                     actual = pacai.util.reflection.new_object(reference, *args, **kwargs)
@@ -159,6 +165,7 @@ class TicketTest(pacai.test.base.BaseTest):
 
                 self.assertEqual(expected_count, actual.count)
 
-class TestClass:
+class _TestClass:
+    """ A class just for testing. """
     def __init__(self, count = 0, **kwargs):
         self.count = count

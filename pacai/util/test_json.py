@@ -382,8 +382,8 @@ class JSONTest(pacai.test.base.BaseTest):
             ),
         ]
 
-        for i in range(len(test_cases)):
-            (original, expected_dict, error_substring) = test_cases[i]
+        for (i, test_case) in enumerate(test_cases):
+            (original, expected_dict, error_substring) = test_case
             with self.subTest(msg = f"Case {i}:"):
                 try:
                     actual_dict = original.to_dict()
@@ -459,8 +459,8 @@ class JSONTest(pacai.test.base.BaseTest):
             ),
         ]
 
-        for i in range(len(test_cases)):
-            (text, cls, error_substring, expected) = test_cases[i]
+        for (i, test_case) in enumerate(test_cases):
+            (text, cls, error_substring, expected) = test_case
             with self.subTest(msg = f"Case {i}:"):
                 try:
                     actual = pacai.util.json.loads_object(text, cls)

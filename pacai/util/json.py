@@ -11,6 +11,8 @@ import typing
 
 import json5
 
+import pacai.util.file
+
 class DictConverter(abc.ABC):
     """
     A base class for class that can represent (serialize) and reconstruct (deserialize) themselves from a dict.
@@ -73,7 +75,9 @@ def loads(text: str, strict: bool = False, **kwargs) -> dict[str, typing.Any]:
 
     return json5.loads(text, **kwargs)
 
-def load_path(path: str, **kwargs) -> dict[str, typing.Any]:
+def load_path(path: str,
+        encoding: str = pacai.util.file.DEFAULT_ENCODING,
+        **kwargs) -> dict[str, typing.Any]:
     """
     Load a file path as JSON.
     If strict is set, then use standard Python JSON,
@@ -81,7 +85,7 @@ def load_path(path: str, **kwargs) -> dict[str, typing.Any]:
     """
 
     try:
-        with open(path, 'r') as file:
+        with open(path, 'r', encoding = encoding) as file:
             return load(file, **kwargs)
     except Exception as ex:
         raise ValueError(f"Failed to read JSON file '{path}'.") from ex
@@ -108,8 +112,11 @@ def dumps(data: typing.Any, default: typing.Callable | None = _custom_handle, **
 
     return json.dumps(data, default = default, **kwargs)
 
-def dump_path(data: typing.Any, path: str, **kwargs) -> None:
+def dump_path(data: typing.Any,
+        path: str,
+        encoding: str = pacai.util.file.DEFAULT_ENCODING,
+        **kwargs) -> None:
     """ Dump an object as a JSON file. """
 
-    with open(path, 'w') as file:
+    with open(path, 'w', encoding = encoding) as file:
         dump(data, file, **kwargs)

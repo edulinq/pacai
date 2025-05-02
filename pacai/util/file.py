@@ -1,5 +1,9 @@
-def read(path: str, strip: bool = True) -> str:
-    with open(path, 'r') as file:
+DEFAULT_ENCODING: str = 'utf-8'
+
+def read(path: str, strip: bool = True, encoding: str = DEFAULT_ENCODING) -> str:
+    """ Read the given file into a string. """
+
+    with open(path, 'r', encoding = encoding) as file:
         contents = file.read()
 
     if (strip):
@@ -7,7 +11,13 @@ def read(path: str, strip: bool = True) -> str:
 
     return contents
 
-def write(path: str, contents: str | None, strip: bool = True, newline: bool = True) -> None:
+def write(path: str,
+        contents: str | None,
+        strip: bool = True,
+        newline: bool = True,
+        encoding: str = DEFAULT_ENCODING) -> None:
+    """ Write the given content into a file. """
+
     if (contents is None):
         contents = ''
 
@@ -17,5 +27,5 @@ def write(path: str, contents: str | None, strip: bool = True, newline: bool = T
     if (newline):
         contents += "\n"
 
-    with open(path, 'w') as file:
+    with open(path, 'w', encoding = encoding) as file:
         file.write(contents)

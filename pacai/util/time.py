@@ -6,9 +6,13 @@ class Duration(int):
     """
 
     def to_secs(self) -> float:
+        """ Convert the duration to float seconds. """
+
         return self / 1000
 
     def to_msecs(self) -> int:
+        """ Convert the duration to integer milliseconds. """
+
         return self
 
 class Timestamp(int):
@@ -20,7 +24,11 @@ class Timestamp(int):
     """
 
     def sub(self, other: 'Timestamp') -> Duration:
+        """ Return a new duration that is the difference of this and the given duration. """
+
         return Duration(self - other)
 
 def now() -> Timestamp:
+    """ Get a Timestamp that represents the current moment. """
+
     return Timestamp(time.time() * 1000)
