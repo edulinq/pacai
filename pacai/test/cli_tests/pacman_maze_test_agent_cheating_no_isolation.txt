@@ -1,0 +1,16 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--board", "maze-test",
+        "--pacman", "pacai.agents.cheating.CheatingAgent",
+        "--isolation", "none",
+        "--ui", "pacai.ui.null.NullUI",
+        "--max-turns", "10",
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: 999.0
+<LOG_PREFIX> -- Scores:        999
+<LOG_PREFIX> -- Win Rate:      1/1 (1.00)
+<LOG_PREFIX> -- Record:        Win
