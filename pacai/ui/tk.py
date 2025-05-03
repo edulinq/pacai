@@ -43,8 +43,11 @@ class TkUserInputDevice(pacai.core.ui.UserInputDevice):
     """
 
     def __init__(self,
-            char_mapping: dict[str, pacai.core.action.Action] = WASD_CHAR_MAPPING,
+            char_mapping: dict[str, pacai.core.action.Action] | None = None,
             **kwargs) -> None:
+        if (char_mapping is None):
+            char_mapping = WASD_CHAR_MAPPING
+
         self._char_mapping: dict[str, pacai.core.action.Action] = char_mapping
         """ Map characters to actions. """
 
@@ -58,20 +61,26 @@ class TkUserInputDevice(pacai.core.ui.UserInputDevice):
         return actions
 
     def register_root(self, tk_root: tkinter.Tk) -> None:
+        """ Register/Bind this handler to a root Tk element. """
+
         tk_root.bind("<KeyPress>", self._key_press)
         tk_root.bind("<KeyRelease>", self._key_release)
         tk_root.bind("<FocusIn>", self._clear)
         tk_root.bind("<FocusOut>", self._clear)
 
-    def _clear(self, event) -> None:
+    def _clear(self, *args, **kwargs) -> None:
+        """ Handle a call to clear the current keys. """
+
         self._actions = []
 
     def _key_press(self, event) -> None:
+        """ Handle a key being pressed. """
+
         if (event.keysym in self._char_mapping):
             self._actions.append(self._char_mapping[event.keysym])
 
     def _key_release(self, event) -> None:
-        pass
+        """ Handle a key being released. """
 
 class TkUI(pacai.core.ui.UI):
     """
@@ -88,7 +97,7 @@ class TkUI(pacai.core.ui.UI):
         super().__init__(user_input_device = input_device, **kwargs)
 
         if (title != 'pacai'):
-            title = 'pacai - %s' % (title)
+            title = f"pacai - {title}"
 
         self._title: str = title
         """ The title of the Tk window. """
@@ -171,7 +180,7 @@ class TkUI(pacai.core.ui.UI):
     def sleep(self, sleep_time_ms: int) -> None:
         self._root.after(sleep_time_ms, None)  # type: ignore
 
-    def _handle_resize(self, event):
+    def _handle_resize(self, event: tkinter.Event) -> None:
         """ Handle Tk configure (resize) events. """
 
         if (self._width == event.width and self._height == event.height):
@@ -191,12 +200,12 @@ class TkUI(pacai.core.ui.UI):
         self._canvas.config(width = self._width, height = self._height)
         self._canvas.pack(fill = 'both', expand = True)
 
-    def _handle_window_closed(self, event = None):
+    def _handle_window_closed(self, **kwargs) -> None:
         """ Handle Tk window close events. """
 
         self._window_closed = True
 
-    def _cleanup(self, exit = True):
+    def _cleanup(self, call_exit: bool = True) -> None:
         """
         The Tk window has been killed, clean up.
         This is one of the rare case where a non-bin will call sys.exit().
@@ -207,7 +216,6 @@ class TkUI(pacai.core.ui.UI):
 
         if (self._root is not None):
             self._root.destroy()
-            self._root = None
 
-        if (exit):
+        if (call_exit):
             sys.exit(0)

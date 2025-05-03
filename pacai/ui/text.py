@@ -36,10 +36,13 @@ class TextStreamUserInputDevice(pacai.core.ui.UserInputDevice):
 
     def __init__(self,
             input_stream: typing.TextIO,
-            char_mapping: dict[str, pacai.core.action.Action] = WASD_CHAR_MAPPING,
+            char_mapping: dict[str, pacai.core.action.Action] | None = None,
             **kwargs) -> None:
         self._input_stream: typing.TextIO = input_stream
         """ Where to get input from. """
+
+        if (char_mapping is None):
+            char_mapping = WASD_CHAR_MAPPING
 
         self._char_mapping: dict[str, pacai.core.action.Action] = char_mapping
         """ Map characters to actions. """
@@ -90,7 +93,6 @@ class TextStreamUserInputDevice(pacai.core.ui.UserInputDevice):
             raise ValueError("Terminal (tty) user input devices are not supported on Windows.")
 
         self._old_settings = termios.tcgetattr(self._input_stream)
-        """ Keep track of the old setting so we can reset properly. """
 
         # Since the behavior of the terminal can be changed by this class,
         # ensure everything is reset when the program exits.
