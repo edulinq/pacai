@@ -145,7 +145,7 @@ class UI(abc.ABC):
 
         if (self._animation_path is not None):
             if (os.path.splitext(self._animation_path)[-1] not in ANIMATION_EXTS):
-                raise ValueError("Animation path must have one of the following extensions %s, found '%s'." % (ANIMATION_EXTS, self._animation_path))
+                raise ValueError(f"Animation path must have one of the following extensions {ANIMATION_EXTS}, found '{self._animation_path}'.")
 
     def update(self, state: pacai.core.gamestate.GameState, force_draw_image: bool = False) -> None:
         """
@@ -305,7 +305,7 @@ class UI(abc.ABC):
 
         # Draw the score.
         score_image_coordinates = (0, state.board.height * self._sprite_sheet.height)
-        score_text = "Score: %d" % (state.score)
+        score_text = f"Score: {state.score}"
         canvas = PIL.ImageDraw.Draw(image)
         canvas.text(score_image_coordinates, score_text, self._sprite_sheet.text, self._font)
 
@@ -387,7 +387,7 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
             action = 'store_true', default = DEFAULT_ANIMATION_OPTIMIZE,
             help = 'Optimize the animation to reduce file size (will take longer) (default: %(default)s).')
 
-def init_from_args(args: argparse.Namespace, additional_args: dict = {}) -> argparse.Namespace:
+def init_from_args(args: argparse.Namespace, additional_args: dict | None = None) -> argparse.Namespace:
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
@@ -402,7 +402,8 @@ def init_from_args(args: argparse.Namespace, additional_args: dict = {}) -> argp
         'animation_optimize': args.animation_optimize,
     }
 
-    ui_args.update(additional_args)
+    if (additional_args is not None):
+        ui_args.update(additional_args)
 
     ui = pacai.util.reflection.new_object(args.ui, **ui_args)
     setattr(args, '_ui', ui)

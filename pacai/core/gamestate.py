@@ -79,8 +79,8 @@ class GameState(pacai.util.json.DictConverter):
 
         # Initialize data from agent arguments if not enough info is provided.
         if ((len(self.move_delays) == 0) and (agent_infos is not None)):
-            for (agent_index, agent_info) in agent_infos.items():
-                self.move_delays[agent_index] = agent_info.move_delay
+            for (info_agent_index, agent_info) in agent_infos.items():
+                self.move_delays[info_agent_index] = agent_info.move_delay
 
     def game_start(self):
         """

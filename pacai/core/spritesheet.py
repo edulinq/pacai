@@ -163,7 +163,7 @@ class SpriteSheet:
                 sprite = self._adjacency_sprites.get(marker, {}).get(adjacency, sprite)
 
         if (sprite is None):
-            raise ValueError("Could not find a matching sprite for action = '%s', adjacency = '%s', key = '%s').", action, adjacency, animation_key)
+            raise ValueError(f"Could not find a matching sprite for action = '{action}', adjacency = '{adjacency}', key = '{animation_key}').")
 
         return sprite
 
@@ -233,7 +233,7 @@ def load(path: str) -> SpriteSheet:
     try:
         return _load(path)
     except Exception as ex:
-        raise ValueError(f"Error loading sprite sheet config: '{path}'.")
+        raise ValueError(f"Error loading sprite sheet config: '{path}'.") from ex
 
 def _load(config_path: str) -> SpriteSheet:
     config = pacai.util.json.load_path(config_path)
@@ -266,9 +266,12 @@ def _load(config_path: str) -> SpriteSheet:
     return SpriteSheet(height, width, background, text, default_sprite, default_marker_sprites, action_sprites, adjacency_sprites)
 
 def _fetch_marker_sprites(
-        sprites: list[list[PIL.Image.Image]],
-        marker_sprites: dict
-        ) -> tuple[PIL.Image.Image | None, dict[pacai.core.action.Action, list[PIL.Image.Image]], dict[pacai.core.board.AdjacencyString, PIL.Image.Image]]:
+            sprites: list[list[PIL.Image.Image]],
+            marker_sprites: dict
+            ) -> tuple[
+                PIL.Image.Image | None,
+                dict[pacai.core.action.Action, list[PIL.Image.Image]],
+                dict[pacai.core.board.AdjacencyString, PIL.Image.Image]]:
     default_sprite: PIL.Image.Image | None = None
     action_sprites: dict[pacai.core.action.Action, list[PIL.Image.Image]] = {}
     adjacency_sprites: dict[pacai.core.board.AdjacencyString, PIL.Image.Image] = {}
@@ -300,7 +303,7 @@ def _parse_color(config: dict, key: str, default: tuple[int, int, int]) -> tuple
 
     color = config.get(key)
     if ((not isinstance(color, list)) or (len(color) != 3)):
-        raise ValueError("Background must be a list of three ints, found: '%s'.", str(color))
+        raise ValueError(f"Background must be a list of three ints, found: '{str(color)}'.")
 
     color = (
         _parse_int(color[0]),
@@ -308,9 +311,9 @@ def _parse_color(config: dict, key: str, default: tuple[int, int, int]) -> tuple
         _parse_int(color[2]),
     )
 
-    for i in range(len(color)):
-        if ((color[i] < 0) or (color[i] > 255)):
-            raise ValueError("Color component %d is out of bounds, must be between 0 and 255. Found: '%s'.", i, color)
+    for (i, component) in enumerate(color):
+        if ((component < 0) or (component > 255)):
+            raise ValueError(f"Color component {i} is out of bounds, must be between 0 and 255. Found: '{color}'.")
 
     return color
 
@@ -338,12 +341,12 @@ def _load_sprites(config: dict, config_path: str) -> tuple[int, int, list[list[P
     try:
         height = _parse_int(config.get(KEY_HEIGHT))  # type: ignore
     except Exception as ex:
-        raise ValueError(f"Invalid or missing '{KEY_HEIGHT}' field.")
+        raise ValueError(f"Invalid or missing '{KEY_HEIGHT}' field.") from ex
 
     try:
         width = _parse_int(config.get(KEY_WIDTH))  # type: ignore
     except Exception as ex:
-        raise ValueError(f"Invalid or missing '{KEY_WIDTH}' field.")
+        raise ValueError(f"Invalid or missing '{KEY_WIDTH}' field.") from ex
 
     raw_sheet = PIL.Image.open(path)
 

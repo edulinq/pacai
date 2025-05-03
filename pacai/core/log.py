@@ -12,12 +12,12 @@ LEVELS: list[str] = [
     logging.getLevelName(logging.CRITICAL),
 ]
 
-def init(level: str = DEFAULT_LOGGING_LEVEL, format: str = DEFAULT_LOGGING_FORMAT, **kwargs) -> None:
+def init(level: str = DEFAULT_LOGGING_LEVEL, log_format: str = DEFAULT_LOGGING_FORMAT, **kwargs) -> None:
     """
     Initialize or re-initialize the logging infrastructure.
     """
 
-    logging.basicConfig(level = level, format = format, force = True)
+    logging.basicConfig(level = level, format = log_format, force = True)
 
     # Ignore logging from third-party libraries.
     logging.getLogger("PIL").setLevel(logging.WARNING)

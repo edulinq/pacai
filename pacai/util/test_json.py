@@ -142,7 +142,7 @@ class JSONTest(pacai.test.base.BaseTest):
                     start_time = pacai.util.time.Timestamp(12345),
                 ),
                 {
-                    "id": 1234,
+                    "game_id": 1234,
                     "game_info": {
                         "seed": 4,
                         "board_source": "source",
@@ -185,7 +185,7 @@ class JSONTest(pacai.test.base.BaseTest):
                     ],
                 ),
                 {
-                    "id": 1234,
+                    "game_id": 1234,
                     "game_info": {
                         "seed": 4,
                         "board_source": "source",

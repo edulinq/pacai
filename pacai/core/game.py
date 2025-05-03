@@ -73,7 +73,7 @@ class GameResult(pacai.util.json.DictConverter):
     """ The result of running a game. """
 
     def __init__(self,
-            id: int,
+            game_id: int,
             game_info: GameInfo,
             score: int = 0,
             winning_agent_index: int = -1,
@@ -81,7 +81,7 @@ class GameResult(pacai.util.json.DictConverter):
             end_time: pacai.util.time.Timestamp | None = None,
             history: list[pacai.core.action.ActionRecord] | None = None,
             **kwargs) -> None:
-        self.id: int = id
+        self.game_id: int = game_id
         """ The ID of the game result. """
 
         self.game_info: GameInfo = game_info
@@ -119,7 +119,7 @@ class GameResult(pacai.util.json.DictConverter):
 
     def to_dict(self) -> dict[str, typing.Any]:
         return {
-            'id': self.id,
+            'game_id': self.game_id,
             'game_info': self.game_info.to_dict(),
             'start_time': self.start_time,
             'end_time': self.end_time,
@@ -131,7 +131,7 @@ class GameResult(pacai.util.json.DictConverter):
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
         return GameResult(
-            data['id'],
+            data['game_id'],
             GameInfo.from_dict(data['game_info']),
             start_time = data.get('start_time', None),
             end_time = data.get('end_time', None),
@@ -168,7 +168,11 @@ class Game(abc.ABC):
         """
 
     @abc.abstractmethod
-    def get_initial_state(self, rng: random.Random, board: pacai.core.board.Board, agent_infos: dict[int, pacai.core.agentinfo.AgentInfo]) -> pacai.core.gamestate.GameState:
+    def get_initial_state(self,
+            rng: random.Random,
+            board: pacai.core.board.Board,
+            agent_infos: dict[int, pacai.core.agentinfo.AgentInfo],
+            ) -> pacai.core.gamestate.GameState:
         """ Create the initial state for this game. """
 
     def process_turn(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> pacai.core.gamestate.GameState:
@@ -214,8 +218,8 @@ class Game(abc.ABC):
         isolator.init_agents(self._game_info.agent_infos)
 
         # Keep track of what happens during this game.
-        result_id = rng.randint(0, 2**64)
-        result = GameResult(result_id, self._game_info)
+        game_id = rng.randint(0, 2**64)
+        result = GameResult(game_id, self._game_info)
 
         # Keep track of all the user inputs since the last time an agent moved.
         # Note that we need to keep track for all agents,
@@ -282,12 +286,16 @@ class Game(abc.ABC):
         ui.close()
 
         if ((not self._is_replay) and (self._save_path is not None)):
-            logging.info(f"Saving results to '{self._save_path}'.")
+            logging.info("Saving results to '%s'.", self._save_path)
             pacai.util.json.dump_path(result, self._save_path)
 
         return result
 
-    def _get_user_inputs(self, agent_index: int, agent_user_inputs: dict[int, list[pacai.core.action.Action]], ui: pacai.core.ui.UI) -> list[pacai.core.action.Action]:
+    def _get_user_inputs(self,
+            agent_index: int,
+            agent_user_inputs: dict[int, list[pacai.core.action.Action]],
+            ui: pacai.core.ui.UI,
+            ) -> list[pacai.core.action.Action]:
         """
         Add the current user inputs to the running list for each agent,
         and return (and clear) the inputs for the current agent.
@@ -333,7 +341,8 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
             help = ('Set the agent isolation level for this game (default: %(default)s).'
                     + ' Choose one of:'
                     + ' `none` -- Do not make any attempt to isolate the agent code from the game (fastest and least secure),'
-                    + ' `process` -- Run the agent code in a separate process/memory space (offers some protection, but still vulnerable to disk or execution exploits),'
+                    + ' `process` -- Run the agent code in a separate process'
+                    + ' (offers some protection, but still vulnerable to disk or execution exploits),'
                     + ' `tcp` -- Open TCP listeners to communicate with agents (most secure, requires additional work to set up agents).'))
 
     parser.add_argument('--agent-arg', dest = 'raw_agent_args', metavar = 'ARG',
@@ -359,8 +368,8 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
 def init_from_args(
         args: argparse.Namespace,
         game_class: typing.Type[Game],
-        base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {},
-        remove_agent_indexes: list[int] = []) -> argparse.Namespace:
+        base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] | None = None,
+        remove_agent_indexes: list[int] | None = None) -> argparse.Namespace:
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
@@ -368,6 +377,12 @@ def init_from_args(
     Each of these resources will be placed in their respective list at
     `args._boards`, `args._agent_infos`, or `args._games`.
     """
+
+    if (base_agent_infos is None):
+        base_agent_infos = {}
+
+    if (remove_agent_indexes is None):
+        remove_agent_indexes = []
 
     # If this is a replay,
     # then all the core arguments are loaded differently (directly from the file).
@@ -422,7 +437,7 @@ def init_from_args(
         save_path = base_save_path
         if ((save_path is not None) and (args.num_games > 1)):
             parts = os.path.splitext(save_path)
-            save_path = "%s_%03d%s" % (parts[0], i, parts[1])
+            save_path = f"{parts[0]}_{i:03d}{parts[1]}"
 
         game_args = {
             'game_info': game_info,
@@ -443,7 +458,7 @@ def _override_args_with_replay(args: argparse.Namespace, base_agent_infos: dict[
     Override the args with the settings from the replay in the args.
     """
 
-    logging.info(f"Loading replay from '{args.replay_path}'.")
+    logging.info("Loading replay from '%s'.", args.replay_path)
     replay_info = typing.cast(GameResult, pacai.util.json.load_object_path(args.replay_path, GameResult))
 
     # Overrides from the replay info.

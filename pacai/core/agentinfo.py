@@ -44,6 +44,8 @@ class AgentInfo(pacai.util.json.DictConverter):
             self.extra_arguments.update(extra_arguments)
 
     def set(self, name: str, value: typing.Any) -> None:
+        """ Set an attribute by name. """
+
         if (name == 'name'):
             if (isinstance(value, pacai.util.reflection.Reference)):
                 self.name = value
@@ -55,6 +57,8 @@ class AgentInfo(pacai.util.json.DictConverter):
             self.extra_arguments[name] = value
 
     def update(self, other: 'AgentInfo') -> None:
+        """ Update this agent info data from the given agent info. """
+
         self.name = other.name
         self.move_delay = other.move_delay
         self.extra_arguments.update(other.extra_arguments)
