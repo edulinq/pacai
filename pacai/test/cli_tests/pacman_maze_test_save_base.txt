@@ -12,5 +12,5 @@
 <LOG_PREFIX> -- Saving results to '__TEMP_DIR__(test.json)'.
 <LOG_PREFIX> -- Average Score: 502.0
 <LOG_PREFIX> -- Scores:        502
-<LOG_PREFIX> -- Win Rate:      1/1 (1.00)
+<LOG_PREFIX> -- Win Rate:      1 / 1 (1.00)
 <LOG_PREFIX> -- Record:        Win

@@ -24,17 +24,19 @@ DEFAULT_SPRITE_SHEET: str = 'pacman'
 SCARED_GHOST_MARKER: pacai.core.board.Marker = pacai.core.board.Marker('!')
 
 def run(args: argparse.Namespace) -> int:
+    """ Run one or more gaames of pacman using pre-parsed arguments. """
+
     results = []
-    for i in range(len(args._games)):
-        results.append(args._games[i].run(args._ui))
+    for game in args._games:
+        results.append(game.run(args._ui))
 
     scores = [result.score for result in results]
     wins = [(result.winning_agent_index == pacai.pacman.gamestate.PACMAN_AGENT_INDEX) for result in results]
-    winRate = wins.count(True) / float(len(wins))
+    win_rate = wins.count(True) / float(len(wins))
 
     logging.info('Average Score: %s', sum(scores) / float(len(scores)))
     logging.info('Scores:        %s', ', '.join([str(score) for score in scores]))
-    logging.info('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
+    logging.info('Win Rate:      %d / %d (%0.2f)', wins.count(True), len(wins), win_rate)
     logging.info('Record:        %s', ', '.join([['Loss', 'Win'][int(win)] for win in wins]))
 
     return 0
@@ -82,16 +84,25 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
 
     return base_agent_infos, remove_agent_indexes
 
-def _sprite_lookup(state: pacai.core.gamestate.GameState, sprite_sheet: pacai.core.spritesheet.SpriteSheet, marker: pacai.core.board.Marker | None = None, **kwargs) -> PIL.Image.Image:
+def _sprite_lookup(
+        state: pacai.core.gamestate.GameState,
+        sprite_sheet: pacai.core.spritesheet.SpriteSheet,
+        marker: pacai.core.board.Marker | None = None,
+        **kwargs) -> PIL.Image.Image:
     """ Pacman requires a special lookup function since ghosts need a special sprite when scared. """
 
     state = typing.cast(pacai.pacman.gamestate.GameState, state)
-    if ((marker is not None) and (marker.is_agent()) and (marker != pacai.pacman.gamestate.PACMAN_MARKER) and (state.is_scared(marker.get_agent_index()))):
+    if ((marker is not None)
+            and (marker.is_agent())
+            and (marker != pacai.pacman.gamestate.PACMAN_MARKER)
+            and (state.is_scared(marker.get_agent_index()))):
         return sprite_sheet.get_sprite(marker = SCARED_GHOST_MARKER, **kwargs)
 
     return sprite_sheet.get_sprite(marker = marker, **kwargs)
 
 def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
+    """ Parse the args from the parser returned by _get_parser(). """
+
     args = parser.parse_args()
 
     # Parse logging arguments.
@@ -108,11 +119,14 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     base_agent_infos, remove_agent_indexes = init_from_args(args)
 
     # Parse game arguments.
-    args = pacai.core.game.init_from_args(args, pacai.pacman.game.Game, base_agent_infos = base_agent_infos, remove_agent_indexes = remove_agent_indexes)
+    args = pacai.core.game.init_from_args(args, pacai.pacman.game.Game,
+            base_agent_infos = base_agent_infos, remove_agent_indexes = remove_agent_indexes)
 
     return args
 
 def _get_parser() -> argparse.ArgumentParser:
+    """ Get a parser with all the options set to handle PacMan. """
+
     parser = argparse.ArgumentParser(description = "Play a game of Pac-Man.")
 
     # Add logging arguments.
@@ -130,6 +144,8 @@ def _get_parser() -> argparse.ArgumentParser:
     return parser
 
 def main() -> int:
+    """ Invoke a game of PacMan. """
+
     args = _parse_args(_get_parser())
     return run(args)
 

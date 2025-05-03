@@ -40,12 +40,15 @@ class GameState(pacai.core.gamestate.GameState):
 
     def __init__(self,
             food_count: int = 0,
-            scared_timers: dict[int, int] = {},
+            scared_timers: dict[int, int] | None = None,
             **kwargs) -> None:
         super().__init__(**kwargs)
 
         self.food_count: int = food_count
         """ The number of food pellets on the board. """
+
+        if (scared_timers is None):
+            scared_timers = {}
 
         self.scared_timers: dict[int, int] = scared_timers
         """
@@ -150,7 +153,7 @@ class GameState(pacai.core.gamestate.GameState):
                 self.board.remove_marker(interaction_marker, new_position)
 
                 # Scare all ghosts.
-                for (agent_index, move_delay) in self.move_delays.items():
+                for agent_index in self.move_delays.keys():
                     if (agent_index == PACMAN_AGENT_INDEX):
                         continue
 

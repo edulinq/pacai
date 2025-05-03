@@ -9,5 +9,5 @@
 <LOG_PREFIX> -- Loading replay from '__DATA_DIR__(maze-test-random-replay.json)'.
 <LOG_PREFIX> -- Average Score: 502.0
 <LOG_PREFIX> -- Scores:        502
-<LOG_PREFIX> -- Win Rate:      1/1 (1.00)
+<LOG_PREFIX> -- Win Rate:      1 / 1 (1.00)
 <LOG_PREFIX> -- Record:        Win

@@ -10,5 +10,5 @@
 ---
 <LOG_PREFIX> -- Average Score: 503.0
 <LOG_PREFIX> -- Scores:        503
-<LOG_PREFIX> -- Win Rate:      1/1 (1.00)
+<LOG_PREFIX> -- Win Rate:      1 / 1 (1.00)
 <LOG_PREFIX> -- Record:        Win
