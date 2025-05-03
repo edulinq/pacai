@@ -86,8 +86,7 @@ class ProcessIsolator(pacai.core.isolation.isolator.AgentIsolator):
 
         # Empty all receiving (action) queues.
         for queue in self._agent_message_queues.values():
-            while (not queue.empty()):
-                queue.get(False)
+            _empty_queue(queue)
 
         # Join all processes.
         for process in self._agent_processes.values():
@@ -138,14 +137,27 @@ def _agent_handler(
     action_queue.close()
 
     # Empty the message queue.
-    while (not message_queue.empty()):
-        message_queue.get(False)
+    _empty_queue(message_queue)
+
+def _empty_queue(queue: multiprocessing.Queue) -> None:
+    """
+    Attempt to empty out the given queue.
+    Ignore anyhting that is pulled out of the queue and ignore any queue closed error.
+    """
+
+    while (not queue.empty()):
+        try:
+            queue.get(False)
+        except ValueError:
+            return
 
 def _get_action(
         agent: pacai.core.agent.Agent,
         state: pacai.core.gamestate.GameState,
         user_inputs: list[pacai.core.action.Action],
         ) -> pacai.core.action.ActionRecord:
+    """ Get action from the agent. """
+
     crashed = False
 
     start_time = pacai.util.time.now()
