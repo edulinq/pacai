@@ -24,8 +24,7 @@ function main() {
     mkdir -p "${outputDir}"
 
     pdoc --output-directory "${outputDir}" pacai !.*\.test_.*
-
-    return 0
+    return $?
 }
 
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"

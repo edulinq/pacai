@@ -41,6 +41,10 @@ jobs:
         shell: bash
         run: ./scripts/check_types.sh
 
+      - name: Check Lint
+        shell: bash
+        run: ./scripts/check_lint.sh
+
       - name: Run Tests
         shell: bash
         run: ./scripts/run_tests.py

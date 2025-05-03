@@ -1,8 +1,7 @@
 import atexit
-import platform
 import queue
 import sys
-import termios
+import termios  # pylint: disable=import-error
 import threading
 import typing
 
@@ -89,7 +88,7 @@ class TextStreamUserInputDevice(pacai.core.ui.UserInputDevice):
             return
 
         # Do a platform check for POSIX.
-        if (platform.system() == "Windows"):
+        if (sys.platform.startswith("win")):
             raise ValueError("Terminal (tty) user input devices are not supported on Windows.")
 
         self._old_settings = termios.tcgetattr(self._input_stream)
