@@ -1,6 +1,7 @@
-import pacai.util.json
 import typing
 import unittest
+
+import pacai.util.json
 
 FORMAT_STR = "\n--- Expected ---\n%s\n--- Actual ---\n%s\n---\n"
 
@@ -9,9 +10,9 @@ class BaseTest(unittest.TestCase):
 
     maxDiff = None
 
-    def assertDictEqualJSON(self, a: typing.Any, b: typing.Any) -> None:
+    def assertDictEqualJSON(self, a: typing.Any, b: typing.Any) -> None:  # pylint: disable=invalid-name
         """
-        Like unittest.TestCase.assertForcecdDictEqual(),
+        Like unittest.TestCase.assertDictEqual(),
         but calls vars() on each object if they are not already dicts
         and uses JSON from the error message.
         """
@@ -33,7 +34,9 @@ class BaseTest(unittest.TestCase):
 
         super().assertDictEqual(a, b, FORMAT_STR % (a_json, b_json))
 
-    def assertListEqualJSON(self, a: list, b: list) -> None:
+    def assertListEqualJSON(self, a: list, b: list) -> None:  # pylint: disable=invalid-name
+        """ Like unittest.TestCase.assertLiseEqual(), but uses JSON formatting in the output. """
+
         a_json = pacai.util.json.dumps(a, indent = 4)
         b_json = pacai.util.json.dumps(b, indent = 4)
 

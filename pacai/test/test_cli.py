@@ -8,6 +8,7 @@ import sys
 import typing
 
 import pacai.test.base
+import pacai.util.file
 import pacai.util.dirent
 import pacai.util.json
 
@@ -60,7 +61,7 @@ class CLITest(pacai.test.base.BaseTest):
 
         output_check_name = options.get('output-check', DEFAULT_OUTPUT_CHECK)
         if (output_check_name not in globals()):
-            raise ValueError("Could not find output check function: '%s'." % (output_check_name))
+            raise ValueError(f"Could not find output check function: '{output_check_name}'.")
 
         output_check = globals()[output_check_name]
 
@@ -71,8 +72,8 @@ class CLITest(pacai.test.base.BaseTest):
 
         # Make any substitutions.
         expected_output = _prepare_string(expected_output, temp_dir)
-        for i in range(len(cli_arguments)):
-            cli_arguments[i] = _prepare_string(cli_arguments[i], temp_dir)
+        for (i, cli_argument) in enumerate(cli_arguments):
+            cli_arguments[i] = _prepare_string(cli_argument, temp_dir)
 
         return module_name, cli_arguments, expected_output, output_check, exit_status, is_error, skip_windows
 
@@ -92,7 +93,7 @@ def _prepare_string(text: str, temp_dir: str) -> str:
 def _replace_path(text: str, key: str, base_dir: str) -> str:
     """ Make any test replacement inside the given string. """
 
-    match = re.search(r'%s\(([^)]*)\)' % (key), text)
+    match = re.search(rf'{key}\(([^)]*)\)', text)
     if (match is not None):
         filename = match.group(1)
 
@@ -114,17 +115,18 @@ def _read_test_file(path: str) -> tuple[dict, str]:
     json_lines: list[str] = []
     output_lines: list[str] = []
 
-    with open(path, 'r') as file:
-        accumulator = json_lines
-        for line in file:
-            if (line.strip() == TEST_CASE_SEP):
-                accumulator = output_lines
-                continue
+    text = pacai.util.file.read(path, strip = False)
 
-            accumulator.append(line)
+    accumulator = json_lines
+    for line in text.split("\n"):
+        if (line.strip() == TEST_CASE_SEP):
+            accumulator = output_lines
+            continue
+
+        accumulator.append(line)
 
     options = pacai.util.json.loads(''.join(json_lines))
-    output = ''.join(output_lines)
+    output = "\n".join(output_lines)
 
     return options, output
 
@@ -135,7 +137,7 @@ def _discover_test_cases() -> None:
         try:
             _add_test_case(path)
         except Exception as ex:
-            raise ValueError("Failed to parse test case '%s'." % (path)) from ex
+            raise ValueError(f"Failed to parse test case '{path}'.") from ex
 
 def _add_test_case(path: str) -> None:
     """ Attach a test method to the test class. """
@@ -175,7 +177,7 @@ def _get_test_method(test_name: str, path: str) -> typing.Callable:
                 actual_output = stderr_text
 
             if (is_error):
-                self.fail("No error was not raised when one was expected ('%s')." % (str(expected_output)))
+                self.fail(f"No error was not raised when one was expected ('{str(expected_output)}').")
         except BaseException as ex:
             if (not is_error):
                 raise ex
@@ -221,7 +223,7 @@ def has_content_100(test: CLITest, expected: str, actual: str, **kwargs) -> None
 def has_content(test: CLITest, expected: str, actual: str, min_length: int = 100) -> None:
     """ Ensure that the output has content of at least some length. """
 
-    message = "Output does not meet minimum length of %d, it is only %d." % (min_length, len(actual))
+    message = f"Output does not meet minimum length of {min_length}, it is only {len(actual)}."
     test.assertTrue((len(actual) >= min_length), msg = message)
 
 _discover_test_cases()

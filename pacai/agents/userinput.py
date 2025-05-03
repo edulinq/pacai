@@ -1,5 +1,3 @@
-import time
-
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.agentinfo
