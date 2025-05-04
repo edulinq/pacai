@@ -1,8 +1,10 @@
 import logging
 import random
+import typing
 
 import pacai.core.action
 import pacai.core.agent
+import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.gamestate
 import pacai.core.isolation.isolator
@@ -29,40 +31,71 @@ class NoneIsolator(pacai.core.isolation.isolator.AgentIsolator):
         for (agent_index, agent_info) in agent_infos.items():
             self._agents[agent_index] = pacai.core.agent.load(agent_info)
 
-    def game_start(self, rng: random.Random, initial_state: pacai.core.gamestate.GameState) -> None:
+    def game_start(self,
+            rng: random.Random,
+            initial_state: pacai.core.gamestate.GameState,
+            ) -> dict[int, pacai.core.agentaction.AgentActionRecord]:
+        results = {}
         for (agent_index, agent) in self._agents.items():
-            suggested_seed = rng.randint(0, 2**64)
-            agent.game_start(agent_index, suggested_seed, initial_state)
+            data = {
+                'agent_index': agent_index,
+                'suggested_seed': rng.randint(0, 2**64),
+                'initial_state': initial_state,
+            }
 
-    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
-        for agent in self._agents.values():
-            agent.game_complete(final_state)
+            results[agent_index] = _call_agent_method(agent_index, agent.game_start_full, data)
 
-    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.ActionRecord:
-        if (state.agent_index == -1):
-            raise ValueError("Game state does not have an active agent.")
+        return results
 
+    def game_complete(self,
+            final_state: pacai.core.gamestate.GameState,
+            ) -> dict[int, pacai.core.agentaction.AgentActionRecord]:
+        results = {}
+        for (agent_index, agent) in self._agents.items():
+            data = {
+                'final_state': final_state,
+            }
+
+            results[agent_index] = _call_agent_method(agent_index, agent.game_complete_full, data)
+
+        return results
+
+    def get_action(self,
+            state: pacai.core.gamestate.GameState,
+            user_inputs: list[pacai.core.action.Action],
+            ) -> pacai.core.agentaction.AgentActionRecord:
         agent = self._agents[state.agent_index]
-        crashed = False
+        data = {
+            'state': state,
+            'user_inputs': user_inputs,
+        }
 
-        start_time = pacai.util.time.now()
-
-        try:
-            action = agent.get_action(state, user_inputs)
-        except Exception as ex:
-            logging.warning("Agent '%s' (%d) crashed.", agent.name, state.agent_index, exc_info = ex)
-
-            crashed = True
-            action = pacai.core.action.STOP
-
-        end_time = pacai.util.time.now()
-
-        return pacai.core.action.ActionRecord(
-                agent_index = state.agent_index,
-                action = action,
-                duration = end_time.sub(start_time),
-                crashed = crashed)
-
+        return _call_agent_method(state.agent_index, agent.get_action_full, data)
 
     def close(self) -> None:
         self._agents.clear()
+
+def _call_agent_method(
+        agent_index: int,
+        agent_method: typing.Callable[..., pacai.core.agentaction.AgentAction],
+        agent_method_kwargs: dict[str, typing.Any],
+        ) -> pacai.core.agentaction.AgentActionRecord:
+    """ Call a method on the agent and do all the proper bookkeeping. """
+
+    crashed = False
+    start_time = pacai.util.time.now()
+    agent_action: pacai.core.agentaction.AgentAction | None = None
+
+    try:
+        agent_action = agent_method(**agent_method_kwargs)
+    except Exception as ex:
+        logging.warning("Agent %d crashed.", agent_index, exc_info = ex)
+        crashed = True
+
+    end_time = pacai.util.time.now()
+
+    return pacai.core.agentaction.AgentActionRecord(
+            agent_index = agent_index,
+            agent_action = agent_action,
+            duration = end_time.sub(start_time),
+            crashed = crashed)

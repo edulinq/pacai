@@ -2,9 +2,11 @@ import logging
 import multiprocessing
 import random
 import sys
+import typing
 
 import pacai.core.action
 import pacai.core.agent
+import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.gamestate
 import pacai.core.isolation.isolator
@@ -30,14 +32,22 @@ class ProcessIsolator(pacai.core.isolation.isolator.AgentIsolator):
         A process for each agent.
         """
 
+        # Cannot consistently type multiprocessing.Queue before 3.11.
         self._agent_message_queues: dict[int, multiprocessing.Queue] = {}
         """
         The queues used to send messages to each agent process.
+
+        These queues will be loaded by the game thread and emptied by the agent threads.
+        Messages of type `tuple[str, typing.Any]` will be sent through these queues.
         """
 
+        # Cannot consistently type multiprocessing.Queue before 3.11.
         self._agent_action_queues: dict[int, multiprocessing.Queue] = {}
         """
         The queues used for each agent to send back actions.
+
+        These queues will be loaded by the agent threads and emptied by the game thread.
+        Messages of type `pacai.core.agentaction.AgentAction | None` will be sent through these queues.
         """
 
         # Windows has differences with spawning processes.
@@ -57,27 +67,34 @@ class ProcessIsolator(pacai.core.isolation.isolator.AgentIsolator):
             self._agent_action_queues[agent_index] = action_queue
             self._agent_processes[agent_index] = process
 
-    def game_start(self, rng: random.Random, initial_state: pacai.core.gamestate.GameState) -> None:
-        for (agent_index, queue) in self._agent_message_queues.items():
+    def game_start(self,
+            rng: random.Random,
+            initial_state: pacai.core.gamestate.GameState,
+            ) -> dict[int, pacai.core.agentaction.AgentActionRecord]:
+        results = {}
+        for agent_index in self._agent_processes:
             suggested_seed = rng.randint(0, 2**64)
-            queue.put((MESSAGE_TYPE_START, (agent_index, suggested_seed, initial_state)), False)
+            message = (MESSAGE_TYPE_START, (agent_index, suggested_seed, initial_state))
+            results[agent_index] = self._send_agent_message(agent_index, message)
 
-    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
-        for queue in self._agent_message_queues.values():
-            queue.put((MESSAGE_TYPE_COMPLETE, final_state), False)
+        return results
+
+    def game_complete(self,
+            final_state: pacai.core.gamestate.GameState,
+            ) -> dict[int, pacai.core.agentaction.AgentActionRecord]:
+        results = {}
+        for agent_index in self._agent_processes:
+            message = (MESSAGE_TYPE_COMPLETE, final_state)
+            results[agent_index] = self._send_agent_message(agent_index, message)
+
+        return results
 
     def get_action(self,
             state: pacai.core.gamestate.GameState,
             user_inputs: list[pacai.core.action.Action],
-            ) -> pacai.core.action.ActionRecord:
-        message_queue = self._agent_message_queues[state.agent_index]
-        action_queue = self._agent_action_queues[state.agent_index]
-
-        # Send the request for an action.
-        message_queue.put((MESSAGE_TYPE_ACTION, (state, user_inputs)), False)
-
-        # Receive the action.
-        return action_queue.get(True)
+            ) -> pacai.core.agentaction.AgentActionRecord:
+        message = (MESSAGE_TYPE_ACTION, (state, user_inputs))
+        return self._send_agent_message(state.agent_index, message)
 
     def close(self) -> None:
         # Close all sending (message) queues.
@@ -95,6 +112,32 @@ class ProcessIsolator(pacai.core.isolation.isolator.AgentIsolator):
         self._agent_message_queues.clear()
         self._agent_action_queues.clear()
         self._agent_processes.clear()
+
+    def _send_agent_message(self,
+            agent_index: int,
+            message: tuple,
+            ) -> pacai.core.agentaction.AgentActionRecord:
+        """ Send an agent a message and wait for a response. """
+
+        message_queue = self._agent_message_queues[agent_index]
+        action_queue = self._agent_action_queues[agent_index]
+
+        # Send the message.
+        message_queue.put(message, False)
+
+        start_time = pacai.util.time.now()
+
+        # Receive the action.
+        agent_action = action_queue.get(True)
+
+        end_time = pacai.util.time.now()
+        crashed = (agent_action is None)
+
+        return pacai.core.agentaction.AgentActionRecord(
+                agent_index = agent_index,
+                agent_action = agent_action,
+                duration = end_time.sub(start_time),
+                crashed = crashed)
 
 def _join_process(process: multiprocessing.Process) -> None:
     process.join(JOIN_WAIT_SECS)
@@ -119,19 +162,42 @@ def _agent_handler(
 
     while (True):
         (message_type, payload) = message_queue.get(True)
+
+        agent_method: typing.Callable[..., pacai.core.agentaction.AgentAction] | None = None
+        agent_kwargs: dict[str, typing.Any] = {}
+
         if (message_type == MESSAGE_TYPE_START):
             (agent_index, suggested_seed, initial_state) = payload
-            agent.game_start(agent_index, suggested_seed, initial_state)
+
+            agent_method = agent.game_start_full
+            agent_kwargs = {
+                'agent_index': agent_index,
+                'suggested_seed': suggested_seed,
+                'initial_state': initial_state,
+            }
         elif (message_type == MESSAGE_TYPE_ACTION):
             (state, user_inputs) = payload
-            action = _get_action(agent, state, user_inputs)
-            action_queue.put(action, False)
+
+            agent_method = agent.get_action_full
+            agent_kwargs = {
+                'state': state,
+                'user_inputs': user_inputs,
+            }
         elif (message_type == MESSAGE_TYPE_COMPLETE):
             final_state = payload
-            agent.game_complete(final_state)
-            break
+
+            agent_method = agent.game_complete_full
+            agent_kwargs = {
+                'final_state': final_state,
+            }
         else:
             raise ValueError(f"Unknown message type: '{message_type}'.")
+
+        agent_action = _call_agent_method(agent, agent_method, agent_kwargs)
+        action_queue.put(agent_action, False)
+
+        if (message_type == MESSAGE_TYPE_COMPLETE):
+            break
 
     # Close the action queue.
     action_queue.close()
@@ -151,29 +217,29 @@ def _empty_queue(queue: multiprocessing.Queue) -> None:
         except ValueError:
             return
 
-def _get_action(
+def _get_agent_action(
         agent: pacai.core.agent.Agent,
         state: pacai.core.gamestate.GameState,
         user_inputs: list[pacai.core.action.Action],
-        ) -> pacai.core.action.ActionRecord:
+        ) -> pacai.core.agentaction.AgentAction | None:
     """ Get action from the agent. """
 
-    crashed = False
-
-    start_time = pacai.util.time.now()
-
     try:
-        action = agent.get_action(state, user_inputs)
+        return agent.get_action_full(state, user_inputs)
     except Exception as ex:
         logging.warning("Agent '%s' (%d) crashed.", agent.name, state.agent_index, exc_info = ex)
+        return None
 
-        crashed = True
-        action = pacai.core.action.STOP
 
-    end_time = pacai.util.time.now()
+def _call_agent_method(
+        agent: pacai.core.agent.Agent,
+        agent_method: typing.Callable[..., pacai.core.agentaction.AgentAction],
+        agent_method_kwargs: dict[str, typing.Any],
+        ) -> pacai.core.agentaction.AgentAction | None:
+    """ Call a method on the agent. """
 
-    return pacai.core.action.ActionRecord(
-            agent_index = state.agent_index,
-            action = action,
-            duration = end_time.sub(start_time),
-            crashed = crashed)
+    try:
+        return agent_method(**agent_method_kwargs)
+    except Exception as ex:
+        logging.warning("Agent '%s' crashed.", agent.name, exc_info = ex)
+        return None

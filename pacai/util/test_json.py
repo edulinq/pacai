@@ -1,4 +1,4 @@
-import pacai.core.action
+import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.game
 import pacai.core.isolation.level
@@ -121,10 +121,198 @@ class JSONTest(pacai.test.base.BaseTest):
             ),
 
             (
-                pacai.core.action.ActionRecord(1, pacai.core.action.STOP, pacai.util.time.Duration(10), False),
+                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
-                    "agent_index": 1,
+                    "position": {
+                        "row": 1,
+                        "col": 2,
+                    },
+                    "intensity": 1,
+                },
+                None,
+            ),
+            (
+                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 0.5),
+                {
+                    "position": {
+                        "row": 1,
+                        "col": 2,
+                    },
+                    "intensity": 500,
+                },
+                None,
+            ),
+            (
+                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), None),
+                {
+                    "position": {
+                        "row": 1,
+                        "col": 2,
+                    },
+                    "intensity": None,
+                },
+                None,
+            ),
+            (
+                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 1),
+                {
+                    "position": {
+                        "row": 1,
+                        "col": 2,
+                    },
+                    "intensity": -1,
+                },
+                'Integer highlight intensity must be in',
+            ),
+            (
+                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 1),
+                {
+                    "position": {
+                        "row": 1,
+                        "col": 2,
+                    },
+                    "intensity": 10000000,
+                },
+                'Integer highlight intensity must be in',
+            ),
+            (
+                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 1),
+                {
+                    "position": {
+                        "row": 1,
+                        "col": 2,
+                    },
+                    "intensity": -0.1,
+                },
+                'Floating point highlight intensity must be in',
+            ),
+            (
+                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 1),
+                {
+                    "position": {
+                        "row": 1,
+                        "col": 2,
+                    },
+                    "intensity": 1.1,
+                },
+                'Floating point highlight intensity must be in',
+            ),
+
+            (
+                pacai.core.agentaction.AgentAction(pacai.core.action.STOP),
+                {
                     "action": "STOP",
+                    "board_highlights": [],
+                    "other_info": {},
+                },
+                None,
+            ),
+            (
+                pacai.core.agentaction.AgentAction(
+                        action = pacai.core.action.STOP,
+                        board_highlights = [
+                             pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 0),
+                             pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 3, col = 4), 1),
+                        ],
+                        other_info = {'foo': 'bar'},
+                ),
+                {
+                    "action": "STOP",
+                    "board_highlights": [
+                        {
+                            "position": {
+                                "row": 1,
+                                "col": 2,
+                            },
+                            "intensity": 0,
+                        },
+                        {
+                            "position": {
+                                "row": 3,
+                                "col": 4,
+                            },
+                            "intensity": 1,
+                        }
+                    ],
+                    "other_info": {
+                        "foo": "bar",
+                    },
+                },
+                None,
+            ),
+
+            (
+                pacai.core.agentaction.AgentActionRecord(
+                    agent_index = 0,
+                    agent_action = pacai.core.agentaction.AgentAction(action = pacai.core.action.STOP),
+                    duration = pacai.util.time.Duration(10),
+                    crashed = False,
+                ),
+                {
+                    "agent_index": 0,
+                    "agent_action": {
+                        "action": "STOP",
+                        "board_highlights": [],
+                        "other_info": {},
+                    },
+                    "duration": 10,
+                    "crashed": False,
+                },
+                None,
+            ),
+            (
+                pacai.core.agentaction.AgentActionRecord(
+                    agent_index = 0,
+                    agent_action = None,
+                    duration = pacai.util.time.Duration(10),
+                    crashed = False,
+                ),
+                {
+                    "agent_index": 0,
+                    "agent_action": None,
+                    "duration": 10,
+                    "crashed": False,
+                },
+                None,
+            ),
+            (
+                pacai.core.agentaction.AgentActionRecord(
+                    agent_index = 0,
+                    agent_action = pacai.core.agentaction.AgentAction(
+                        action = pacai.core.action.STOP,
+                        board_highlights = [
+                             pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 0),
+                             pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 3, col = 4), 1),
+                        ],
+                        other_info = {'foo': 'bar'},
+                    ),
+                    duration = pacai.util.time.Duration(10),
+                    crashed = False,
+                ),
+                {
+                    "agent_index": 0,
+                    "agent_action": {
+                        "action": "STOP",
+                        "board_highlights": [
+                            {
+                                "position": {
+                                    "row": 1,
+                                    "col": 2,
+                                },
+                                "intensity": 0,
+                            },
+                            {
+                                "position": {
+                                    "row": 3,
+                                    "col": 4,
+                                },
+                                "intensity": 1,
+                            }
+                        ],
+                        "other_info": {
+                            "foo": "bar",
+                        },
+                    },
                     "duration": 10,
                     "crashed": False,
                 },
@@ -180,8 +368,18 @@ class JSONTest(pacai.test.base.BaseTest):
                     ),
                     start_time = pacai.util.time.Timestamp(12345),
                     history = [
-                        pacai.core.action.ActionRecord(1, pacai.core.action.STOP, pacai.util.time.Duration(10), False),
-                        pacai.core.action.ActionRecord(2, pacai.core.action.NORTH, pacai.util.time.Duration(20), True),
+                        pacai.core.agentaction.AgentActionRecord(
+                            agent_index = 0,
+                            agent_action = pacai.core.agentaction.AgentAction(action = pacai.core.action.STOP),
+                            duration = pacai.util.time.Duration(10),
+                            crashed = False,
+                        ),
+                        pacai.core.agentaction.AgentActionRecord(
+                            agent_index = 1,
+                            agent_action = None,
+                            duration = pacai.util.time.Duration(20),
+                            crashed = True,
+                        ),
                     ],
                 ),
                 {
@@ -207,14 +405,18 @@ class JSONTest(pacai.test.base.BaseTest):
                     "end_time": None,
                     "history": [
                         {
-                            "agent_index": 1,
-                            "action": "STOP",
+                            "agent_index": 0,
+                            "agent_action": {
+                                "action": "STOP",
+                                "board_highlights": [],
+                                "other_info": {},
+                            },
                             "duration": 10,
                             "crashed": False,
                         },
                         {
-                            "agent_index": 2,
-                            "action": "NORTH",
+                            "agent_index": 1,
+                            "agent_action": None,
                             "duration": 20,
                             "crashed": True,
                         },

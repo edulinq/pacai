@@ -5,7 +5,7 @@ import pacai.core.gamestate
 class GoWestAgent(pacai.core.agent.Agent):
     """ An agent that goes west as often as it can. """
 
-    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
+    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         """ Go west! """
 
         legal_actions = state.get_legal_actions()

@@ -36,7 +36,7 @@ class LeftTurnAgent(pacai.core.agent.Agent):
      - Randomly Choose Legal Action
     """
 
-    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
+    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         legal_actions = state.get_legal_actions()
 
         previous_action = state.get_agent_last_action()

@@ -27,7 +27,7 @@ class GreedyAgent(pacai.core.agent.Agent):
         self._evaluation_function: pacai.core.agent.EvaluationFunction = eval_func_object
         """ The evaluation function that agent will use to assess game states. """
 
-    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
+    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         legal_actions = state.get_legal_actions()
         if (len(legal_actions) == 1):
             return legal_actions[0]

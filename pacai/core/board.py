@@ -116,18 +116,6 @@ class Position(pacai.util.json.DictConverter):
         self.col: int = col
         """ The col / x / width of this position. """
 
-    def to_index(self, width: int) -> int:
-        """ Convert this position into a 1-dimension index. """
-        return (self.row * width) + self.col
-
-    @staticmethod
-    def from_index(index: int, width: int) -> 'Position':
-        """ Convert a 1-dimension index into a 2-dimension position. """
-        row = index // width
-        col = index % width
-
-        return Position(row, col)
-
     def add(self, other: 'Position') -> 'Position':
         """
         Add another position (offset) to this one and return the result.

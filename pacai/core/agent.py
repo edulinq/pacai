@@ -2,13 +2,28 @@ import abc
 import random
 import typing
 
+import pacai.core.agentaction
 import pacai.core.action
 import pacai.core.agentinfo
 import pacai.core.gamestate
 import pacai.util.reflection
 
 class Agent(abc.ABC):
-    """ The base for all agents in the pacai system. """
+    """
+    The base for all agents in the pacai system.
+
+    Agents are called on by the game engine for three things:
+    1) `game_start()` - a notification that the game has started.
+    2) `game_complete()` - a notification that the game has ended.
+    3) `get_action()` - a request for the agent to provide its next action.
+
+    For the three core agent methods: get_action(), game_start(), and game_complete(),
+    this class provides "full" versions of these methods (suffixed with "_full").
+    These methods may have more information and allow the agent to provide more information,
+    but are a little more complex.
+    By default, this class will just call the simple methods from the "full" ones,
+    allowing children to just implement the simple methods.
+    """
 
     def __init__(self, agent_info: pacai.core.agentinfo.AgentInfo, *args, **kwargs) -> None:
         self.name: pacai.util.reflection.Reference = agent_info.name
@@ -31,15 +46,39 @@ class Agent(abc.ABC):
         but will be recreated with the suggested seed from the game engine during game_start().
         """
 
-    @abc.abstractmethod
-    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
+    def get_action_full(self,
+            state: pacai.core.gamestate.GameState,
+            user_inputs: list[pacai.core.action.Action],
+            ) -> pacai.core.agentaction.AgentAction:
         """
         Get an action for this agent given the current state of the game.
         Agents may keep internal state, but the given state should be considered the source of truth.
-        Calls to this method may be subject to a timeout.
+        Calls to this method may be subject to a timeout (enforced by the isolator).
+
+        By default, this method just calls get_action().
+        Agent classes should typically just implement get_action(),
+        and only implement this if they need additional functionality.
         """
 
-    def game_start(self, agent_index: int, suggested_seed: int, initial_state: pacai.core.gamestate.GameState) -> None:
+        action = self.get_action(state)
+        return pacai.core.agentaction.AgentAction(action)
+
+    def get_action(self,
+            state: pacai.core.gamestate.GameState,
+            ) -> pacai.core.action.Action:
+        """
+        Get an action for this agent given the current state of the game.
+        This is simplified version of get_action_full(),
+        see that method for full details.
+        """
+
+        return pacai.core.action.STOP
+
+    def game_start_full(self,
+            agent_index: int,
+            suggested_seed: int,
+            initial_state: pacai.core.gamestate.GameState,
+            ) -> pacai.core.agentaction.AgentAction:
         """
         Notify this agent that the game is about to start.
         The provided agent index is the game's index/id for this agent.
@@ -50,7 +89,36 @@ class Agent(abc.ABC):
 
         self._rng = random.Random(suggested_seed)
 
-    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
+        self.game_start(initial_state)
+
+        return pacai.core.agentaction.AgentAction(pacai.core.action.STOP)
+
+    def game_start(self,
+            initial_state: pacai.core.gamestate.GameState,
+            ) -> None:
+        """
+        Notify this agent that the game is about to start.
+        The provided agent index is the game's index/id for this agent.
+        The state represents the initial state of the game.
+        Any precomputation for this game should be done in this method.
+        Calls to this method may be subject to a timeout.
+        """
+
+    def game_complete_full(self,
+            final_state: pacai.core.gamestate.GameState,
+            ) -> pacai.core.agentaction.AgentAction:
+        """
+        Notify this agent that the game has concluded.
+        Agents should use this as an opportunity to make any final calculations and close any game-related resources.
+        """
+
+        self.game_complete(final_state)
+
+        return pacai.core.agentaction.AgentAction(pacai.core.action.STOP)
+
+    def game_complete(self,
+            final_state: pacai.core.gamestate.GameState,
+            ) -> None:
         """
         Notify this agent that the game has concluded.
         Agents should use this as an opportunity to make any final calculations and close any game-related resources.

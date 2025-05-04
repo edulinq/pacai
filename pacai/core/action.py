@@ -5,9 +5,6 @@ Default actions are provided, but custom actions can be easily created.
 
 import typing
 
-import pacai.util.json
-import pacai.util.time
-
 class Action(str):
     """ An action that an agent is allowed to take. """
 
@@ -26,37 +23,6 @@ class Action(str):
         """
 
         return REVERSE_CARDINAL_DIRECTIONS.get(self, None)
-
-class ActionRecord(pacai.util.json.DictConverter):
-    """
-    The result of requesting an action from an agent.
-    Aside from the action, this also includes timing and crashing information.
-    """
-
-    def __init__(self,
-            agent_index: int,
-            action: Action,
-            duration: pacai.util.time.Duration,
-            crashed: bool) -> None:
-        self.agent_index: int = agent_index
-        """ The index of the agent making this action. """
-
-        self.action: Action = action
-        """ The action returned by the agent (or pacai.core.action.STOP on a crash). """
-
-        self.duration: pacai.util.time.Duration = duration
-        """ The duration (in MS) the agent took to compute this action. """
-
-        self.crashed: bool = crashed
-        """ Whether or not the agent crashed (e.g., raised an exception) when computing this action. """
-
-    def to_dict(self) -> dict[str, typing.Any]:
-        return vars(self).copy()
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        data = data.copy()
-        return ActionRecord(**data)
 
 NORTH = Action("north")
 """ The action for moving north/up. """

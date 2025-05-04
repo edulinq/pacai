@@ -26,7 +26,7 @@ class ScriptedAgent(pacai.core.agent.Agent):
         self._actions: list[pacai.core.action.Action] = [pacai.core.action.Action(raw_action) for raw_action in raw_actions]
         """ The scripted actions this agent will take. """
 
-    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.Action:
+    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         if (len(self._actions) > 0):
             return self._actions.pop(0)
 

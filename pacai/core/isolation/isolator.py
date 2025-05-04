@@ -2,8 +2,10 @@ import abc
 import random
 
 import pacai.core.action
+import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.gamestate
+import pacai.util.json
 
 class AgentIsolator(abc.ABC):
     """
@@ -22,19 +24,27 @@ class AgentIsolator(abc.ABC):
         """
 
     @abc.abstractmethod
-    def game_start(self, rng: random.Random, initial_state: pacai.core.gamestate.GameState) -> None:
+    def game_start(self,
+            rng: random.Random,
+            initial_state: pacai.core.gamestate.GameState,
+            ) -> dict[int, pacai.core.agentaction.AgentActionRecord]:
         """
         Pass along the initial game state to each agent and all them the allotted time to start.
         """
 
     @abc.abstractmethod
-    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
+    def game_complete(self,
+            final_state: pacai.core.gamestate.GameState,
+            ) -> dict[int, pacai.core.agentaction.AgentActionRecord]:
         """
         Notify all agents that the game is over.
         """
 
     @abc.abstractmethod
-    def get_action(self, state: pacai.core.gamestate.GameState, user_inputs: list[pacai.core.action.Action]) -> pacai.core.action.ActionRecord:
+    def get_action(self,
+            state: pacai.core.gamestate.GameState,
+            user_inputs: list[pacai.core.action.Action],
+            ) -> pacai.core.agentaction.AgentActionRecord:
         """
         Get the current agent's next action.
         User inputs may be provided by the UI if available.

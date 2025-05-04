@@ -7,6 +7,7 @@ import random
 import typing
 
 import pacai.core.action
+import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.isolation.level
 import pacai.core.ui
@@ -79,7 +80,7 @@ class GameResult(pacai.util.json.DictConverter):
             winning_agent_index: int = -1,
             start_time: pacai.util.time.Timestamp | None = None,
             end_time: pacai.util.time.Timestamp | None = None,
-            history: list[pacai.core.action.ActionRecord] | None = None,
+            history: list[pacai.core.agentaction.AgentActionRecord] | None = None,
             **kwargs) -> None:
         self.game_id: int = game_id
         """ The ID of the game result. """
@@ -99,7 +100,7 @@ class GameResult(pacai.util.json.DictConverter):
         if (history is None):
             history = []
 
-        self.history: list[pacai.core.action.ActionRecord] = history
+        self.history: list[pacai.core.agentaction.AgentActionRecord] = history
         """ The history of actions taken by each agent in this game. """
 
         self.score: int = score
@@ -111,7 +112,10 @@ class GameResult(pacai.util.json.DictConverter):
         Games may interpret this value in different ways.
         """
 
-    def update(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> None:
+    def update(self,
+            state: pacai.core.gamestate.GameState,
+            action_record: pacai.core.agentaction.AgentActionRecord,
+            ) -> None:
         """ Update the game result after an agent move. """
 
         self.score = state.score
@@ -130,12 +134,12 @@ class GameResult(pacai.util.json.DictConverter):
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return GameResult(
+        return cls(
             data['game_id'],
             GameInfo.from_dict(data['game_info']),
             start_time = data.get('start_time', None),
             end_time = data.get('end_time', None),
-            history = [pacai.core.action.ActionRecord.from_dict(item) for item in data.get('history', [])],
+            history = [pacai.core.agentaction.AgentActionRecord.from_dict(item) for item in data.get('history', [])],
             score = data.get('score', 0),
             winning_agent_index = data.get('winning_agent_index', -1),
         )
@@ -175,16 +179,20 @@ class Game(abc.ABC):
             ) -> pacai.core.gamestate.GameState:
         """ Create the initial state for this game. """
 
-    def process_turn(self, state: pacai.core.gamestate.GameState, action_record: pacai.core.action.ActionRecord) -> pacai.core.gamestate.GameState:
+    def process_turn(self,
+            state: pacai.core.gamestate.GameState,
+            action_record: pacai.core.agentaction.AgentActionRecord,
+            ) -> pacai.core.gamestate.GameState:
         """
         Process the given move and return an updated game state.
         The returned game state may be a copy or modified version of the passed in game state.
         """
 
-        if (action_record.action not in state.get_legal_actions()):
-            raise ValueError(f"Illegal action for agent {state.agent_index}: '{action_record.action}'.")
+        action = action_record.get_action()
+        if (action not in state.get_legal_actions()):
+            raise ValueError(f"Illegal action for agent {state.agent_index}: '{action}'.")
 
-        state.process_turn(action_record.action)
+        state.process_turn(action)
         return state
 
     def check_end(self, state: pacai.core.gamestate.GameState) -> bool:
@@ -246,6 +254,8 @@ class Game(abc.ABC):
 
             # Get the next action from the agent.
             action_record = isolator.get_action(state, user_inputs)
+
+            # TODO(eriq): Handle crashes -- acton_record.agent_action is None
 
             # Execute the next action and update the state.
             state = self.process_turn(state, action_record)
@@ -475,7 +485,7 @@ def _override_args_with_replay(args: argparse.Namespace, base_agent_infos: dict[
         if (item.agent_index not in scripted_actions):
             scripted_actions[item.agent_index] = []
 
-        scripted_actions[item.agent_index].append(item.action)
+        scripted_actions[item.agent_index].append(item.get_action())
 
     base_agent_infos.clear()
 
