@@ -124,6 +124,19 @@ class Agent(abc.ABC):
         Agents should use this as an opportunity to make any final calculations and close any game-related resources.
         """
 
+def load(agent_info: pacai.core.agentinfo.AgentInfo) -> Agent:
+    """
+    Construct a new agent object using the given agent info.
+    The name of the agent will be used as a reference to (e.g., name of) the agent's class.
+    """
+
+    agent = pacai.util.reflection.new_object(agent_info.name, agent_info)
+
+    if (not isinstance(agent, Agent)):
+        raise ValueError(f"Loaded class is not an agent: '{agent_info.name}'.")
+
+    return agent
+
 @typing.runtime_checkable
 class EvaluationFunction(typing.Protocol):
     """
@@ -139,16 +152,3 @@ def base_eval(state: pacai.core.gamestate.GameState) -> float:
     """ The most basic evaluation function, which just uses the state's current score. """
 
     return float(state.score)
-
-def load(agent_info: pacai.core.agentinfo.AgentInfo) -> Agent:
-    """
-    Construct a new agent object using the given agent info.
-    The name of the agent will be used as a reference to (e.g., name of) the agent's class.
-    """
-
-    agent = pacai.util.reflection.new_object(agent_info.name, agent_info)
-
-    if (not isinstance(agent, Agent)):
-        raise ValueError(f"Loaded class is not an agent: '{agent_info.name}'.")
-
-    return agent

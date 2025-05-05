@@ -148,6 +148,9 @@ class Position(pacai.util.json.DictConverter):
     def __hash__(self) -> int:
         return (self.row, self.col).__hash__()
 
+    def __str__(self) -> str:
+        return f"({self.row}, {self.col})"
+
     def to_dict(self) -> dict[str, typing.Any]:
         return vars(self).copy()
 
@@ -236,6 +239,7 @@ class Board(pacai.util.json.DictConverter):
             markers: dict[str, Marker] | None = None,
             additional_markers: list[str] | None = None,
             strip: bool = True,
+            search_target: Position | dict[str, typing.Any] | None = None,
             _height: int | None = None,
             _width: int | None = None,
             _all_objects: dict[Marker, set[Position]] | None = None,
@@ -271,6 +275,12 @@ class Board(pacai.util.json.DictConverter):
 
         self._agent_initial_positions: dict[Marker, Position] = {}
         """ Keep track of where each agent started. """
+
+        if (isinstance(search_target, dict)):
+            search_target = Position.from_dict(search_target)
+
+        self.search_target: Position | None = search_target  # type: ignore
+        """ Some boards (especially mazes) will have a specific positional search target. """
 
         # The board text has been provided, parse the data from it.
         if (board_text is not None):
@@ -572,11 +582,16 @@ class Board(pacai.util.json.DictConverter):
         for (marker, position) in sorted(self._agent_initial_positions.items()):
             agent_initial_positions[str(marker)] = position.to_dict()
 
+        search_target: Position | dict[str, typing.Any] | None = self.search_target
+        if (isinstance(search_target, Position)):
+            search_target = search_target.to_dict()
+
         return {
             'source': self.source,
             'markers': {key: str(marker) for (key, marker) in sorted(self._markers.items())},
             'height': self.height,
             'width': self.width,
+            'search_target': search_target,
             '_all_objects': all_objects,
             '_agent_initial_positions': agent_initial_positions,
         }
@@ -591,9 +606,14 @@ class Board(pacai.util.json.DictConverter):
         for (raw_marker, raw_position) in data['_agent_initial_positions'].items():
             agent_initial_positions[Marker(raw_marker)] = Position.from_dict(raw_position)
 
+        search_target = data.get('search_target', None)
+        if (search_target is not None):
+            search_target = Position.from_dict(search_target)
+
         return Board(
             source = data['source'],
             markers = {key: Marker(marker) for (key, marker) in data['markers'].items()},
+            search_target = search_target,
             _height = data['height'],
             _width = data['width'],
             _all_objects = all_objects,

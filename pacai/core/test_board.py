@@ -27,6 +27,7 @@ class BoardTest(pacai.test.base.BaseTest):
             (TEST_BOARD_AGENT, None),
             (TEST_BOARD_AGENTS, None),
             (TEST_BOARD_AGENTS_NUMBERS, None),
+            (TEST_BOARD_SEARCH_TARGET, None),
 
             ('', 'A board cannot be empty.'),
             (TEST_BOARD_ERROR_EMPTY_BOARD, 'A board cannot be empty.'),
@@ -138,5 +139,13 @@ TEST_BOARD_ERROR_INCONSISTENT_WIDTH = '''
 TEST_BOARD_ERROR_UNKNOWN_MARKER = '''
 %%%
 %?%
+%%%
+'''
+
+TEST_BOARD_SEARCH_TARGET = '''
+{"search_target": {"row": 1, "col": 2}}
+---
+%%%
+% %
 %%%
 '''

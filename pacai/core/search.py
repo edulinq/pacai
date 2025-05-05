@@ -3,6 +3,7 @@ This file provides the core infrastructure for search problems.
 """
 
 import abc
+import random
 import typing
 
 import pacai.core.action
@@ -33,7 +34,7 @@ class SuccessorInfo:
     def __init__(self,
             node: SearchNode,
             action: pacai.core.action.Action,
-            cost: int,
+            cost: float,
             **kwargs) -> None:
         self.node = node
         """ The search node of this successor. """
@@ -91,10 +92,52 @@ class SearchProblem(abc.ABC):
         (where the passed in node is that search node).
         """
 
+class SearchSolution:
+    """
+    A potential solution to a search problem.
+    This does not have to be an optimal (or even correct) solution,
+    but just what a solver returns.
+    """
+
+    def __init__(self, actions: list[pacai.core.action.Action], cost: float) -> None:
+        self.actions: list[pacai.core.action.Action] = actions
+        """
+        The actions to take for this solution.
+        These actions should guide the agent from its starting location (SearchProblem.get_starting_node())
+        to the goal (SearchProblem.is_goal_node()).
+        If the agent is just moving, you can think of this as it's "path".
+        """
+
+        self.cost: float = cost
+        """ The cost of this solution. """
+
+@typing.runtime_checkable
 class CostFunction(typing.Protocol):
     """
     A function that computes the cost associated with a specific search node.
     """
 
-    def __call__(self, node: SearchNode) -> int:
+    def __call__(self, node: SearchNode, **kwargs) -> float:
+        ...
+
+@typing.runtime_checkable
+class SearchHeuristic(typing.Protocol):
+    """
+    A heuristic function attempts to score a search node in the context of a problem.
+    """
+
+    def __call__(self, node: SearchNode, problem: SearchProblem, **kwargs) -> float:
+        ...
+
+@typing.runtime_checkable
+class SearchProblemSolver(typing.Protocol):
+    """
+    A function that solves a search problem and returns a solution.
+    """
+
+    def __call__(self,
+            problem: SearchProblem,
+            heuristic: SearchHeuristic,
+            rng: random.Random,
+            **kwargs) -> SearchSolution:
         ...

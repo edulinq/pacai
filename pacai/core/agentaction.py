@@ -61,7 +61,7 @@ class AgentAction(pacai.util.json.DictConverter):
     """
 
     def __init__(self,
-            action: pacai.core.action.Action,
+            action: pacai.core.action.Action = pacai.core.action.STOP,
             board_highlights: list[BoardHighlight] | None = None,
             other_info: dict[str, typing.Any] | None = None,
             ) -> None:

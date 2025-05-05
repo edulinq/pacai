@@ -1,5 +1,6 @@
 {
-    "class": "pacai.pacman.board.Board"
+    "class": "pacai.pacman.board.Board",
+    "search_target": {"row": 16, "col": 1}
 }
 ---
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

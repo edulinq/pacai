@@ -40,7 +40,8 @@ class PositionSearchProblem(pacai.core.search.SearchProblem):
         """
         Create a positional search problem.
 
-        If no goal position is provided, DEFAULT_GOAL_POSITION will be used.
+        If no goal position is provided, the board's search target will be used,
+            if that does not exist, then DEFAULT_GOAL_POSITION will be used.
         If no start position is provided, the current agent's position will be used.
         If no cost function is provided, DEFAULT_COST_FUNCTION will be used.
         """
@@ -51,7 +52,10 @@ class PositionSearchProblem(pacai.core.search.SearchProblem):
         """ Keep track of the board so we can navigate walls. """
 
         if (goal_position is None):
-            goal_position = DEFAULT_GOAL_POSITION
+            if (self._board.search_target is not None):
+                goal_position = self._board.search_target
+            else:
+                goal_position = DEFAULT_GOAL_POSITION
 
         self._goal_position = goal_position
         """ The position to search for. """
@@ -75,7 +79,7 @@ class PositionSearchProblem(pacai.core.search.SearchProblem):
         return PositionSearchNode(self.start_position)
 
     def is_goal_node(self, node: PositionSearchNode) -> bool:  # type: ignore[override]
-        return (self.start_position == node.position)
+        return (self._goal_position == node.position)
 
     def get_successor_nodes(self, node: PositionSearchNode) -> list[pacai.core.search.SuccessorInfo]:  # type: ignore[override]
         successors = []

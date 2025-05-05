@@ -493,6 +493,48 @@ class JSONTest(pacai.test.base.BaseTest):
                     },
                     '_agent_initial_positions': {
                         "0": {"row": 1, "col": 1},
+                    },
+                    'search_target': None,
+                },
+                None,
+            ),
+            (
+                pacai.core.board.load_string('test', pacai.core.test_board.TEST_BOARD_SEARCH_TARGET),
+                {
+                    'source': 'test',
+                    'markers': {
+                        " ": " ",
+                        "%": "%",
+                        "0": "0",
+                        "1": "1",
+                        "2": "2",
+                        "3": "3",
+                        "4": "4",
+                        "5": "5",
+                        "6": "6",
+                        "7": "7",
+                        "8": "8",
+                        "9": "9"
+                    },
+                    'height': 3,
+                    'width': 3,
+                    '_all_objects': {
+                        "%": [
+                            {"row": 0, "col": 0},
+                            {"row": 0, "col": 1},
+                            {"row": 0, "col": 2},
+                            {"row": 1, "col": 0},
+                            {"row": 1, "col": 2},
+                            {"row": 2, "col": 0},
+                            {"row": 2, "col": 1},
+                            {"row": 2, "col": 2},
+                        ],
+                    },
+                    '_agent_initial_positions': {
+                    },
+                    'search_target': {
+                        "row": 1,
+                        "col": 2,
                     }
                 },
                 None,
@@ -550,7 +592,8 @@ class JSONTest(pacai.test.base.BaseTest):
                         },
                         '_agent_initial_positions': {
                             "0": {"row": 1, "col": 1},
-                        }
+                        },
+                        "search_target": None,
                     },
                     'last_actions': {
                         0: "STOP",

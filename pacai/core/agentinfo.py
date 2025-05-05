@@ -10,7 +10,10 @@ class AgentInfo(pacai.util.json.DictConverter):
     """
     Argument used to construct an agent.
     Common arguments used by the engine are stored as top-level fields,
-    while arguments that spcecific child agents may use are stored in a general dict.
+    while arguments that specific child agents may use are stored in a general dict.
+
+    Then additional arguments should be kept to simple types
+    that can be serialized/deserialized via the standard Python JSON library.
     """
 
     def __init__(self,
@@ -22,7 +25,7 @@ class AgentInfo(pacai.util.json.DictConverter):
             name = pacai.util.reflection.Reference(name)
 
         self.name: pacai.util.reflection.Reference = name
-        """ The name of the agent's class (as a reflection refernce). """
+        """ The name of the agent's class (as a reflection reference). """
 
         if (move_delay is None):
             move_delay = DEFAULT_MOVE_DELAY
