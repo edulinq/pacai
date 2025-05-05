@@ -81,6 +81,10 @@ class PositionSearchProblem(pacai.core.search.SearchProblem):
     def is_goal_node(self, node: PositionSearchNode) -> bool:  # type: ignore[override]
         return (self._goal_position == node.position)
 
+    def complete(self, goal_node: PositionSearchNode) -> None:  # type: ignore[override]
+        # Mark the final node in the history.
+        self.position_history.append(goal_node.position)
+
     def get_successor_nodes(self, node: PositionSearchNode) -> list[pacai.core.search.SuccessorInfo]:  # type: ignore[override]
         successors = []
 

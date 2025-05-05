@@ -84,6 +84,9 @@ class SearchProblem(abc.ABC):
     def is_goal_node(self, node: SearchNode) -> bool:
         """ Check if this node is a valid goal node. """
 
+    def complete(self, goal_node: SearchNode) -> None:
+        """ Notify this search problem that the soler choose this goal node. """
+
     @abc.abstractmethod
     def get_successor_nodes(self, node: SearchNode) -> list[SuccessorInfo]:
         """

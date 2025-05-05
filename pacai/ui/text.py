@@ -147,7 +147,7 @@ class TextUI(pacai.core.ui.UI):
         self._output_stream: typing.TextIO = output_stream
         """ The stream output will be sent to. """
 
-    def draw(self, state: pacai.core.gamestate.GameState) -> None:
+    def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
         grid = state.board.to_grid()
         for row in grid:
             line = ''.join([self._translate_marker(marker, state) for marker in row])

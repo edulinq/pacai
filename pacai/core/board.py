@@ -19,6 +19,9 @@ DEFAULT_BOARD_CLASS: str = 'pacai.core.board.Board'
 
 MAX_AGENTS: int = 10
 
+MIN_HL_INTENSITY: int = 0
+MAX_HL_INTENSITY: int = 1000
+
 class Marker(str):
     """
     A marker represents something that can appear on a board.
@@ -165,6 +168,56 @@ CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
     pacai.core.action.SOUTH: Position(1, 0),
     pacai.core.action.WEST: Position(0, -1),
 }
+
+class Highlight(pacai.util.json.DictConverter):
+    """
+    A class representing a request to highlight/emphasize a position on the board.
+    """
+
+    def __init__(self,
+            position: Position,
+            intensity: int | float | None,
+            ) -> None:
+        self.position = position
+        """ The position of this highlight. """
+
+        if (isinstance(intensity, float)):
+            if ((intensity < 0.0) or (intensity > 1.0)):
+                raise ValueError(f"Floating point highlight intensity must be in [0.0, 1.0], found: {intensity}.")
+
+            intensity = int(intensity * MAX_HL_INTENSITY)
+
+        if (isinstance(intensity, int)):
+            if ((intensity < MIN_HL_INTENSITY) or (intensity > MAX_HL_INTENSITY)):
+                raise ValueError(f"Integer highlight intensity must be in [MIN_HL_INTENSITY, MAX_HL_INTENSITY], found: {intensity}.")
+
+        self.intensity: int | None = intensity
+        """
+        The highlight intensity associated with this position,
+        or None if this highlight should be cleared.
+        """
+
+    def get_float_intensity(self) -> float | None:
+        """ Get the highlight intensity in [0.0, 1.0]. """
+
+        if (self.intensity is None):
+            return None
+
+        return self.intensity / MAX_HL_INTENSITY
+
+    def to_dict(self) -> dict[str, typing.Any]:
+        return {
+            'position': self.position.to_dict(),
+            'intensity': self.intensity,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        data = {
+            'position': Position.from_dict(data['position']),
+            'intensity': data['intensity'],
+        }
+        return cls(**data)
 
 class AdjacencyString(str):
     """

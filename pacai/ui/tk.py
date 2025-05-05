@@ -6,6 +6,7 @@ import PIL.Image
 import PIL.ImageTk
 
 import pacai.core.action
+import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.ui
 
@@ -120,12 +121,18 @@ class TkUI(pacai.core.ui.UI):
         self._window_closed: bool = False
         """ Indicate that the Tk window has been closed. """
 
-    def game_start(self, initial_state: pacai.core.gamestate.GameState) -> None:
+    def game_start(self,
+            initial_state: pacai.core.gamestate.GameState,
+            board_highlights: list[pacai.core.board.Highlight] | None = None,
+            ) -> None:
         self._init_tk(initial_state)
-        super().game_start(initial_state)
+        super().game_start(initial_state, board_highlights = board_highlights)
 
-    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
-        super().game_complete(final_state)
+    def game_complete(self,
+            final_state: pacai.core.gamestate.GameState,
+            board_highlights: list[pacai.core.board.Highlight] | None = None,
+            ) -> None:
+        super().game_complete(final_state, board_highlights = board_highlights)
 
         if (self._canvas is not None):
             self._canvas.delete("all")
@@ -154,7 +161,7 @@ class TkUI(pacai.core.ui.UI):
         if (isinstance(self.user_input_device, TkUserInputDevice)):
             self.user_input_device.register_root(self._root)
 
-    def draw(self, state: pacai.core.gamestate.GameState) -> None:
+    def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
         if (self._window_closed):
             self._cleanup()
             return

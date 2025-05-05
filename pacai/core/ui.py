@@ -109,6 +109,10 @@ class UI(abc.ABC):
         self._animation_path: str | None = animation_path
         """ If specified, create a animation and write it to this location after the game completes. """
 
+        if (self._animation_path is not None):
+            if (os.path.splitext(self._animation_path)[-1] not in ANIMATION_EXTS):
+                raise ValueError(f"Animation path must have one of the following extensions {ANIMATION_EXTS}, found '{self._animation_path}'.")
+
         self._animation_optimize: bool = animation_optimize
         """ Optimize the animation output to reduce file size. """
 
@@ -143,17 +147,30 @@ class UI(abc.ABC):
         self._image_cache: dict[int, PIL.Image.Image] = {}
         """ Cache images (by game state turn count) to avoid redrawing images. """
 
-        if (self._animation_path is not None):
-            if (os.path.splitext(self._animation_path)[-1] not in ANIMATION_EXTS):
-                raise ValueError(f"Animation path must have one of the following extensions {ANIMATION_EXTS}, found '{self._animation_path}'.")
+        self._highlights: dict[pacai.core.board.Position, float] = {}
+        """ The current set of board highlights. """
 
-    def update(self, state: pacai.core.gamestate.GameState, force_draw_image: bool = False) -> None:
+    def update(self,
+            state: pacai.core.gamestate.GameState,
+            force_draw_image: bool = False,
+            board_highlights: list[pacai.core.board.Highlight] | None = None,
+            ) -> None:
         """
         Update the UI with the current state of the game.
         This is the main entry point for the game into the UI.
         """
 
         self.wait_for_fps()
+
+        if (board_highlights is None):
+            board_highlights = []
+
+        for board_highlight in board_highlights:
+            intensity = board_highlight.get_float_intensity()
+            if (intensity is None):
+                self._highlights.pop(board_highlight.position, None)
+            else:
+                self._highlights[board_highlight.position] = intensity
 
         if ((self._animation_path is not None) and (force_draw_image or (self._update_count % self._animation_skip_frames == 0))):
             image = self.draw_image(state)
@@ -163,15 +180,21 @@ class UI(abc.ABC):
 
         self._update_count += 1
 
-    def game_start(self, initial_state: pacai.core.gamestate.GameState) -> None:
+    def game_start(self,
+            initial_state: pacai.core.gamestate.GameState,
+            board_highlights: list[pacai.core.board.Highlight] | None = None,
+            ) -> None:
         """ Initialize the UI with the game's initial state. """
 
-        self.update(initial_state, force_draw_image = True)
+        self.update(initial_state, board_highlights = board_highlights, force_draw_image = True)
 
-    def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
+    def game_complete(self,
+            final_state: pacai.core.gamestate.GameState,
+            board_highlights: list[pacai.core.board.Highlight] | None = None,
+            ) -> None:
         """ Update the UI with the game's final state. """
 
-        self.update(final_state, force_draw_image = True)
+        self.update(final_state, board_highlights = board_highlights, force_draw_image = True)
 
         # Write the animation.
         if ((self._animation_path is not None) and (len(self._animation_frames) > 0)):
@@ -250,7 +273,7 @@ class UI(abc.ABC):
 
         return self.user_input_device.get_inputs()
 
-    def draw_image(self, state: pacai.core.gamestate.GameState) -> PIL.Image.Image:
+    def draw_image(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
         """
         Visualize the state of the game as an image.
         This method is typically used for rendering the game to an animation.
@@ -268,7 +291,7 @@ class UI(abc.ABC):
                 (state.board.height + 1) * self._sprite_sheet.height,
             )
 
-            # Add in the alpha channel to the background.
+            # Add in an alpha channel to the background.
             background_color = list(self._sprite_sheet.background)
             background_color.append(255)
 
@@ -283,6 +306,21 @@ class UI(abc.ABC):
             self._walls_image = image.copy()
         else:
             image = self._walls_image.copy()
+
+        canvas = PIL.ImageDraw.Draw(image)
+
+        # Draw highlights.
+        for (position, intensity) in self._highlights.items():
+            start_coord = self._position_to_image_coords(position)
+            end_coord = self._position_to_image_coords(position.add(pacai.core.board.Position(1, 1)))
+
+            highlight_color = (
+                int(self._sprite_sheet.highlight[0] * intensity),
+                int(self._sprite_sheet.highlight[1] * intensity),
+                int(self._sprite_sheet.highlight[2] * intensity),
+            )
+
+            canvas.rectangle([start_coord, end_coord], fill = tuple(highlight_color))
 
         # Draw non-agent (non-wall) markers.
         for (marker, positions) in state.board._all_objects.items():
@@ -306,7 +344,6 @@ class UI(abc.ABC):
         # Draw the score.
         score_image_coordinates = (0, state.board.height * self._sprite_sheet.height)
         score_text = f"Score: {state.score}"
-        canvas = PIL.ImageDraw.Draw(image)
         canvas.text(score_image_coordinates, score_text, self._sprite_sheet.text, self._font)
 
         # Store this image in the cache.
@@ -326,15 +363,18 @@ class UI(abc.ABC):
         return self._sprite_sheet.get_sprite(**kwargs)
 
     def _place_sprite(self, position: pacai.core.board.Position, sprite: PIL.Image.Image, image: PIL.Image.Image):
-        image_coordinates = (position.col * self._sprite_sheet.width, position.row * self._sprite_sheet.height)
+        image_coordinates = self._position_to_image_coords(position)
 
         # Overlay the sprite onto the image.
         # Note that the same image is used as the mask, since sprites will usually have alpha channels
         # (so the transparent parts will not get drawn).
         image.paste(sprite, image_coordinates, sprite)
 
+    def _position_to_image_coords(self, position: pacai.core.board.Position) -> tuple[int, int]:
+        return (position.col * self._sprite_sheet.width, position.row * self._sprite_sheet.height)
+
     @abc.abstractmethod
-    def draw(self, state: pacai.core.gamestate.GameState) -> None:
+    def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
         """
         Visualize the state of the game to the UI.
         This is the typically the main override point for children.

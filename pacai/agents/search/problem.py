@@ -92,6 +92,6 @@ class SearchProblemAgent(pacai.core.agent.Agent):
             # Gradually increase the highlight intensity from the start to the end.
             intensity = (i + 1) / len(search_problem.position_history)
 
-            highlights.append(pacai.core.agentaction.BoardHighlight(position, intensity))
+            highlights.append(pacai.core.board.Highlight(position, intensity))
 
         return pacai.core.agentaction.AgentAction(board_highlights = highlights)

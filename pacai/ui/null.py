@@ -1,3 +1,4 @@
+import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.ui
 
@@ -8,7 +9,7 @@ class NullUI(pacai.core.ui.UI):
     (e.g., the log or gif) than seeing the actual game.
     """
 
-    def draw(self, state: pacai.core.gamestate.GameState) -> None:
+    def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
         pass
 
     def wait_for_fps(self) -> None:

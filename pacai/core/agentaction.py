@@ -9,51 +9,6 @@ import pacai.core.board
 import pacai.util.json
 import pacai.util.time
 
-MIN_INTENSITY: int = 0
-MAX_INTENSITY: int = 1000
-
-class BoardHighlight(pacai.util.json.DictConverter):
-    """
-    A class representing a request to highlight/emphasize a position on the board.
-    """
-
-    def __init__(self,
-            position: pacai.core.board.Position,
-            intensity: int | float | None,
-            ) -> None:
-        self.position = position
-        """ The position of this highlight. """
-
-        if (isinstance(intensity, float)):
-            if ((intensity < 0.0) or (intensity > 1.0)):
-                raise ValueError(f"Floating point highlight intensity must be in [0.0, 1.0], found: {intensity}.")
-
-            intensity = int(intensity * MAX_INTENSITY)
-
-        if (isinstance(intensity, int)):
-            if ((intensity < MIN_INTENSITY) or (intensity > MAX_INTENSITY)):
-                raise ValueError(f"Integer highlight intensity must be in [MIN_INTENSITY, MAX_INTENSITY], found: {intensity}.")
-
-        self.intensity: int | None = intensity
-        """
-        The highlight intensity associated with this position,
-        or None if this highlight should be cleared.
-        """
-
-    def to_dict(self) -> dict[str, typing.Any]:
-        return {
-            'position': self.position.to_dict(),
-            'intensity': self.intensity,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        data = {
-            'position': pacai.core.board.Position.from_dict(data['position']),
-            'intensity': data['intensity'],
-        }
-        return cls(**data)
-
 class AgentAction(pacai.util.json.DictConverter):
     """
     The full response by an agent when an action is requested.
@@ -62,7 +17,7 @@ class AgentAction(pacai.util.json.DictConverter):
 
     def __init__(self,
             action: pacai.core.action.Action = pacai.core.action.STOP,
-            board_highlights: list[BoardHighlight] | None = None,
+            board_highlights: list[pacai.core.board.Highlight] | None = None,
             other_info: dict[str, typing.Any] | None = None,
             ) -> None:
         self.action: pacai.core.action.Action = action
@@ -71,7 +26,7 @@ class AgentAction(pacai.util.json.DictConverter):
         if (board_highlights is None):
             board_highlights = []
 
-        self.board_highlights: list[BoardHighlight] = board_highlights
+        self.board_highlights: list[pacai.core.board.Highlight] = board_highlights
         """
         Board highlights that the agent would like to take effect.
         """
@@ -93,7 +48,7 @@ class AgentAction(pacai.util.json.DictConverter):
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
         data = data.copy()
-        data['board_highlights'] = [BoardHighlight.from_dict(raw_highligh) for raw_highligh in data['board_highlights']]
+        data['board_highlights'] = [pacai.core.board.Highlight.from_dict(raw_highligh) for raw_highligh in data['board_highlights']]
         return cls(**data)
 
 class AgentActionRecord(pacai.util.json.DictConverter):
@@ -128,6 +83,14 @@ class AgentActionRecord(pacai.util.json.DictConverter):
             return pacai.core.action.STOP
 
         return self.agent_action.action
+
+    def get_board_highlights(self) -> list[pacai.core.board.Highlight]:
+        """ Get the board highlights. """
+
+        if (self.agent_action is None):
+            return []
+
+        return self.agent_action.board_highlights
 
     def to_dict(self) -> dict[str, typing.Any]:
         return {

@@ -121,7 +121,7 @@ class JSONTest(pacai.test.base.BaseTest):
             ),
 
             (
-                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 1),
+                pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
                     "position": {
                         "row": 1,
@@ -132,7 +132,7 @@ class JSONTest(pacai.test.base.BaseTest):
                 None,
             ),
             (
-                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 0.5),
+                pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 0.5),
                 {
                     "position": {
                         "row": 1,
@@ -143,7 +143,7 @@ class JSONTest(pacai.test.base.BaseTest):
                 None,
             ),
             (
-                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), None),
+                pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), None),
                 {
                     "position": {
                         "row": 1,
@@ -154,7 +154,7 @@ class JSONTest(pacai.test.base.BaseTest):
                 None,
             ),
             (
-                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 1),
+                pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
                     "position": {
                         "row": 1,
@@ -165,7 +165,7 @@ class JSONTest(pacai.test.base.BaseTest):
                 'Integer highlight intensity must be in',
             ),
             (
-                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 1),
+                pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
                     "position": {
                         "row": 1,
@@ -176,7 +176,7 @@ class JSONTest(pacai.test.base.BaseTest):
                 'Integer highlight intensity must be in',
             ),
             (
-                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 1),
+                pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
                     "position": {
                         "row": 1,
@@ -187,7 +187,7 @@ class JSONTest(pacai.test.base.BaseTest):
                 'Floating point highlight intensity must be in',
             ),
             (
-                pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 1),
+                pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
                     "position": {
                         "row": 1,
@@ -211,8 +211,8 @@ class JSONTest(pacai.test.base.BaseTest):
                 pacai.core.agentaction.AgentAction(
                         action = pacai.core.action.STOP,
                         board_highlights = [
-                             pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 0),
-                             pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 3, col = 4), 1),
+                             pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 0),
+                             pacai.core.board.Highlight(pacai.core.board.Position(row = 3, col = 4), 1),
                         ],
                         other_info = {'foo': 'bar'},
                 ),
@@ -281,8 +281,8 @@ class JSONTest(pacai.test.base.BaseTest):
                     agent_action = pacai.core.agentaction.AgentAction(
                         action = pacai.core.action.STOP,
                         board_highlights = [
-                             pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 1, col = 2), 0),
-                             pacai.core.agentaction.BoardHighlight(pacai.core.board.Position(row = 3, col = 4), 1),
+                             pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 0),
+                             pacai.core.board.Highlight(pacai.core.board.Position(row = 3, col = 4), 1),
                         ],
                         other_info = {'foo': 'bar'},
                     ),

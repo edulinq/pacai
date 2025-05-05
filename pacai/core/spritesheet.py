@@ -7,6 +7,7 @@ The JSON config is a JSON object that contains the following key/values:
  - height: int
  - width: int
  - background: Color
+ - highlight: Color
  - default: Coordinate
  - markers: dict[pacai.core.board.Marker, MarkerSprites]
 
@@ -18,6 +19,7 @@ The top left is the origin, and the coordinates already take the height/width in
 `Color` is an RGB tuple of int (all between 0 and 255) that represents an RGB color.
 
 Default `background` is [0, 0, 0] (black).
+Default `highlight` is [255, 0, 0] (red).
 Default `text` is [255, 255, 255] (white).
 
 `MarkerSprites` represent the sprite information for a single marker.
@@ -56,11 +58,13 @@ KEY_BACKGROUND: str = 'background'
 KEY_DEFAULT: str = 'default'
 KEY_FILENAME: str = 'filename'
 KEY_HEIGHT: str = 'height'
+KEY_HIGHLIGHT: str = 'highlight'
 KEY_MARKERS: str = 'markers'
 KEY_TEXT: str = 'text'
 KEY_WIDTH: str = 'width'
 
 DEFAULT_BACKGROUND: tuple[int, int, int] = (0, 0, 0)
+DEFAULT_HIGHLIGHT: tuple[int, int, int] = (255, 0, 0)
 DEFAULT_TEXT: tuple[int, int, int] = (255, 255, 255)
 
 class SpriteSheet:
@@ -73,6 +77,7 @@ class SpriteSheet:
     def __init__(self,
             height: int, width: int,
             background: tuple[int, int, int],
+            highlight: tuple[int, int, int],
             text: tuple[int, int, int],
             default_sprite: PIL.Image.Image | None,
             default_marker_sprites: dict[pacai.core.board.Marker, PIL.Image.Image],
@@ -87,6 +92,9 @@ class SpriteSheet:
 
         self.background: tuple[int, int, int] = background
         """ The color (RGB) for the image's background. """
+
+        self.highlight: tuple[int, int, int] = highlight
+        """ The color (RGB) for the image's highlight. """
 
         self.text: tuple[int, int, int] = text
         """ The color (RGB) for the image's text color. """
@@ -240,6 +248,7 @@ def _load(config_path: str) -> SpriteSheet:
     height, width, sprites = _load_sprites(config, config_path)
 
     background: tuple[int, int, int] = _parse_color(config, KEY_BACKGROUND, DEFAULT_BACKGROUND)
+    highlight: tuple[int, int, int] = _parse_color(config, KEY_HIGHLIGHT, DEFAULT_HIGHLIGHT)
     text: tuple[int, int, int] = _parse_color(config, KEY_TEXT, DEFAULT_TEXT)
 
     default_sprite: PIL.Image.Image | None = None
@@ -263,7 +272,7 @@ def _load(config_path: str) -> SpriteSheet:
         if (len(adjacency) > 0):
             adjacency_sprites[marker] = adjacency
 
-    return SpriteSheet(height, width, background, text, default_sprite, default_marker_sprites, action_sprites, adjacency_sprites)
+    return SpriteSheet(height, width, background, highlight, text, default_sprite, default_marker_sprites, action_sprites, adjacency_sprites)
 
 def _fetch_marker_sprites(
             sprites: list[list[PIL.Image.Image]],
@@ -303,7 +312,7 @@ def _parse_color(config: dict, key: str, default: tuple[int, int, int]) -> tuple
 
     color = config.get(key)
     if ((not isinstance(color, list)) or (len(color) != 3)):
-        raise ValueError(f"Background must be a list of three ints, found: '{str(color)}'.")
+        raise ValueError(f"Color must be a list of three ints, found: '{str(color)}'.")
 
     color = (
         _parse_int(color[0]),

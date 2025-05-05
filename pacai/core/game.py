@@ -240,11 +240,15 @@ class Game(abc.ABC):
         state = self.get_initial_state(rng, self._board, self._game_info.agent_infos)
         state.game_start()
 
+        board_highlights: list[pacai.core.board.Highlight] = []
+
         # Notify agents about the start of the game.
-        isolator.game_start(rng, state)
+        records = isolator.game_start(rng, state)
+        for record in records.values():
+            board_highlights += record.get_board_highlights()
 
         # Start the UI.
-        ui.game_start(state)
+        ui.game_start(state, board_highlights = board_highlights)
 
         while ((self._game_info.max_turns < 0) or (state.turn_count < self._game_info.max_turns)):
             logging.debug("Turn %d, agent %d.", state.turn_count, state.agent_index)
@@ -261,7 +265,7 @@ class Game(abc.ABC):
             state = self.process_turn(state, action_record)
 
             # Update the UI.
-            ui.update(state)
+            ui.update(state, board_highlights = action_record.get_board_highlights())
 
             # Update the game result and move history.
             result.update(state, action_record)
