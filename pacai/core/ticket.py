@@ -46,4 +46,4 @@ class Ticket(pacai.util.json.DictConverter):
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
         data = data.copy()
-        return Ticket(**data)
+        return cls(**data)

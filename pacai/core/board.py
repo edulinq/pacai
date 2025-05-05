@@ -160,7 +160,7 @@ class Position(pacai.util.json.DictConverter):
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
         data = data.copy()
-        return Position(**data)
+        return cls(**data)
 
 CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
     pacai.core.action.NORTH: Position(-1, 0),
@@ -663,7 +663,7 @@ class Board(pacai.util.json.DictConverter):
         if (search_target is not None):
             search_target = Position.from_dict(search_target)
 
-        return Board(
+        return cls(
             source = data['source'],
             markers = {key: Marker(marker) for (key, marker) in data['markers'].items()},
             search_target = search_target,

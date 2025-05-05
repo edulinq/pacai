@@ -75,4 +75,4 @@ class AgentInfo(pacai.util.json.DictConverter):
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
         data = data.copy()
         data['name'] = pacai.util.reflection.Reference.from_dict(data['name'])
-        return AgentInfo(**data)
+        return cls(**data)

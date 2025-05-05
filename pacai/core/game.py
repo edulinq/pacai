@@ -63,7 +63,7 @@ class GameInfo(pacai.util.json.DictConverter):
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return GameInfo(
+        return cls(
             seed = data.get('seed', None),
             board_source = data['board_source'],
             agent_infos = {int(id): pacai.core.agentinfo.AgentInfo.from_dict(raw_info) for (id, raw_info) in data['agent_infos'].items()},

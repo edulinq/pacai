@@ -92,7 +92,7 @@ class Reference(pacai.util.json.DictConverter):
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
         text = Reference.build_string(data.get('short_name', ''), data.get('file_path', None), data.get('module_name', None))
-        return Reference(text)
+        return cls(text)
 
 def fetch(reference: Reference | str) -> typing.Any:
     """ Fetch the target of the reference. """
