@@ -27,7 +27,6 @@ import pacai.util.json
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 STATIC_DIR: str = os.path.join(THIS_DIR, '..', 'resources', 'webui')
 
-# TEST
 WASD_CHAR_MAPPING: dict[str, pacai.core.action.Action] = {
     'w': pacai.core.action.NORTH,
     'a': pacai.core.action.WEST,
@@ -48,6 +47,7 @@ INITIAL_SLEEP_TIME_SEC: float = 0.05
 SOCKET_SLEEP_TIME_SECS: float = 0.10
 SERVER_WAIT_TIME_SECS: float = 0.25
 REAP_TIME_SECS: float = 0.25
+COMPLETE_WAIT_TIME_SECS: float = 0.15
 
 SERVER_POLL_INTERVAL_SECS: float = 0.1
 
@@ -59,23 +59,28 @@ class WebUserInputDevice(pacai.core.ui.UserInputDevice):
     """
 
     def __init__(self, **kwargs) -> None:
-        self._inputs: list[pacai.core.action.Action] = []
-        """ The inputs stored from the web page. """
+        self._actions: list[pacai.core.action.Action] = []
+        """ The actions stored from the web page. """
 
         self._lock: threading.Lock = threading.Lock()
-        """ A lock to protect the user inputs. """
+        """ A lock to protect the user actions. """
 
-    def set_inputs(self, inputs: list[pacai.core.action.Action]) -> None:
-        """ Load inputs from the UI into this device. """
+    def add_keys(self, keys: list[str]) -> None:
+        """ Load key inputs from the UI into this device. """
+
+        actions = []
+        for key in keys:
+            if (key in WASD_CHAR_MAPPING):
+                actions.append(WASD_CHAR_MAPPING[key])
 
         with self._lock:
-            self._inputs += inputs
+            self._actions += actions
 
     def get_inputs(self) -> list[pacai.core.action.Action]:
         with self._lock:
-            inputs = self._inputs
-            self._inputs = []
-            return inputs
+            actions = self._actions
+            self._actions = []
+            return actions
 
 class HTTPHandler(http.server.BaseHTTPRequestHandler):
     """ Handle HTTP requests for the web UI. """
@@ -282,6 +287,9 @@ class WebUI(pacai.core.ui.UI):
             ) -> None:
         super().game_complete(final_state, board_highlights = board_highlights)
 
+        # Wait for the UI to make a final request.
+        time.sleep(COMPLETE_WAIT_TIME_SECS)
+
         self._stop_server()
 
     def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
@@ -431,11 +439,14 @@ def _handler_update(handler: HTTPHandler, path: str, params: dict) -> RequestHan
     """ Handle a request by the browser for more data. """
 
     state, image_url = handler.get_data()
-
     data = {
         'state': state,
         'image_url': image_url,
     }
+
+    keys = params.get('keys', [])
+    if (handler._user_input_device is not None):
+        handler._user_input_device.add_keys(keys)
 
     return (data, None, None)
 

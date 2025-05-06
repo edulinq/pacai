@@ -1,9 +1,20 @@
 "use strict";
 
 let fps = 10;
+let pressedKeys = undefined;
+let intervalID = undefined;
 
 function main() {
+    registerKeys();
     init();
+}
+
+function registerKeys() {
+    pressedKeys = [];
+
+    window.addEventListener("keydown", function(event) {
+        pressedKeys.push(event.key);
+    });
 }
 
 function init() {
@@ -12,23 +23,38 @@ function init() {
             fps = body.fps;
 
             // Update twice an FPS period (since we are polling and updates are not pushed).
-            let delayMS = 1.0 / fps * 1000.0;
+            let delayMS = 1.0 / fps * 1000.0 / 2.0;
 
             // Update the UI according to the FPS from the server.
-            setInterval(update, delayMS);
+            intervalID = setInterval(update, delayMS);
         })
     ;
 }
 
+function close() {
+    if (intervalID) {
+        clearInterval(intervalID);
+        intervalID = undefined;
+    }
+}
+
 function update() {
-    // TEST
+    let oldKeys = pressedKeys;
+    pressedKeys = [];
+
     let data = {
-        'user_inputs': ['STOP'],
+        'keys': oldKeys,
     }
 
     makeRequest('/api/update', data)
         .then(function(body) {
             document.querySelector('.page .image-area img').src = body.image_url;
+
+            // Check if the game has ended.
+            if (body.state.game_over) {
+                close();
+                console.log("Game Over");
+            }
         })
     ;
 }
@@ -53,6 +79,9 @@ async function apiSuccess(response) {
 async function apiFailure(response) {
     console.error("Failed to make API request.");
     console.error(response);
+
+    close();
+
     return Promise.reject(response);
 }
 

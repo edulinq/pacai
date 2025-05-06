@@ -345,6 +345,9 @@ class UI(abc.ABC):
         # Draw the score.
         score_image_coordinates = (0, state.board.height * self._sprite_sheet.height)
         score_text = f"Score: {state.score}"
+        if (state.game_over):
+            score_text += " - Final"
+
         canvas.text(score_image_coordinates, score_text, self._sprite_sheet.text, self._font)
 
         # Store this image in the cache.
@@ -393,9 +396,8 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
     This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
     """
 
-    # TODO(eriq) - Default to browser
     parser.add_argument('--ui', dest = 'ui', metavar = 'UI_CLASS',
-            action = 'store', type = str, default = 'pacai.ui.text.StdioUI',
+            action = 'store', type = str, default = 'pacai.ui.web.WebUI',
             choices = CLI_UIS,
             help = ('Set the UI/graphics to use (default: %(default)s).'
                     + ' Choose one of:'
