@@ -20,10 +20,13 @@ TEST_CASE_SEP: str = '---'
 DATA_DIR_ID: str = '__DATA_DIR__'
 TEMP_DIR_ID: str = '__TEMP_DIR__'
 
-DEFAULT_OUTPUT_CHECK: str = 'content_equals_normalize_logs'
+DEFAULT_OUTPUT_CHECK: str = 'content_equals_normalize'
 
-LOG_PREFIX_REGEX = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d+ \[\S+ *\] - .*\.py:\d+ -- '
-LOG_PREFIX_REPLACEMENT = '<LOG_PREFIX> -- '
+LOG_PREFIX_REGEX: str = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d+ \[\S+ *\] - .*\.py:\d+ -- '
+LOG_PREFIX_REPLACEMENT: str = '<LOG_PREFIX> -- '
+
+TIME_SECS_REGEX: str = r'\d+\.\d+ seconds'
+TIME_SECS_REPLACEMENT: str = '<DURATION_SECONDS>'
 
 class CLITest(pacai.test.base.BaseTest):
     """
@@ -199,21 +202,25 @@ def _get_test_method(test_name: str, path: str) -> typing.Callable:
 
     return __method
 
-def content_equals(test: CLITest, expected: str, actual: str, **kwargs) -> None:
+def content_equals_raw(test: CLITest, expected: str, actual: str, **kwargs) -> None:
     """ Check for equality using a simple string comparison. """
 
     test.assertEqual(expected, actual)
 
-def content_equals_normalize_logs(test: CLITest, expected: str, actual: str, **kwargs) -> None:
+def content_equals_normalize(test: CLITest, expected: str, actual: str, **kwargs) -> None:
     """
-    Rewrite the output to normalize any logs entries,
-    then check for equality using a simple string comparison.
+    Perform some standard normalizations before using simple string comparison:
+     - Replace log prefixes with LOG_PREFIX_REPLACEMENT.
+     - Replace what looks like seconds duraton with TIME_SECS_REPLACEMENT.
     """
 
     expected = re.sub(LOG_PREFIX_REGEX, LOG_PREFIX_REPLACEMENT, expected, flags = re.MULTILINE)
     actual = re.sub(LOG_PREFIX_REGEX, LOG_PREFIX_REPLACEMENT, actual, flags = re.MULTILINE)
 
-    content_equals(test, expected, actual)
+    expected = re.sub(TIME_SECS_REGEX, TIME_SECS_REPLACEMENT, expected, flags = re.MULTILINE)
+    actual = re.sub(TIME_SECS_REGEX, TIME_SECS_REPLACEMENT, actual, flags = re.MULTILINE)
+
+    content_equals_raw(test, expected, actual)
 
 def has_content_100(test: CLITest, expected: str, actual: str, **kwargs) -> None:
     """ Check the that output has at least 100 characters. """
