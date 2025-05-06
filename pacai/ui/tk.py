@@ -158,8 +158,8 @@ class TkUI(pacai.core.ui.UI):
         self._canvas.pack(fill = 'both', expand = True)
 
         # Initialize the user input (keyboard).
-        if (isinstance(self.user_input_device, TkUserInputDevice)):
-            self.user_input_device.register_root(self._root)
+        if (isinstance(self._user_input_device, TkUserInputDevice)):
+            self._user_input_device.register_root(self._root)
 
     def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
         if (self._window_closed):

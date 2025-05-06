@@ -36,6 +36,7 @@ CLI_UIS: list[str] = [
     'pacai.ui.null.NullUI',
     'pacai.ui.text.StdioUI',
     'pacai.ui.tk.TkUI',
+    'pacai.ui.web.WebUI',
 ]
 
 class UserInputDevice(abc.ABC):
@@ -86,7 +87,7 @@ class UI(abc.ABC):
             sprite_lookup_func: SpriteLookup | None = None,
             font_path: str = DEFAULT_FONT_PATH,
             **kwargs) -> None:
-        self.user_input_device: UserInputDevice | None = user_input_device
+        self._user_input_device: UserInputDevice | None = user_input_device
         """ The device to use to get user input. """
 
         self._fps: int = fps
@@ -258,8 +259,8 @@ class UI(abc.ABC):
     def close(self) -> None:
         """ Close the UI and release all owned resources. """
 
-        if (self.user_input_device is not None):
-            self.user_input_device.close()
+        if (self._user_input_device is not None):
+            self._user_input_device.close()
 
     def get_user_inputs(self) -> list[pacai.core.action.Action]:
         """
@@ -268,10 +269,10 @@ class UI(abc.ABC):
         If no device is available, return an empty list.
         """
 
-        if (self.user_input_device is None):
+        if (self._user_input_device is None):
             return []
 
-        return self.user_input_device.get_inputs()
+        return self._user_input_device.get_inputs()
 
     def draw_image(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
         """
@@ -400,7 +401,8 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
                     + ' Choose one of:'
                     + ' `pacai.ui.null.NullUI` -- Do not show any ui/graphics (best if you want to run fast and just need the result),'
                     + ' `pacai.ui.text.StdioUI` -- Use stdin/stdout from the terminal,'
-                    + ' `pacai.ui.tk.TkUI` -- Use Tk/tkinter (must already be installed) to open a window.'))
+                    + ' `pacai.ui.tk.TkUI` -- Use Tk/tkinter (must already be installed) to open a window,'
+                    + ' `pacai.ui.web.WebUI` -- Launch a browser window.'))
 
     parser.add_argument('--fps', dest = 'fps',
             action = 'store', type = int, default = DEFAULT_FPS,

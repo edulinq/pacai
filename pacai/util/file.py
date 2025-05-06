@@ -11,6 +11,12 @@ def read(path: str, strip: bool = True, encoding: str = DEFAULT_ENCODING) -> str
 
     return contents
 
+def read_bytes(path: str) -> bytes:
+    """ Read the given file as raw bybtes. """
+
+    with open(path, 'rb') as file:
+        return file.read()
+
 def write(path: str,
         contents: str | None,
         strip: bool = True,
