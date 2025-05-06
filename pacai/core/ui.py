@@ -32,6 +32,53 @@ ANIMATION_KEY: str = 'UI.draw_image'
 ANIMATION_EXTS: list[str] = ['.gif', '.webp']
 """ The allowed extensions for animation files. """
 
+WASD_CHAR_MAPPING: dict[str, pacai.core.action.Action] = {
+    'w': pacai.core.action.NORTH,
+    'W': pacai.core.action.NORTH,
+    'ArrowUp': pacai.core.action.NORTH,
+
+    'a': pacai.core.action.WEST,
+    'A': pacai.core.action.WEST,
+    'ArrowLeft': pacai.core.action.WEST,
+
+    's': pacai.core.action.SOUTH,
+    'S': pacai.core.action.SOUTH,
+    'ArrowDown': pacai.core.action.SOUTH,
+
+    'd': pacai.core.action.EAST,
+    'D': pacai.core.action.EAST,
+    'ArrowRight': pacai.core.action.EAST,
+
+    ' ': pacai.core.action.STOP,
+    'space': pacai.core.action.STOP,
+    'Space': pacai.core.action.STOP,
+    'SPACE': pacai.core.action.STOP,
+}
+""" A character to action mapping using the common WASD scheme. """
+
+ARROW_CHAR_MAPPING: dict[str, pacai.core.action.Action] = {
+    'Up': pacai.core.action.NORTH,
+    'ArrowUp': pacai.core.action.NORTH,
+
+    'Left': pacai.core.action.WEST,
+    'ArrowLeft': pacai.core.action.WEST,
+
+    'Down': pacai.core.action.SOUTH,
+    'ArrowDown': pacai.core.action.SOUTH,
+
+    'Right': pacai.core.action.EAST,
+    'ArrowRight': pacai.core.action.EAST,
+
+    ' ': pacai.core.action.STOP,
+    'space': pacai.core.action.STOP,
+    'Space': pacai.core.action.STOP,
+    'SPACE': pacai.core.action.STOP,
+}
+""" A character to action mapping using the arrow keys. """
+
+DUAL_CHAR_MAPPING: dict[str, pacai.core.action.Action] = WASD_CHAR_MAPPING | ARROW_CHAR_MAPPING
+""" A character to action mapping that uses both WASD_CHAR_MAPPING and ARROW_CHAR_MAPPING. """
+
 CLI_UIS: list[str] = [
     'pacai.ui.null.NullUI',
     'pacai.ui.text.StdioUI',

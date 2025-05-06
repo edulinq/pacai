@@ -10,19 +10,6 @@ import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.ui
 
-WASD_CHAR_MAPPING: dict[str, pacai.core.action.Action] = {
-    'w': pacai.core.action.NORTH,
-    'a': pacai.core.action.WEST,
-    's': pacai.core.action.SOUTH,
-    'd': pacai.core.action.EAST,
-    'W': pacai.core.action.NORTH,
-    'A': pacai.core.action.WEST,
-    'S': pacai.core.action.SOUTH,
-    'D': pacai.core.action.EAST,
-    ' ': pacai.core.action.STOP,
-}
-""" A character to action mapping using the common WASD scheme. """
-
 class TextStreamUserInputDevice(pacai.core.ui.UserInputDevice):
     """
     A user input device that watches a text stream for input.
@@ -41,7 +28,7 @@ class TextStreamUserInputDevice(pacai.core.ui.UserInputDevice):
         """ Where to get input from. """
 
         if (char_mapping is None):
-            char_mapping = WASD_CHAR_MAPPING
+            char_mapping = pacai.core.ui.DUAL_CHAR_MAPPING
 
         self._char_mapping: dict[str, pacai.core.action.Action] = char_mapping
         """ Map characters to actions. """

@@ -16,28 +16,6 @@ DEATH_SLEEP_TIME_SECS: float = 0.5
 MIN_WINDOW_HEIGHT: int = 100
 MIN_WINDOW_WIDTH: int = 100
 
-WASD_CHAR_MAPPING: dict[str, pacai.core.action.Action] = {
-    'w': pacai.core.action.NORTH,
-    'a': pacai.core.action.WEST,
-    's': pacai.core.action.SOUTH,
-    'd': pacai.core.action.EAST,
-    'W': pacai.core.action.NORTH,
-    'A': pacai.core.action.WEST,
-    'S': pacai.core.action.SOUTH,
-    'D': pacai.core.action.EAST,
-    'space': pacai.core.action.STOP,
-}
-""" A character to action mapping using the common WASD scheme. """
-
-ARROW_CHAR_MAPPING: dict[str, pacai.core.action.Action] = {
-    'Up': pacai.core.action.NORTH,
-    'Left': pacai.core.action.WEST,
-    'Down': pacai.core.action.SOUTH,
-    'Right': pacai.core.action.EAST,
-    'space': pacai.core.action.STOP,
-}
-""" A character to action mapping using the arrow keys. """
-
 class TkUserInputDevice(pacai.core.ui.UserInputDevice):
     """
     Use Tk to capture keyboard inputs on the window.
@@ -47,7 +25,7 @@ class TkUserInputDevice(pacai.core.ui.UserInputDevice):
             char_mapping: dict[str, pacai.core.action.Action] | None = None,
             **kwargs) -> None:
         if (char_mapping is None):
-            char_mapping = WASD_CHAR_MAPPING
+            char_mapping = pacai.core.ui.DUAL_CHAR_MAPPING
 
         self._char_mapping: dict[str, pacai.core.action.Action] = char_mapping
         """ Map characters to actions. """

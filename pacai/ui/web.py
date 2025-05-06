@@ -27,19 +27,6 @@ import pacai.util.json
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 STATIC_DIR: str = os.path.join(THIS_DIR, '..', 'resources', 'webui')
 
-WASD_CHAR_MAPPING: dict[str, pacai.core.action.Action] = {
-    'w': pacai.core.action.NORTH,
-    'a': pacai.core.action.WEST,
-    's': pacai.core.action.SOUTH,
-    'd': pacai.core.action.EAST,
-    'W': pacai.core.action.NORTH,
-    'A': pacai.core.action.WEST,
-    'S': pacai.core.action.SOUTH,
-    'D': pacai.core.action.EAST,
-    ' ': pacai.core.action.STOP,
-}
-""" A character to action mapping using the common WASD scheme. """
-
 START_PORT: int = 30000
 END_PORT: int = 40000
 
@@ -58,20 +45,28 @@ class WebUserInputDevice(pacai.core.ui.UserInputDevice):
     A user input device that gets input from the same web page used by a WebUI.
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self,
+            char_mapping: dict[str, pacai.core.action.Action] | None = None,
+            **kwargs) -> None:
         self._actions: list[pacai.core.action.Action] = []
         """ The actions stored from the web page. """
 
         self._lock: threading.Lock = threading.Lock()
         """ A lock to protect the user actions. """
 
+        if (char_mapping is None):
+            char_mapping = pacai.core.ui.DUAL_CHAR_MAPPING
+
+        self._char_mapping: dict[str, pacai.core.action.Action] = char_mapping
+        """ Map characters to actions. """
+
     def add_keys(self, keys: list[str]) -> None:
         """ Load key inputs from the UI into this device. """
 
         actions = []
         for key in keys:
-            if (key in WASD_CHAR_MAPPING):
-                actions.append(WASD_CHAR_MAPPING[key])
+            if (key in self._char_mapping):
+                actions.append(self._char_mapping[key])
 
         with self._lock:
             self._actions += actions
