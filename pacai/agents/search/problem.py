@@ -8,12 +8,13 @@ import pacai.core.gamestate
 import pacai.search.common
 import pacai.search.random
 import pacai.search.position
+import pacai.util.alias
 import pacai.util.reflection
 import pacai.util.time
 
-DEFAULT_PROBLEM: str = pacai.search.position.__name__ + '.' + pacai.search.position.PositionSearchProblem.__name__
-DEFAULT_SOLVER: str = pacai.search.random.__name__ + '.' + pacai.search.random.random_search.__name__
-DEFAULT_HEURISTIC: str = pacai.search.common.__name__ + '.' + pacai.search.common.null_heuristic.__name__
+DEFAULT_PROBLEM: str = pacai.util.alias.SEARCH_PROBLEM_POSITION.long
+DEFAULT_SOLVER: str = pacai.util.alias.SEARCH_SOLVER_RANDOM.long
+DEFAULT_HEURISTIC: str = pacai.util.alias.HEURISTIC_NULL.long
 
 class SearchProblemAgent(pacai.core.agent.Agent):
     """

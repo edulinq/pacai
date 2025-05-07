@@ -79,8 +79,33 @@ AGENT_SHORT_NAMES: list[str] = [
     AGENT_USER_INPUT.short,
 ]
 
+COST_FUNC_UNIT: Alias = Alias('cost-unit', 'pacai.search.common.unit_cost_function')
+
+COST_FUNC_SHORT_NAMES: list[str] = [
+    COST_FUNC_UNIT.short,
+]
+
+HEURISTIC_NULL: Alias = Alias('heuristic-null', 'pacai.search.common.null_heuristic')
+
+HEURISTIC_SHORT_NAMES: list[str] = [
+    HEURISTIC_NULL.short,
+]
+
+SEARCH_PROBLEM_POSITION: Alias = Alias('search-problem-position', 'pacai.search.position.PositionSearchProblem')
+
+SEARCH_PROBLEM_SHORT_NAMES: list[str] = [
+    SEARCH_PROBLEM_POSITION.short,
+]
+
+SEARCH_SOLVER_RANDOM: Alias = Alias('search-solver-random', 'pacai.search.random.random_search')
+
+SEARCH_SOLVER_SHORT_NAMES: list[str] = [
+    SEARCH_SOLVER_RANDOM.short,
+]
+
 UI_NULL: Alias = Alias('null', 'pacai.ui.null.NullUI')
 UI_STDIO: Alias = Alias('text', 'pacai.ui.text.StdioUI', skip_windows_test = True)
+UI_RAW_TEXT: Alias = Alias('raw-text', 'pacai.ui.text.TextUI', skip_windows_test = True)
 UI_TK: Alias = Alias('tk', 'pacai.ui.tk.TkUI')
 UI_WEB: Alias = Alias('web', 'pacai.ui.web.WebUI')
 

@@ -1,10 +1,12 @@
+import typing
+
 import pacai.core.action
 import pacai.core.gamestate
 import pacai.core.search
 import pacai.search.common
+import pacai.util.alias
 
 DEFAULT_GOAL_POSITION: pacai.core.board.Position = pacai.core.board.Position(1, 1)
-DEFAULT_COST_FUNCTION: pacai.core.search.CostFunction = pacai.search.common.unit_cost_function
 
 class PositionSearchNode(pacai.core.search.SearchNode):
     """
@@ -35,7 +37,7 @@ class PositionSearchProblem(pacai.core.search.SearchProblem):
             game_state: pacai.core.gamestate.GameState,
             goal_position: pacai.core.board.Position | None = None,
             start_position: pacai.core.board.Position | None = None,
-            cost_function: pacai.core.search.CostFunction | None = None,
+            cost_function: pacai.core.search.CostFunction | str = pacai.util.alias.COST_FUNC_UNIT.long,
             **kwargs) -> None:
         """
         Create a positional search problem.
@@ -43,7 +45,7 @@ class PositionSearchProblem(pacai.core.search.SearchProblem):
         If no goal position is provided, the board's search target will be used,
             if that does not exist, then DEFAULT_GOAL_POSITION will be used.
         If no start position is provided, the current agent's position will be used.
-        If no cost function is provided, DEFAULT_COST_FUNCTION will be used.
+        If no cost function is provided, pacai.util.alias.COST_FUNC_UNIT will be used.
         """
 
         super().__init__()
@@ -69,8 +71,8 @@ class PositionSearchProblem(pacai.core.search.SearchProblem):
         self.start_position = start_position
         """ The position to start from. """
 
-        if (cost_function is None):
-            cost_function = DEFAULT_COST_FUNCTION
+        if (isinstance(cost_function, str)):
+            cost_function = typing.cast(pacai.core.search.CostFunction, pacai.util.reflection.fetch(cost_function))
 
         self._cost_function = cost_function
         """ The function used to score search nodes. """
