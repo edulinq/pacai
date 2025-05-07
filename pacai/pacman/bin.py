@@ -17,6 +17,7 @@ import pacai.core.spritesheet
 import pacai.core.ui
 import pacai.pacman.game
 import pacai.pacman.gamestate
+import pacai.util.alias
 
 DEFAULT_BOARD: str = 'classic-medium'
 DEFAULT_SPRITE_SHEET: str = 'pacman'
@@ -47,13 +48,15 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
     This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
     """
 
-    parser.add_argument('--pacman', dest = 'pacman', metavar  = 'AGENT_TYPE',
-            action = 'store', type = str, default = 'pacai.agents.userinput.UserInputAgent',
-            help = 'Select the agent type that PacMan will use (default: %(default)s).')
+    parser.add_argument('--pacman', dest = 'pacman', metavar = 'AGENT_TYPE',
+            action = 'store', type = str, default = pacai.util.alias.AGENT_USER_INPUT.short,
+            help = ('Select the agent type that PacMan will use (default: %(default)s).'
+                    + f' Builtin agents: {pacai.util.alias.AGENT_SHORT_NAMES}.'))
 
-    parser.add_argument('--ghosts', dest = 'ghosts', metavar  = 'AGENT_TYPE',
-            action = 'store', type = str, default = 'pacai.agents.random.RandomAgent',
-            help = 'Select the agent type that all ghosts will use (default: %(default)s).')
+    parser.add_argument('--ghosts', dest = 'ghosts', metavar = 'AGENT_TYPE',
+            action = 'store', type = str, default = pacai.util.alias.AGENT_RANDOM.short,
+            help = ('Select the agent type that all ghosts will use (default: %(default)s).'
+                    + f' Builtin agents: {pacai.util.alias.AGENT_SHORT_NAMES}.'))
 
     parser.add_argument('--num-ghosts', dest = 'num_ghosts',
             action = 'store', type = int, default = -1,

@@ -3,8 +3,8 @@
     "arguments": [
         "--seed", "5",
         "--board", "maze-tiny",
-        "--pacman", "pacai.agents.search.problem.SearchProblemAgent",
-        "--ui", "pacai.ui.null.NullUI"
+        "--pacman", "search-problem",
+        "--ui", "null"
     ]
 }
 ---

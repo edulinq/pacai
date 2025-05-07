@@ -6,7 +6,7 @@
         "--board", "maze-test",
         "--pacman", "pacai.agents.cheating.CheatingAgent",
         "--isolation", "process",
-        "--ui", "pacai.ui.null.NullUI",
+        "--ui", "null",
         "--max-turns", "10",
     ]
 }

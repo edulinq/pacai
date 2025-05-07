@@ -3,9 +3,9 @@
     "arguments": [
         "--seed", "4",
         "--board", "maze-test",
-        "--pacman", "pacai.agents.cheating.CheatingAgent",
+        "--pacman", "cheating",
         "--isolation", "none",
-        "--ui", "pacai.ui.null.NullUI",
+        "--ui", "null",
         "--max-turns", "10",
     ]
 }

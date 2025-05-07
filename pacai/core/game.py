@@ -11,10 +11,11 @@ import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.isolation.level
 import pacai.core.ui
+import pacai.util.alias
 import pacai.util.json
 
 DEFAULT_MAX_TURNS: int = -1
-DEFAULT_AGENT: str = 'pacai.agents.random.RandomAgent'
+DEFAULT_AGENT: str = pacai.util.alias.AGENT_RANDOM.short
 
 class GameInfo(pacai.util.json.DictConverter):
     """
@@ -495,7 +496,7 @@ def _override_args_with_replay(args: argparse.Namespace, base_agent_infos: dict[
 
     for (agent_index, actions) in scripted_actions.items():
         base_agent_infos[agent_index] = pacai.core.agentinfo.AgentInfo(
-            name = 'pacai.agents.scripted.ScriptedAgent',
+            name = pacai.util.alias.AGENT_SCRIPTED.short,
             move_delay = replay_info.game_info.agent_infos[agent_index].move_delay,
             actions = actions,
         )

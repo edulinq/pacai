@@ -54,7 +54,7 @@ class ReflectionTest(pacai.test.base.BaseTest):
             ),
             (
                 'Reference',
-                'Cannot specify a short name alone',
+                'Cannot specify a (non-alias) short name alone',
                 None,
             ),
             (

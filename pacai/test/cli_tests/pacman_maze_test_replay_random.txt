@@ -1,7 +1,7 @@
 {
     "cli": "pacai.pacman.bin",
     "arguments": [
-        "--ui", "pacai.ui.null.NullUI",
+        "--ui", "null",
         "--replay-path", "__DATA_DIR__(maze-test-random-replay.json)"
     ]
 }

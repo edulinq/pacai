@@ -11,6 +11,7 @@ import PIL.ImageFont
 import pacai.core.action
 import pacai.core.gamestate
 import pacai.core.spritesheet
+import pacai.util.alias
 import pacai.util.time
 import pacai.util.reflection
 
@@ -78,13 +79,6 @@ ARROW_CHAR_MAPPING: dict[str, pacai.core.action.Action] = {
 
 DUAL_CHAR_MAPPING: dict[str, pacai.core.action.Action] = WASD_CHAR_MAPPING | ARROW_CHAR_MAPPING
 """ A character to action mapping that uses both WASD_CHAR_MAPPING and ARROW_CHAR_MAPPING. """
-
-CLI_UIS: list[str] = [
-    'pacai.ui.null.NullUI',
-    'pacai.ui.text.StdioUI',
-    'pacai.ui.tk.TkUI',
-    'pacai.ui.web.WebUI',
-]
 
 class UserInputDevice(abc.ABC):
     """
@@ -443,15 +437,18 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
     This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
     """
 
-    parser.add_argument('--ui', dest = 'ui', metavar = 'UI_CLASS',
-            action = 'store', type = str, default = 'pacai.ui.web.WebUI',
-            choices = CLI_UIS,
+    parser.add_argument('--ui', dest = 'ui',
+            action = 'store', type = str, default = pacai.util.alias.UI_WEB.short,
             help = ('Set the UI/graphics to use (default: %(default)s).'
-                    + ' Choose one of:'
-                    + ' `pacai.ui.null.NullUI` -- Do not show any ui/graphics (best if you want to run fast and just need the result),'
-                    + ' `pacai.ui.text.StdioUI` -- Use stdin/stdout from the terminal,'
-                    + ' `pacai.ui.tk.TkUI` -- Use Tk/tkinter (must already be installed) to open a window,'
-                    + ' `pacai.ui.web.WebUI` -- Launch a browser window.'))
+                    + ' Builtin options:'
+                    + f' `{pacai.util.alias.UI_NULL.short}` (`{pacai.util.alias.UI_NULL.long}`)'
+                    +       ' -- Do not show any ui/graphics (best if you want to run fast and just need the result),'
+                    + f' `{pacai.util.alias.UI_STDIO.short}` (`{pacai.util.alias.UI_STDIO.long}`)'
+                    +       ' -- Use stdin/stdout from the terminal,'
+                    + f' `{pacai.util.alias.UI_TK.short}` (`{pacai.util.alias.UI_TK.long}`)'
+                    +       ' -- Use Tk/tkinter (must already be installed) to open a window,'
+                    + f' `{pacai.util.alias.UI_WEB.short}` (`{pacai.util.alias.UI_WEB.long}`)'
+                    +       ' -- Launch a browser window (default).'))
 
     parser.add_argument('--fps', dest = 'fps',
             action = 'store', type = int, default = DEFAULT_FPS,

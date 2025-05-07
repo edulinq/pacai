@@ -3,8 +3,8 @@
     "arguments": [
         "--seed", "4",
         "--board", "maze-test",
-        "--pacman", "pacai.agents.gowest.GoWestAgent",
-        "--ui", "pacai.ui.null.NullUI"
+        "--pacman", "go-west",
+        "--ui", "null"
     ]
 }
 ---

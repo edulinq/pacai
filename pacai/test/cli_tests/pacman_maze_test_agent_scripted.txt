@@ -3,8 +3,8 @@
     "arguments": [
         "--seed", "4",
         "--board", "maze-test",
-        "--pacman", "pacai.agents.scripted.ScriptedAgent",
-        "--ui", "pacai.ui.null.NullUI",
+        "--pacman", "scripted",
+        "--ui", "null",
         "--max-turns", "10",
     ]
 }

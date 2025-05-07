@@ -3,8 +3,8 @@
     "arguments": [
         "--seed", "4",
         "--board", "maze-test",
-        "--pacman", "pacai.agents.greedy.GreedyAgent",
-        "--ui", "pacai.ui.null.NullUI"
+        "--pacman", "greedy",
+        "--ui", "null"
     ]
 }
 ---

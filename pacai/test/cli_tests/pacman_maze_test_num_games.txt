@@ -3,8 +3,8 @@
     "arguments": [
         "--seed", "4",
         "--board", "maze-test",
-        "--pacman", "pacai.agents.random.RandomAgent",
-        "--ui", "pacai.ui.null.NullUI",
+        "--pacman", "random",
+        "--ui", "null",
         "--num-games", "10"
     ]
 }
