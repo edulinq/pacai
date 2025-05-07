@@ -1,0 +1,16 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--ui", "null",
+        "--board", "maze-tiny",
+        "--pacman", "search-problem"
+    ]
+}
+---
+<LOG_PREFIX> -- Created a SearchProblemAgent using problem 'pacai.search.position.PositionSearchProblem', solver 'pacai.search.random.random_search', and heuristic 'pacai.search.common.null_heuristic'.
+<LOG_PREFIX> -- Path found with 192 steps and a total cost of 192.00 in <DURATION_SECONDS>.
+<LOG_PREFIX> -- Average Score: 318.0
+<LOG_PREFIX> -- Scores:        318
+<LOG_PREFIX> -- Win Rate:      1 / 1 (1.00)
+<LOG_PREFIX> -- Record:        Win

@@ -1,0 +1,9 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--help"
+    ],
+    "error": true
+}
+---
+0

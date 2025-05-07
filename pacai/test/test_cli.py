@@ -185,13 +185,12 @@ def _get_test_method(test_name: str, path: str) -> typing.Callable:
             if (not is_error):
                 raise ex
 
-            if (isinstance(ex, SystemExit)):
-                if (ex.__context__ is None):
-                    self.fail("Unexpected exit without context.")
+            output = str(ex)
 
-                ex = ex.__context__
+            if (isinstance(ex, SystemExit) and (ex.__context__ is not None)):
+                output = str(ex.__context__)
 
-            self.assertEqual(expected_output, str(ex))
+            self.assertEqual(expected_output, output)
             return
         finally:
             sys.argv = old_args

@@ -1,0 +1,14 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--ui", "null",
+        "--board", "maze-test",
+        "--pacman", "go-west"
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: 503.0
+<LOG_PREFIX> -- Scores:        503
+<LOG_PREFIX> -- Win Rate:      1 / 1 (1.00)
+<LOG_PREFIX> -- Record:        Win

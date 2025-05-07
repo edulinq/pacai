@@ -1,0 +1,12 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--ui", "null"
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: -604.0
+<LOG_PREFIX> -- Scores:        -604
+<LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
+<LOG_PREFIX> -- Record:        Loss

@@ -97,6 +97,7 @@ SEARCH_PROBLEM_SHORT_NAMES: list[str] = [
     SEARCH_PROBLEM_POSITION.short,
 ]
 
+SEARCH_SOLVER_MAZE_TINY: Alias = Alias('search-maze-tiny', 'pacai.search.mazetiny.maze_tiny_search')
 SEARCH_SOLVER_RANDOM: Alias = Alias('search-solver-random', 'pacai.search.random.random_search')
 
 SEARCH_SOLVER_SHORT_NAMES: list[str] = [
