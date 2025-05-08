@@ -37,17 +37,17 @@ class SearchProblemAgent(pacai.core.agent.Agent):
 
         super().__init__(agent_info, *args, **kwargs)
 
-        problem_reference = agent_info.extra_arguments.get('problem', DEFAULT_PROBLEM)
+        problem_reference = pacai.util.reflection.Reference(agent_info.extra_arguments.get('problem', DEFAULT_PROBLEM))
 
         self._problem_class: type[pacai.core.search.SearchProblem] = pacai.util.reflection.fetch(problem_reference)
         """ The search problem class this agent will use. """
 
-        solver_reference = agent_info.extra_arguments.get('solver', DEFAULT_SOLVER)
+        solver_reference = pacai.util.reflection.Reference(agent_info.extra_arguments.get('solver', DEFAULT_SOLVER))
 
         self._solver_function: pacai.core.search.SearchProblemSolver = pacai.util.reflection.fetch(solver_reference)
         """ The search solver function this agent will use. """
 
-        heuristic_reference = agent_info.extra_arguments.get('heuristic', DEFAULT_HEURISTIC)
+        heuristic_reference = pacai.util.reflection.Reference(agent_info.extra_arguments.get('heuristic', DEFAULT_HEURISTIC))
 
         self._heuristic_function: pacai.core.search.SearchHeuristic = pacai.util.reflection.fetch(heuristic_reference)
         """ The search heuristic function this agent will use. """

@@ -25,42 +25,18 @@ class Reference(pacai.util.json.DictConverter):
     2) `pacai/util/reflection.py:Reference` -- a path and class name,
     """
 
-    def __init__(self, text: str,
-            check_alias: bool = True) -> None:
+    def __init__(self,
+            raw_input: typing.Union[str, 'Reference'],
+            check_alias: bool = True,
+            ) -> None:
         """ Construct and validate a reference. """
 
-        text = text.strip()
-        if (len(text) == 0):
-            raise ValueError("Cannot create a reflection reference from an empty string.")
-
-        # Check if this looks like an alias.
-        if (check_alias and ('.' not in text)):
-            text = pacai.util.alias.lookup(text, text)
-
-        parts = text.split(REF_DELIM, 1)
-
-        file_path = None
-        remaining = parts[-1].strip()
-
-        if (len(parts) > 1):
-            file_path = parts[0].strip()
-
-        if (len(remaining) == 0):
-            raise ValueError("Cannot create a reflection reference without a short name.")
-
-        parts = remaining.split('.')
-
-        module_name = None
-        short_name = parts[-1].strip()
-
-        if (len(parts) > 1):
-            module_name = '.'.join(parts[0:-1]).strip()
-
-        if ((file_path is not None) and (module_name is not None)):
-            raise ValueError(f"Cannot specify both a file path and module name for reflection reference: '{text}'.")
-
-        if ((file_path is None) and (module_name is None)):
-            raise ValueError(f"Cannot specify a (non-alias) short name alone, need a file_path or module name for reflection reference: '{text}'.")
+        if (isinstance(raw_input, Reference)):
+            file_path = raw_input.file_path
+            module_name = raw_input.module_name
+            short_name = raw_input.short_name
+        else:
+            file_path, module_name, short_name = Reference.parse_string(raw_input, check_alias)
 
         self.file_path: str | None = file_path
         """ The file_path component of the reflection reference (or None). """
@@ -90,6 +66,45 @@ class Reference(pacai.util.json.DictConverter):
             text = file_path + REF_DELIM + text
 
         return text
+
+    @staticmethod
+    def parse_string(text: str, check_alias: bool = True) -> tuple[str | None, str | None, str]:
+        """ Parse out the key reference components from a string. """
+
+        text = text.strip()
+        if (len(text) == 0):
+            raise ValueError("Cannot parse a reflection reference from an empty string.")
+
+        # Check if this looks like an alias.
+        if (check_alias and ('.' not in text)):
+            text = pacai.util.alias.lookup(text, text)
+
+        parts = text.split(REF_DELIM, 1)
+
+        file_path = None
+        remaining = parts[-1].strip()
+
+        if (len(parts) > 1):
+            file_path = parts[0].strip()
+
+        if (len(remaining) == 0):
+            raise ValueError("Cannot parse a reflection reference without a short name.")
+
+        parts = remaining.split('.')
+
+        module_name = None
+        short_name = parts[-1].strip()
+
+        if (len(parts) > 1):
+            module_name = '.'.join(parts[0:-1]).strip()
+
+        if ((file_path is not None) and (module_name is not None)):
+            raise ValueError(f"Cannot specify both a file path and module name for reflection reference: '{text}'.")
+
+        if ((file_path is None) and (module_name is None)):
+            raise ValueError(f"Cannot specify a (non-alias) short name alone, need a file_path or module name for reflection reference: '{text}'.")
+
+        return file_path, module_name, short_name
 
     def to_dict(self) -> dict[str, typing.Any]:
         return vars(self).copy()

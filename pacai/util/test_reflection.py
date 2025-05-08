@@ -29,6 +29,17 @@ class ReflectionTest(pacai.test.base.BaseTest):
                 None,
                 ('pacai/util/reflection.py', None, 'Reference'),
             ),
+            (
+                pacai.util.reflection.Reference('pacai.util.reflection.Reference'),
+                None,
+                (None, 'pacai.util.reflection', 'Reference'),
+            ),
+
+            (
+                'dummy',
+                None,
+                (None, 'pacai.agents.dummy', 'DummyAgent'),
+            ),
 
             # Errors
 
