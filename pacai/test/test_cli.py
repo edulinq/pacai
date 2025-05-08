@@ -28,6 +28,9 @@ LOG_PREFIX_REPLACEMENT: str = '<LOG_PREFIX> -- '
 TIME_SECS_REGEX: str = r'\d+\.\d+ seconds'
 TIME_SECS_REPLACEMENT: str = '<DURATION_SECONDS>'
 
+TRACEBACK_LINE_REGEX: str = r'^\s*File "[^"]+", line \d+,.*$\n.*$(\n\s*\^+\s*$)?'
+TRACEBACK_LINE_REPLACEMENT: str = '<TRACEBACK_LINE>'
+
 class CLITest(pacai.test.base.BaseTest):
     """
     Test CLI tools using a JSON file which describes a test case,
@@ -211,6 +214,7 @@ def content_equals_normalize(test: CLITest, expected: str, actual: str, **kwargs
     Perform some standard normalizations before using simple string comparison:
      - Replace log prefixes with LOG_PREFIX_REPLACEMENT.
      - Replace what looks like seconds duraton with TIME_SECS_REPLACEMENT.
+     - Replace traceback lines with TRACEBACK_LINE_REPLACEMENT.
     """
 
     expected = re.sub(LOG_PREFIX_REGEX, LOG_PREFIX_REPLACEMENT, expected, flags = re.MULTILINE)
@@ -218,6 +222,9 @@ def content_equals_normalize(test: CLITest, expected: str, actual: str, **kwargs
 
     expected = re.sub(TIME_SECS_REGEX, TIME_SECS_REPLACEMENT, expected, flags = re.MULTILINE)
     actual = re.sub(TIME_SECS_REGEX, TIME_SECS_REPLACEMENT, actual, flags = re.MULTILINE)
+
+    expected = re.sub(TRACEBACK_LINE_REGEX, TRACEBACK_LINE_REPLACEMENT, expected, flags = re.MULTILINE)
+    actual = re.sub(TRACEBACK_LINE_REGEX, TRACEBACK_LINE_REPLACEMENT, actual, flags = re.MULTILINE)
 
     content_equals_raw(test, expected, actual)
 

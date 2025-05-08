@@ -5,11 +5,11 @@
         "--ui", "null",
         "--board", "maze-tiny",
         "--pacman", "search-problem",
-        "--agent-arg", "0::solver=search-maze-tiny"
+        "--agent-arg", "0::solver=search-solver-maze-tiny"
     ]
 }
 ---
-<LOG_PREFIX> -- Created a SearchProblemAgent using problem 'pacai.search.position.PositionSearchProblem', solver 'search-maze-tiny', and heuristic 'pacai.search.common.null_heuristic'.
+<LOG_PREFIX> -- Created a SearchProblemAgent using problem 'pacai.search.position.PositionSearchProblem', solver 'pacai.search.mazetiny.maze_tiny_search', and heuristic 'pacai.search.common.null_heuristic'.
 <LOG_PREFIX> -- Path found with 8 steps and a total cost of 0.00 in <DURATION_SECONDS>.
 <LOG_PREFIX> -- Average Score: 502.0
 <LOG_PREFIX> -- Scores:        502

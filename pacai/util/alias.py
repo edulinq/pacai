@@ -97,11 +97,20 @@ SEARCH_PROBLEM_SHORT_NAMES: list[str] = [
     SEARCH_PROBLEM_POSITION.short,
 ]
 
-SEARCH_SOLVER_MAZE_TINY: Alias = Alias('search-maze-tiny', 'pacai.search.mazetiny.maze_tiny_search')
+SEARCH_SOLVER_ASTAR: Alias = Alias('search-solver-astar', 'pacai.student.search.astar_search')
+SEARCH_SOLVER_BFS: Alias = Alias('search-solver-bfs', 'pacai.student.search.breadth_first_search')
+SEARCH_SOLVER_DFS: Alias = Alias('search-solver-dfs', 'pacai.student.search.depth_first_search')
+SEARCH_SOLVER_MAZE_TINY: Alias = Alias('search-solver-maze-tiny', 'pacai.search.mazetiny.maze_tiny_search')
 SEARCH_SOLVER_RANDOM: Alias = Alias('search-solver-random', 'pacai.search.random.random_search')
+SEARCH_SOLVER_UCS: Alias = Alias('search-solver-ucs', 'pacai.student.search.uniform_cost_search')
 
 SEARCH_SOLVER_SHORT_NAMES: list[str] = [
+    SEARCH_SOLVER_ASTAR.short,
+    SEARCH_SOLVER_BFS.short,
+    SEARCH_SOLVER_DFS.short,
+    SEARCH_SOLVER_MAZE_TINY.short,
     SEARCH_SOLVER_RANDOM.short,
+    SEARCH_SOLVER_UCS.short,
 ]
 
 UI_NULL: Alias = Alias('null', 'pacai.ui.null.NullUI')
