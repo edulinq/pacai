@@ -35,6 +35,9 @@ GHOST_POINTS: int = 200
 LOSE_POINTS: int = -500
 """ Points for getting eatten. """
 
+CRASH_POINTS: int = -1000000
+""" Points for crashing the game. """
+
 class GameState(pacai.core.gamestate.GameState):
     """ A game state specific to a standard Pacman game. """
 
@@ -56,6 +59,12 @@ class GameState(pacai.core.gamestate.GameState):
         When a ghost dies their scared timer resets,
         so all ghosts need an independent timer.
         """
+
+    def process_agent_crash(self, agent_index: int):
+        super().process_agent_crash(agent_index)
+
+        if (agent_index == PACMAN_AGENT_INDEX):
+            self.score += CRASH_POINTS
 
     def is_scared(self, agent_index: int = -1) -> bool:
         """ Check if the given agent (or the current agent) is currently scared. """
@@ -105,7 +114,18 @@ class GameState(pacai.core.gamestate.GameState):
         if (len(actions) == 0):
             actions.append(pacai.core.action.STOP)
 
-    def _apply_action(self, action: pacai.core.action.Action) -> None:
+    def game_complete(self) -> list[int]:
+        # Pacman wins if there is no food on the board.
+        if (self.food_count == 0):
+            return [PACMAN_AGENT_INDEX]
+
+        # Otherwise, the ghosts (if any) win.
+        ghost_indexes = list(self.move_delays.keys())
+        ghost_indexes.remove(PACMAN_AGENT_INDEX)
+
+        return ghost_indexes
+
+    def process_turn(self, action: pacai.core.action.Action) -> None:
         # Do actions specific to pacman/ghosts.
         if (self.agent_index == PACMAN_AGENT_INDEX):
             self._process_pacman_turn(action)

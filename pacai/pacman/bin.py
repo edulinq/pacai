@@ -32,7 +32,7 @@ def run(args: argparse.Namespace) -> int:
         results.append(game.run(args._ui))
 
     scores = [result.score for result in results]
-    wins = [(result.winning_agent_index == pacai.pacman.gamestate.PACMAN_AGENT_INDEX) for result in results]
+    wins = [(pacai.pacman.gamestate.PACMAN_AGENT_INDEX in result.winning_agent_indexes) for result in results]
     win_rate = wins.count(True) / float(len(wins))
 
     logging.info('Average Score: %s', sum(scores) / float(len(scores)))

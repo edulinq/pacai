@@ -91,8 +91,8 @@ class SearchProblem(abc.ABC):
     def get_successor_nodes(self, node: SearchNode) -> list[SuccessorInfo]:
         """
         Get all the possible successors (successor nodes) to the current node.
-        This action can be though of expanding a search node
-        (where the passed in node is that search node).
+        This action can be though of expanding a search node,
+        or getting the children of a node in the search tree.
         """
 
 class SearchSolution:
@@ -136,6 +136,8 @@ class SearchHeuristic(typing.Protocol):
 class SearchProblemSolver(typing.Protocol):
     """
     A function that solves a search problem and returns a solution.
+    Not all solvers will need to heuristic or RNG,
+    but they will always be provided (even if the heuristic is a null heuristic).
     """
 
     def __call__(self,

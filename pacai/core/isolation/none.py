@@ -83,14 +83,15 @@ def _call_agent_method(
     """ Call a method on the agent and do all the proper bookkeeping. """
 
     crashed = False
-    start_time = pacai.util.time.now()
     agent_action: pacai.core.agentaction.AgentAction | None = None
+
+    start_time = pacai.util.time.now()
 
     try:
         agent_action = agent_method(**agent_method_kwargs)
     except Exception as ex:
-        logging.warning("Agent %d crashed.", agent_index, exc_info = ex)
         crashed = True
+        logging.warning("Agent %d crashed.", agent_index, exc_info = ex)
 
     end_time = pacai.util.time.now()
 

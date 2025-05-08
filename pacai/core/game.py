@@ -78,7 +78,10 @@ class GameResult(pacai.util.json.DictConverter):
             game_id: int,
             game_info: GameInfo,
             score: int = 0,
-            winning_agent_index: int = -1,
+            game_timeout: bool = False,
+            timeout_agent_indexes: list[int] | None = None,
+            crash_agent_indexes: list[int] | None = None,
+            winning_agent_indexes: list[int] | None = None,
             start_time: pacai.util.time.Timestamp | None = None,
             end_time: pacai.util.time.Timestamp | None = None,
             history: list[pacai.core.agentaction.AgentActionRecord] | None = None,
@@ -107,20 +110,29 @@ class GameResult(pacai.util.json.DictConverter):
         self.score: int = score
         """ The score of the game. """
 
-        self.winning_agent_index: int = winning_agent_index
+        self.game_timeout: bool = game_timeout
+        """ Indicates that the game has timed out (reached the maximum number of moves). """
+
+        if (timeout_agent_indexes is None):
+            timeout_agent_indexes = []
+
+        self.timeout_agent_indexes: list[int] = timeout_agent_indexes
+        """ The list of agents that timed out in this game. """
+
+        if (crash_agent_indexes is None):
+            crash_agent_indexes = []
+
+        self.crash_agent_indexes: list[int] = crash_agent_indexes
+        """ The list of agents that crashed in this game. """
+
+        if (winning_agent_indexes is None):
+            winning_agent_indexes = []
+
+        self.winning_agent_indexes: list[int] = winning_agent_indexes
         """
-        The agent that is considered the "winner" of this game.
+        The agents that are considered the "winner" of this game.
         Games may interpret this value in different ways.
         """
-
-    def update(self,
-            state: pacai.core.gamestate.GameState,
-            action_record: pacai.core.agentaction.AgentActionRecord,
-            ) -> None:
-        """ Update the game result after an agent move. """
-
-        self.score = state.score
-        self.history.append(action_record)
 
     def to_dict(self) -> dict[str, typing.Any]:
         return {
@@ -130,7 +142,10 @@ class GameResult(pacai.util.json.DictConverter):
             'end_time': self.end_time,
             'history': [item.to_dict() for item in self.history],
             'score': self.score,
-            'winning_agent_index': self.winning_agent_index,
+            'game_timeout': self.game_timeout,
+            'timeout_agent_indexes': self.timeout_agent_indexes,
+            'crash_agent_indexes': self.crash_agent_indexes,
+            'winning_agent_indexes': self.winning_agent_indexes,
         }
 
     @classmethod
@@ -142,7 +157,10 @@ class GameResult(pacai.util.json.DictConverter):
             end_time = data.get('end_time', None),
             history = [pacai.core.agentaction.AgentActionRecord.from_dict(item) for item in data.get('history', [])],
             score = data.get('score', 0),
-            winning_agent_index = data.get('winning_agent_index', -1),
+            game_timeout = data.get('game_timeout', False),
+            timeout_agent_indexes = data.get('timeout_agent_indexes', None),
+            crash_agent_indexes = data.get('crash_agent_indexes', None),
+            winning_agent_indexes = data.get('winning_agent_indexes', -1),
         )
 
 class Game(abc.ABC):
@@ -183,15 +201,22 @@ class Game(abc.ABC):
     def process_turn(self,
             state: pacai.core.gamestate.GameState,
             action_record: pacai.core.agentaction.AgentActionRecord,
+            result: GameResult,
             ) -> pacai.core.gamestate.GameState:
         """
-        Process the given move and return an updated game state.
+        Process the given agent action and return an updated game state.
         The returned game state may be a copy or modified version of the passed in game state.
         """
 
+        # The agent has crashed.
+        if (action_record.crashed):
+            result.crash_agent_indexes.append(action_record.agent_index)
+            state.process_agent_crash(action_record.agent_index)
+            return state
+
         action = action_record.get_action()
         if (action not in state.get_legal_actions()):
-            raise ValueError(f"Illegal action for agent {state.agent_index}: '{action}'.")
+            raise ValueError(f"Illegal action for agent {action_record.agent_index}: '{action}'.")
 
         state.process_turn(action)
         return state
@@ -246,12 +271,16 @@ class Game(abc.ABC):
         # Notify agents about the start of the game.
         records = isolator.game_start(rng, state)
         for record in records.values():
-            board_highlights += record.get_board_highlights()
+            if (record.crashed):
+                result.crash_agent_indexes.append(record.agent_index)
+                state.process_agent_crash(record.agent_index)
+            else:
+                board_highlights += record.get_board_highlights()
 
         # Start the UI.
         ui.game_start(state, board_highlights = board_highlights)
 
-        while ((self._game_info.max_turns < 0) or (state.turn_count < self._game_info.max_turns)):
+        while (not self.check_end(state)):
             logging.debug("Turn %d, agent %d.", state.turn_count, state.agent_index)
 
             # Get any user inputs.
@@ -260,32 +289,36 @@ class Game(abc.ABC):
             # Get the next action from the agent.
             action_record = isolator.get_action(state, user_inputs)
 
-            # TODO(eriq): Handle crashes -- acton_record.agent_action is None
-
             # Execute the next action and update the state.
-            state = self.process_turn(state, action_record)
+            state = self.process_turn(state, action_record, result)
 
             # Update the UI.
             ui.update(state, board_highlights = action_record.get_board_highlights())
 
             # Update the game result and move history.
-            result.update(state, action_record)
+            result.history.append(action_record)
 
             # Check for game ending conditions.
-            game_over = self.check_end(state)
-            if (game_over):
+            if (self.check_end(state)):
                 break
 
-        # Check if this game ended naturally or in a timeout.
-        if (not state.game_over):
-            state.game_over = True
+            # End this agent's turn.
+            state.finish_turn(action_record.get_action())
 
-            # Don't count replays as timeouts.
-            if (not self._is_replay):
-                state.timeout = True
+            # Check if this game has ran for the maximum number of turns.
+            if ((self._game_info.max_turns > 0) and (state.turn_count >= self._game_info.max_turns)):
+                state.process_game_timeout()
+                result.game_timeout = True
+                break
 
         # Mark the end time of the game.
         result.end_time = pacai.util.time.now()
+
+        # Notify the state about the end of the game.
+        winners = state.game_complete()
+        result.winning_agent_indexes += winners
+
+        result.score = state.score
 
         # Notify agents about the end of this game.
         isolator.game_complete(state)

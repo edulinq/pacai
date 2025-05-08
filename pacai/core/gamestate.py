@@ -21,7 +21,6 @@ class GameState(pacai.util.json.DictConverter):
             board: pacai.core.board.Board | None = None,
             agent_index: int = -1,
             game_over: bool = False,
-            timeout: bool = False,
             last_actions: dict[int, pacai.core.action.Action] | None = None,
             score: int = 0,
             turn_count: int = 0,
@@ -43,9 +42,6 @@ class GameState(pacai.util.json.DictConverter):
 
         self.game_over: bool = game_over
         """ Indicates that this state represents a complete game. """
-
-        self.timeout: bool = timeout
-        """ Indicates that the game ended in a timeout. """
 
         if (last_actions is None):
             last_actions = {}
@@ -95,6 +91,14 @@ class GameState(pacai.util.json.DictConverter):
         # Choose the first agent to move.
         self.agent_index = self.get_next_agent_index()
 
+    def game_complete(self) -> list[int]:
+        """
+        Indicate that the game has ended.
+        The state should take any final actions and return the indexes of the winning agents (if any).
+        """
+
+        return []
+
     def get_agent_position(self, agent_index: int | None = None) -> pacai.core.board.Position | None:
         """ Get the position of the specified agent (or current agent if no agent is specified). """
 
@@ -137,19 +141,32 @@ class GameState(pacai.util.json.DictConverter):
 
         return successor
 
+    def process_agent_crash(self, agent_index: int):
+        """
+        Notify the state that the given agent has crashed.
+        The state should make any updates and set the end of game information.
+        """
+
+        self.game_over = True
+
+    def process_game_timeout(self):
+        """
+        Notify the state that the game has reached the maximum number of turns without ending.
+        The state should make any updates and set the end of game information.
+        """
+
+        self.game_over = True
+
+    @abc.abstractmethod
     def process_turn(self, action: pacai.core.action.Action) -> None:
         """
         Process the current agent's turn with the given action.
-        This will modify the current state to end the current turn and prepare for the next one.
+        This will modify the current state.
         To get a copy of a potential successor state, use generate_sucessor().
         """
 
-        self._apply_action(action)
-        self._finish_turn(action)
-
-    def _finish_turn(self, action: pacai.core.action.Action) -> None:
-        """ Perform all the final bookkeeping steps when applying an action. """
-
+    def finish_turn(self, action: pacai.core.action.Action) -> None:
+        """ Perform all the final bookkeeping steps when a turn is over. """
 
         # Track this last action.
         self.last_actions[self.agent_index] = action
@@ -200,7 +217,3 @@ class GameState(pacai.util.json.DictConverter):
     @abc.abstractmethod
     def get_legal_actions(self) -> list[pacai.core.action.Action]:
         """ Get the moves that the current agent is allowed to make. """
-
-    @abc.abstractmethod
-    def _apply_action(self, action: pacai.core.action.Action) -> None:
-        """ Apply the given action to this state. """
