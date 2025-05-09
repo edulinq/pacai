@@ -154,6 +154,9 @@ class Position(pacai.util.json.DictConverter):
     def __str__(self) -> str:
         return f"({self.row}, {self.col})"
 
+    def __repr__(self) -> str:
+        return str(self)
+
     def to_dict(self) -> dict[str, typing.Any]:
         return vars(self).copy()
 
