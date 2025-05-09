@@ -20,6 +20,8 @@ function registerKeys() {
 function init() {
     makeRequest('/api/init', {})
         .then(function(body) {
+            document.title = body.title;
+
             fps = body.fps;
 
             // Update twice an FPS period (since we are polling and updates are not pushed).

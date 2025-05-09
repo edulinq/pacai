@@ -425,6 +425,7 @@ def _handler_init(handler: HTTPHandler, path: str, params: dict) -> RequestHandl
     """ Handle a request by the browser to initialize. """
 
     data = {
+        'title': 'pacai',
         'fps': handler._fps,
     }
 
