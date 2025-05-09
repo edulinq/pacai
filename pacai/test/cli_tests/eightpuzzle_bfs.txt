@@ -1,0 +1,9 @@
+{
+    "cli": "pacai.eightpuzzle.bin",
+    "arguments": [
+        "--solver", "search-solver-bfs"
+    ],
+    "error": true
+}
+---
+breadth_first_search

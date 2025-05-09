@@ -1,0 +1,9 @@
+{
+    "cli": "pacai.eightpuzzle.bin",
+    "arguments": [
+        "--help"
+    ],
+    "error": true
+}
+---
+0
