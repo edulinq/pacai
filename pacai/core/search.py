@@ -9,6 +9,9 @@ import typing
 import pacai.core.action
 import pacai.core.board
 
+class SolutionNotFoundError(Exception):
+    """ An error for when a search problem solver cannot find a solution. """
+
 class SearchNode(abc.ABC):
     """
     A node or "state" in a search problem/tree.
@@ -20,11 +23,15 @@ class SearchNode(abc.ABC):
 
     @abc.abstractmethod
     def __eq__(self, other: object) -> bool:
-        """ Override the default Python `==` operator so states can be used in dicts and sets. """
+        """ Override the default Python `==` operator so nodes can be used in dicts and sets. """
 
     @abc.abstractmethod
     def __hash__(self) -> int:
-        """ Override the default Python hash function so states can be used in dicts and sets. """
+        """ Override the default Python hash function so nodes can be used in dicts and sets. """
+
+    @abc.abstractmethod
+    def __lt__(self, other: object) -> bool:
+        """ Override the default Python `<` operator so nodes can be sorted. """
 
 class SuccessorInfo:
     """
@@ -76,6 +83,9 @@ class SearchProblem(abc.ABC):
         This let's us know exactly how the agent has moved about.
         """
 
+    def complete(self, goal_node: SearchNode) -> None:
+        """ Notify this search problem that the solver choose this goal node. """
+
     @abc.abstractmethod
     def get_starting_node(self) -> SearchNode:
         """ Get the starting node for the search problem. """
@@ -83,9 +93,6 @@ class SearchProblem(abc.ABC):
     @abc.abstractmethod
     def is_goal_node(self, node: SearchNode) -> bool:
         """ Check if this node is a valid goal node. """
-
-    def complete(self, goal_node: SearchNode) -> None:
-        """ Notify this search problem that the soler choose this goal node. """
 
     @abc.abstractmethod
     def get_successor_nodes(self, node: SearchNode) -> list[SuccessorInfo]:
@@ -102,7 +109,11 @@ class SearchSolution:
     but just what a solver returns.
     """
 
-    def __init__(self, actions: list[pacai.core.action.Action], cost: float) -> None:
+    def __init__(self,
+            actions: list[pacai.core.action.Action],
+            cost: float,
+            goal_node: SearchNode | None = None,
+            ) -> None:
         self.actions: list[pacai.core.action.Action] = actions
         """
         The actions to take for this solution.
@@ -113,6 +124,12 @@ class SearchSolution:
 
         self.cost: float = cost
         """ The cost of this solution. """
+
+        self.goal_node: SearchNode | None = goal_node
+        """
+        The node that the search was ended on.
+        May be None in cases where the solver does not use search nodes.
+        """
 
 @typing.runtime_checkable
 class CostFunction(typing.Protocol):
@@ -138,6 +155,7 @@ class SearchProblemSolver(typing.Protocol):
     A function that solves a search problem and returns a solution.
     Not all solvers will need to heuristic or RNG,
     but they will always be provided (even if the heuristic is a null heuristic).
+    If no solution/path can be found, a SolutionNotFoundError exception should be raised.
     """
 
     def __call__(self,

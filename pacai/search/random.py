@@ -33,6 +33,4 @@ def random_search(
         actions.append(successor.action)
         cost += successor.cost
 
-    problem.complete(current_node)
-
-    return pacai.core.search.SearchSolution(actions, cost)
+    return pacai.core.search.SearchSolution(actions, cost, current_node)

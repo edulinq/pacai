@@ -1,13 +1,14 @@
+import abc
 import heapq
 import typing
 
 T = typing.TypeVar('T')
 """ A generic type to ensure type consistency for all the container classes. """
 
-class Stack(typing.Generic[T]):
+class FringeContainer(abc.ABC, typing.Generic[T]):
     """
-    A container with a last-in-first-out (LIFO) queuing policy.
-    See https://en.wikipedia.org/wiki/Stack_(abstract_data_type) .
+    A generic container base class that is useful for a search fringe
+    (but can be used for any sort of storage).
     """
 
     def __init__(self) -> None:
@@ -16,6 +17,30 @@ class Stack(typing.Generic[T]):
         The underlying storage for our container's items.
         We can just use a normal list as long as we are careful about how we work with it.
         """
+
+    def is_empty(self) -> bool:
+        """ Returns True if the container is empty. """
+
+        return (len(self._items) == 0)
+
+    def __len__(self) -> int:
+        """ Override the len() operator to get the size of the container. """
+
+        return len(self._items)
+
+    @abc.abstractmethod
+    def push(self, item: T) -> None:
+        """ Add an item to this container. """
+
+    @abc.abstractmethod
+    def pop(self) -> T:
+        """ Remove the next item from this container. """
+
+class Stack(FringeContainer[T]):
+    """
+    A container with a last-in-first-out (LIFO) queuing policy.
+    See https://en.wikipedia.org/wiki/Stack_(abstract_data_type) .
+    """
 
     def push(self, item: T) -> None:
         """ Push an item onto the stack. """
@@ -27,28 +52,11 @@ class Stack(typing.Generic[T]):
 
         return self._items.pop()
 
-    def is_empty(self) -> bool:
-        """ Returns True if the container is empty. """
-
-        return (len(self._items) == 0)
-
-    def __len__(self) -> int:
-        """ Override the len() operator to get the size of the container. """
-
-        return len(self._items)
-
-class Queue(typing.Generic[T]):
+class Queue(FringeContainer[T]):
     """
     A container with a first-in-first-out (FIFO) queuing policy.
     See: https://en.wikipedia.org/wiki/Queue_(abstract_data_type) .
     """
-
-    def __init__(self) -> None:
-        self._items: list[T] = []
-        """
-        The underlying storage for our container's items.
-        We can just use a normal list as long as we are careful about how we work with it.
-        """
 
     def push(self, item: T) -> None:
         """ Enqueue the item into the queue. """
@@ -60,17 +68,7 @@ class Queue(typing.Generic[T]):
 
         return self._items.pop()
 
-    def is_empty(self) -> bool:
-        """ Returns True if the container is empty. """
-
-        return (len(self._items) == 0)
-
-    def __len__(self) -> int:
-        """ Override the len() operator to get the size of the container. """
-
-        return len(self._items)
-
-class PriorityQueue(typing.Generic[T]):
+class PriorityQueue(FringeContainer[T]):
     """
     A container with a queuing policy that prioritizes objects with lower priority..
     See: https://en.wikipedia.org/wiki/Priority_queue .
@@ -83,14 +81,7 @@ class PriorityQueue(typing.Generic[T]):
     However, you may insert the same item multiple times with different priorities.
     """
 
-    def __init__(self) -> None:
-        self._items: list[T] = []
-        """
-        The underlying storage for our container's items.
-        We can just use a normal list as long as we are careful about how we work with it.
-        """
-
-    def push(self, item: T, priority: float) -> None:
+    def push(self, item: T, priority: float) -> None:  # type: ignore  # pylint: disable=arguments-differ
         """ Enqueue the item into the priority queue. """
 
         pair = (priority, item)
@@ -101,16 +92,6 @@ class PriorityQueue(typing.Generic[T]):
 
         (_, item) = heapq.heappop(self._items)  # type: ignore
         return item  # type: ignore
-
-    def is_empty(self) -> bool:
-        """ Returns True if the container is empty. """
-
-        return (len(self._items) == 0)
-
-    def __len__(self) -> int:
-        """ Override the len() operator to get the size of the container. """
-
-        return len(self._items)
 
 @typing.runtime_checkable
 class PriorityFunction(typing.Protocol):

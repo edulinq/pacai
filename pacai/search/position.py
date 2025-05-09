@@ -28,6 +28,12 @@ class PositionSearchNode(pacai.core.search.SearchNode):
     def __hash__(self) -> int:
         return hash(self.position)
 
+    def __lt__(self, other: object) -> bool:
+        if (not isinstance(other, PositionSearchNode)):
+            raise TypeError(f"Search nodes must be of the same type, found '{type(self)}' and '{type(other)}'.")
+
+        return self.position < other.position
+
 class PositionSearchProblem(pacai.core.search.SearchProblem):
     """
     A search problem for finding a specific position on the board.

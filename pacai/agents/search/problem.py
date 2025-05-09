@@ -80,12 +80,15 @@ class SearchProblemAgent(pacai.core.agent.Agent):
         search_problem = self._problem_class(game_state = initial_state)
         solution = self._solver_function(search_problem, self._heuristic_function, self._rng)
 
+        if (solution.goal_node is not None):
+            search_problem.complete(solution.goal_node)
+
         end_time = pacai.util.time.now()
 
         self._actions = solution.actions
 
-        logging.info("Path found with %d steps and a total cost of %0.2f in %0.2f seconds.",
-                len(solution.actions), solution.cost, (end_time.sub(start_time).to_secs()))
+        logging.info("Path found with %d steps and a total cost of %0.2f in %0.2f seconds. %d search nodes expanded.",
+                len(solution.actions), solution.cost, (end_time.sub(start_time).to_secs()), search_problem.expanded_node_count)
 
         # Highlight visited locations in the UI to visually represent our search pattern.
         highlights = []
