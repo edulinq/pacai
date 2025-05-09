@@ -352,9 +352,12 @@ class UI(abc.ABC):
         canvas = PIL.ImageDraw.Draw(image)
 
         # Draw highlights.
-        for (position, intensity) in self._highlights.items():
+        for (position, base_intensity) in self._highlights.items():
             start_coord = self._position_to_image_coords(position)
             end_coord = self._position_to_image_coords(position.add(pacai.core.board.Position(1, 1)))
+
+            # Don't let the intensity go to zero.
+            intensity = 0.10 + (0.9 * base_intensity)
 
             highlight_color = (
                 int(self._sprite_sheet.highlight[0] * intensity),
