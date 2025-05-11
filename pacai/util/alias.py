@@ -103,12 +103,14 @@ COST_FUNC_SHORT_NAMES: list[str] = [
 
 HEURISTIC_CORNERS: Alias = Alias('heuristic-corners', 'pacai.student.problem.corners_heuristic')
 HEURISTIC_EUCLIDEAN: Alias = Alias('heuristic-euclidean', 'pacai.search.distance.euclidean_heuristic')
+HEURISTIC_FOOD: Alias = Alias('heuristic-food', 'pacai.student.problem.food_heuristic')
 HEURISTIC_MANHATTAN: Alias = Alias('heuristic-manhattan', 'pacai.search.distance.manhattan_heuristic')
 HEURISTIC_NULL: Alias = Alias('heuristic-null', 'pacai.search.common.null_heuristic')
 
 HEURISTIC_SHORT_NAMES: list[str] = [
     HEURISTIC_CORNERS.short,
     HEURISTIC_EUCLIDEAN.short,
+    HEURISTIC_FOOD.short,
     HEURISTIC_MANHATTAN.short,
     HEURISTIC_NULL.short,
 ]

@@ -34,15 +34,15 @@ class FoodSearchProblem(pacai.core.search.SearchProblem[FoodSearchNode]):
             **kwargs) -> None:
         super().__init__()
 
-        self._state = game_state
+        self.state = game_state
         """ Keep track of the enire game state. """
 
     def get_starting_node(self) -> FoodSearchNode:
-        position = self._state.get_agent_position()
+        position = self.state.get_agent_position()
         if (position is None):
             raise ValueError("Could not find starting agent position.")
 
-        return FoodSearchNode(position, self._state.board.get_marker_positions(pacai.pacman.board.MARKER_PELLET))
+        return FoodSearchNode(position, self.state.board.get_marker_positions(pacai.pacman.board.MARKER_PELLET))
 
     def is_goal_node(self, node: FoodSearchNode) -> bool:
         return (len(node.remaining_food) == 0)
@@ -55,7 +55,7 @@ class FoodSearchProblem(pacai.core.search.SearchProblem[FoodSearchNode]):
         successors = []
 
         # Check all the non-wall neighbors.
-        for (action, position) in self._state.board.get_neighbors(node.position):
+        for (action, position) in self.state.board.get_neighbors(node.position):
             new_remaining_food = node.remaining_food.copy()
             if (position in new_remaining_food):
                 new_remaining_food.remove(position)

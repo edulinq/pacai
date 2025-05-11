@@ -3,6 +3,7 @@ import pacai.core.gamestate
 import pacai.core.search
 import pacai.pacman.board
 import pacai.search.common
+import pacai.search.food
 import pacai.search.position
 
 class CornersSearchNode(pacai.core.search.SearchNode):
@@ -52,12 +53,20 @@ class CornersSearchProblem(pacai.core.search.SearchProblem[CornersSearchNode]):
 
 def corners_heuristic(node: CornersSearchNode, problem: CornersSearchProblem, **kwargs) -> float:
     """
-    A heuristic for the CornersSearchProblem.
+    A heuristic for CornersSearchProblem.
 
     This function should always return a number that is a lower bound
     on the shortest path from the state to a goal of the problem;
     i.e. it should be admissible.
     (You need not worry about consistency for this heuristic to receive full credit.)
+    """
+
+    # *** Your Code Here ***
+    return pacai.search.common.null_heuristic(node, problem)  # Default to a trivial solution.
+
+def food_heuristic(node: pacai.search.food.FoodSearchNode, problem: pacai.search.food.FoodSearchProblem, **kwargs) -> float:
+    """
+    A heuristic for the CornersSearchProblem.
     """
 
     # *** Your Code Here ***
