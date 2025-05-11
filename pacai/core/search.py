@@ -8,6 +8,7 @@ import typing
 
 import pacai.core.action
 import pacai.core.board
+import pacai.util.json
 
 class SolutionNotFoundError(Exception):
     """ An error for when a search problem solver cannot find a solution. """
@@ -24,7 +25,7 @@ class SearchNode(abc.ABC):
     def __eq__(self, other: object) -> bool:
         """
         Attempt to override the default Python `==` operator so nodes can be used in dicts and sets.
-        This will not work for all subclasses, see _to_tuple().
+        This will not work for all subclasses, see _to_json_string().
         """
 
         # Note the hard type check (done so we can keep this method general).
@@ -32,20 +33,20 @@ class SearchNode(abc.ABC):
             return False
 
         other = typing.cast(SearchNode, other)
-        return self._to_tuple() == other._to_tuple()
+        return self._to_json_string() == other._to_json_string()
 
     def __hash__(self) -> int:
         """
         Attempt to override the default Python hash function so nodes can be used in dicts and sets.
-        This will not work for all subclasses, see _to_tuple().
+        This will not work for all subclasses, see _to_json_string().
         """
 
-        return hash(self._to_tuple())
+        return hash(self._to_json_string())
 
     def __lt__(self, other: object) -> bool:
         """
         Attempt to override the default Python `<` operator so nodes can be sorted.
-        This will not work for all subclasses, see _to_tuple().
+        This will not work for all subclasses, see _to_json_string().
         """
 
         # Note the hard type check (done so we can keep this method general).
@@ -53,14 +54,14 @@ class SearchNode(abc.ABC):
             return False
 
         other = typing.cast(SearchNode, other)
-        return self._to_tuple() > other._to_tuple()
+        return self._to_json_string() > other._to_json_string()
 
-    def _to_tuple(self) -> tuple:
+    def _to_json_string(self) -> str:
         """
-        Attempt to convert this object into a tuple.
+        Attempt to convert this object into a JSON string.
 
         This method will generally only be used by low-level methods that are trying their best to be general.
-        We want to target a tuple, because it has well-defined semantics for most builtin Python operations (like `==` and `<`).
+        We want to target a string, because it has well-defined semantics for most builtin Python operations (like `==` and `<`).
 
         The general nature of this method will come at the cost of performance (i.e., this will be relatively slow).
         If a subclass has complex data that this method won't work on (or needs to speed things up),
@@ -68,7 +69,7 @@ class SearchNode(abc.ABC):
         (see comments for notes on who uses this method).
         """
 
-        return tuple(sorted(list(vars(self).items())))
+        return pacai.util.json.dumps(self)
 
 NodeType = typing.TypeVar('NodeType', bound = SearchNode)  # pylint: disable=invalid-name
 

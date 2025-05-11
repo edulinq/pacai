@@ -102,15 +102,24 @@ def load_object_path(path: str, cls: typing.Type[DictConverter], **kwargs) -> Di
     data = load_path(path, **kwargs)
     return cls.from_dict(data)
 
-def dump(data: typing.Any, file_obj: typing.TextIO, default: typing.Callable | None = _custom_handle, **kwargs) -> None:
+def dump(
+        data: typing.Any,
+        file_obj: typing.TextIO,
+        default: typing.Callable | None = _custom_handle,
+        sort_keys: bool = True,
+        **kwargs) -> None:
     """ Dump an object as a JSON file object. """
 
-    json.dump(data, file_obj, default = default, **kwargs)
+    json.dump(data, file_obj, default = default, sort_keys = sort_keys, **kwargs)
 
-def dumps(data: typing.Any, default: typing.Callable | None = _custom_handle, **kwargs) -> str:
+def dumps(
+        data: typing.Any,
+        default: typing.Callable | None = _custom_handle,
+        sort_keys: bool = True,
+        **kwargs) -> str:
     """ Dump an object as a JSON string. """
 
-    return json.dumps(data, default = default, **kwargs)
+    return json.dumps(data, default = default, sort_keys = sort_keys, **kwargs)
 
 def dump_path(data: typing.Any,
         path: str,
