@@ -2,6 +2,7 @@ import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.search
 import pacai.pacman.board
+import pacai.search.common
 import pacai.search.position
 
 class CornersSearchNode(pacai.core.search.SearchNode):
@@ -48,6 +49,19 @@ class CornersSearchProblem(pacai.core.search.SearchProblem[CornersSearchNode]):
     def get_successor_nodes(self, node: CornersSearchNode) -> list[pacai.core.search.SuccessorInfo]:
         # *** Your Code Here ***
         raise NotImplementedError('CornersSearchProblem.get_successor_nodes')
+
+def corners_heuristic(node: CornersSearchNode, problem: CornersSearchProblem, **kwargs) -> float:
+    """
+    A heuristic for the CornersSearchProblem.
+
+    This function should always return a number that is a lower bound
+    on the shortest path from the state to a goal of the problem;
+    i.e. it should be admissible.
+    (You need not worry about consistency for this heuristic to receive full credit.)
+    """
+
+    # *** Your Code Here ***
+    return pacai.search.common.null_heuristic(node, problem)  # Default to a trivial solution.
 
 class AnyFoodSearchProblem(pacai.search.position.PositionSearchProblem):
     """
