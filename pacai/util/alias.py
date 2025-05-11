@@ -114,10 +114,12 @@ HEURISTIC_SHORT_NAMES: list[str] = [
 ]
 
 SEARCH_PROBLEM_CORNERS: Alias = Alias('search-problem-corners', 'pacai.student.problem.CornersSearchProblem')
+SEARCH_PROBLEM_FOOD: Alias = Alias('search-problem-food', 'pacai.search.food.FoodSearchProblem')
 SEARCH_PROBLEM_POSITION: Alias = Alias('search-problem-position', 'pacai.search.position.PositionSearchProblem')
 
 SEARCH_PROBLEM_SHORT_NAMES: list[str] = [
     SEARCH_PROBLEM_CORNERS.short,
+    SEARCH_PROBLEM_FOOD.short,
     SEARCH_PROBLEM_POSITION.short,
 ]
 
