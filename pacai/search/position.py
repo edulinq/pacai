@@ -34,7 +34,7 @@ class PositionSearchNode(pacai.core.search.SearchNode):
 
         return self.position < other.position
 
-class PositionSearchProblem(pacai.core.search.SearchProblem):
+class PositionSearchProblem(pacai.core.search.SearchProblem[PositionSearchNode]):
     """
     A search problem for finding a specific position on the board.
     """
@@ -86,14 +86,14 @@ class PositionSearchProblem(pacai.core.search.SearchProblem):
     def get_starting_node(self) -> PositionSearchNode:
         return PositionSearchNode(self.start_position)
 
-    def is_goal_node(self, node: PositionSearchNode) -> bool:  # type: ignore[override]
+    def is_goal_node(self, node: PositionSearchNode) -> bool:
         return (self.goal_position == node.position)
 
-    def complete(self, goal_node: PositionSearchNode) -> None:  # type: ignore[override]
+    def complete(self, goal_node: PositionSearchNode) -> None:
         # Mark the final node in the history.
         self.position_history.append(goal_node.position)
 
-    def get_successor_nodes(self, node: PositionSearchNode) -> list[pacai.core.search.SuccessorInfo]:  # type: ignore[override]
+    def get_successor_nodes(self, node: PositionSearchNode) -> list[pacai.core.search.SuccessorInfo]:
         successors = []
 
         # Check all the non-wall neighbors.

@@ -33,13 +33,15 @@ class SearchNode(abc.ABC):
     def __lt__(self, other: object) -> bool:
         """ Override the default Python `<` operator so nodes can be sorted. """
 
-class SuccessorInfo:
+NodeType = typing.TypeVar('NodeType', bound = SearchNode)  # pylint: disable=invalid-name
+
+class SuccessorInfo(typing.Generic[NodeType]):
     """
     A possible search node (and related information) that can be reached from another node in a search problem.
     """
 
     def __init__(self,
-            node: SearchNode,
+            node: NodeType,
             action: pacai.core.action.Action,
             cost: float,
             **kwargs) -> None:
@@ -52,7 +54,7 @@ class SuccessorInfo:
         self.cost = cost
         """ The cost of taken the action that lead to this successor. """
 
-class SearchProblem(abc.ABC):
+class SearchProblem(abc.ABC, typing.Generic[NodeType]):
     """
     This class outlines the structure of a search problem.
     Any search problem will need to provide answers to the following questions:
@@ -71,7 +73,7 @@ class SearchProblem(abc.ABC):
         It is important that subclasses accurately keep this count up-to-date.
         """
 
-        self.visited_nodes: set[SearchNode] = set()
+        self.visited_nodes: set[NodeType] = set()
         """
         Keep track of the board positions that have been visited.
         This can help agents quickly check where they have previously been.
@@ -83,26 +85,26 @@ class SearchProblem(abc.ABC):
         This let's us know exactly how the agent has moved about.
         """
 
-    def complete(self, goal_node: SearchNode) -> None:
+    def complete(self, goal_node: NodeType) -> None:
         """ Notify this search problem that the solver choose this goal node. """
 
     @abc.abstractmethod
-    def get_starting_node(self) -> SearchNode:
+    def get_starting_node(self) -> NodeType:
         """ Get the starting node for the search problem. """
 
     @abc.abstractmethod
-    def is_goal_node(self, node: SearchNode) -> bool:
+    def is_goal_node(self, node: NodeType) -> bool:
         """ Check if this node is a valid goal node. """
 
     @abc.abstractmethod
-    def get_successor_nodes(self, node: SearchNode) -> list[SuccessorInfo]:
+    def get_successor_nodes(self, node: NodeType) -> list[SuccessorInfo[NodeType]]:
         """
         Get all the possible successors (successor nodes) to the current node.
         This action can be though of expanding a search node,
         or getting the children of a node in the search tree.
         """
 
-class SearchSolution:
+class SearchSolution(typing.Generic[NodeType]):
     """
     A potential solution to a search problem.
     This does not have to be an optimal (or even correct) solution,
@@ -112,7 +114,7 @@ class SearchSolution:
     def __init__(self,
             actions: list[pacai.core.action.Action],
             cost: float,
-            goal_node: SearchNode | None = None,
+            goal_node: NodeType | None = None,
             ) -> None:
         self.actions: list[pacai.core.action.Action] = actions
         """
@@ -125,7 +127,7 @@ class SearchSolution:
         self.cost: float = cost
         """ The cost of this solution. """
 
-        self.goal_node: SearchNode | None = goal_node
+        self.goal_node: NodeType | None = goal_node
         """
         The node that the search was ended on.
         May be None in cases where the solver does not use search nodes.
