@@ -1,4 +1,3 @@
-import abc
 import copy
 import typing
 
@@ -19,6 +18,7 @@ class GameState(pacai.util.json.DictConverter):
 
     def __init__(self,
             board: pacai.core.board.Board | None = None,
+            seed: int = -1,
             agent_index: int = -1,
             game_over: bool = False,
             last_actions: dict[int, pacai.core.action.Action] | None = None,
@@ -33,6 +33,9 @@ class GameState(pacai.util.json.DictConverter):
 
         self.board: pacai.core.board.Board = board
         """ The current board. """
+
+        self.seed: int = seed
+        """ A utility seed that components using the game state may use to seed their own RNGs. """
 
         self.agent_index: int = agent_index
         """
@@ -157,7 +160,6 @@ class GameState(pacai.util.json.DictConverter):
 
         self.game_over = True
 
-    @abc.abstractmethod
     def process_turn(self, action: pacai.core.action.Action) -> None:
         """
         Process the current agent's turn with the given action.
@@ -214,6 +216,7 @@ class GameState(pacai.util.json.DictConverter):
 
         return cls(**data)
 
-    @abc.abstractmethod
     def get_legal_actions(self) -> list[pacai.core.action.Action]:
         """ Get the moves that the current agent is allowed to make. """
+
+        return []

@@ -262,8 +262,9 @@ class Game(abc.ABC):
         for agent_index in self._game_info.agent_infos:
             agent_user_inputs[agent_index] = []
 
-        # Create the initial game state.
+        # Create the initial game state (and force it's seed).
         state = self.get_initial_state(rng, self._board, self._game_info.agent_infos)
+        state.seed = game_id
         state.game_start()
 
         board_highlights: list[pacai.core.board.Highlight] = []

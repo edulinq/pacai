@@ -65,7 +65,7 @@ class PositionSearchProblem(pacai.core.search.SearchProblem):
             else:
                 goal_position = DEFAULT_GOAL_POSITION
 
-        self._goal_position = goal_position
+        self.goal_position = goal_position
         """ The position to search for. """
 
         if (start_position is None):
@@ -87,7 +87,7 @@ class PositionSearchProblem(pacai.core.search.SearchProblem):
         return PositionSearchNode(self.start_position)
 
     def is_goal_node(self, node: PositionSearchNode) -> bool:  # type: ignore[override]
-        return (self._goal_position == node.position)
+        return (self.goal_position == node.position)
 
     def complete(self, goal_node: PositionSearchNode) -> None:  # type: ignore[override]
         # Mark the final node in the history.

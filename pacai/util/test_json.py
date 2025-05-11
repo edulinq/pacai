@@ -548,6 +548,7 @@ class JSONTest(pacai.test.base.BaseTest):
 
             (
                 pacai.pacman.gamestate.GameState(
+                    seed = 4,
                     board = pacai.core.board.load_string('test', pacai.core.test_board.TEST_BOARD_AGENT),
                     last_actions = {
                         0: pacai.core.action.STOP,
@@ -563,6 +564,7 @@ class JSONTest(pacai.test.base.BaseTest):
                     }
                 ),
                 {
+                    "seed": 4,
                     "board": {
                         'source': 'test',
                         'markers': {

@@ -79,6 +79,16 @@ AGENT_SHORT_NAMES: list[str] = [
     AGENT_USER_INPUT.short,
 ]
 
+DISTANCE_EUCLIDEAN: Alias = Alias('distance-euclidean', 'pacai.search.distance.euclidean_distance')
+DISTANCE_MANHATTAN: Alias = Alias('distance-manhattan', 'pacai.search.distance.manhattan_distance')
+DISTANCE_MAZE: Alias = Alias('distance-maze', 'pacai.search.distance.maze_distance')
+
+DISTANCE_SHORT_NAMES: list[str] = [
+    DISTANCE_EUCLIDEAN.short,
+    DISTANCE_MANHATTAN.short,
+    DISTANCE_MAZE.short,
+]
+
 COST_FUNC_LONGITUDINAL: Alias = Alias('cost-longitudinal', 'pacai.search.common.longitudinal_cost_function')
 COST_FUNC_STAY_EAST: Alias = Alias('cost-stay-east', 'pacai.search.common.stay_east_cost_function')
 COST_FUNC_STAY_WEST: Alias = Alias('cost-stay-west', 'pacai.search.common.stay_west_cost_function')
@@ -91,9 +101,13 @@ COST_FUNC_SHORT_NAMES: list[str] = [
     COST_FUNC_UNIT.short,
 ]
 
+HEURISTIC_EUCLIDEAN: Alias = Alias('heuristic-euclidean', 'pacai.search.distance.euclidean_heuristic')
+HEURISTIC_MANHATTAN: Alias = Alias('heuristic-manhattan', 'pacai.search.distance.manhattan_heuristic')
 HEURISTIC_NULL: Alias = Alias('heuristic-null', 'pacai.search.common.null_heuristic')
 
 HEURISTIC_SHORT_NAMES: list[str] = [
+    HEURISTIC_EUCLIDEAN.short,
+    HEURISTIC_MANHATTAN.short,
     HEURISTIC_NULL.short,
 ]
 
