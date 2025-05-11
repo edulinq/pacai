@@ -126,9 +126,13 @@ class TkUI(pacai.core.ui.UI):
         self._root.title(self._title)
         self._root.bind("<Configure>", self._handle_resize)
 
+        # Don't start the window too large.
+        max_initial_height = self._root.winfo_screenheight() - 100
+        max_initial_width = self._root.winfo_screenwidth() - 100
+
         # Height is +1 for the score.
-        self._height = max(MIN_WINDOW_HEIGHT, (state.board.height + 1) * self._sprite_sheet.height)
-        self._width = max(MIN_WINDOW_WIDTH, state.board.width * self._sprite_sheet.width)
+        self._height = min(max_initial_height, max(MIN_WINDOW_HEIGHT, (state.board.height + 1) * self._sprite_sheet.height))
+        self._width = min(max_initial_width, max(MIN_WINDOW_WIDTH, state.board.width * self._sprite_sheet.width))
 
         self._canvas = tkinter.Canvas(self._root, height = self._height, width = self._width, highlightthickness = 0)
 
