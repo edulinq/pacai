@@ -79,9 +79,15 @@ AGENT_SHORT_NAMES: list[str] = [
     AGENT_USER_INPUT.short,
 ]
 
+COST_FUNC_LONGITUDINAL: Alias = Alias('cost-longitudinal', 'pacai.search.common.longitudinal_cost_function')
+COST_FUNC_STAY_EAST: Alias = Alias('cost-stay-east', 'pacai.search.common.stay_east_cost_function')
+COST_FUNC_STAY_WEST: Alias = Alias('cost-stay-west', 'pacai.search.common.stay_west_cost_function')
 COST_FUNC_UNIT: Alias = Alias('cost-unit', 'pacai.search.common.unit_cost_function')
 
 COST_FUNC_SHORT_NAMES: list[str] = [
+    COST_FUNC_LONGITUDINAL.short,
+    COST_FUNC_STAY_EAST.short,
+    COST_FUNC_STAY_WEST.short,
     COST_FUNC_UNIT.short,
 ]
 

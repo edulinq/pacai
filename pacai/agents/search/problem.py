@@ -13,6 +13,7 @@ import pacai.util.reflection
 import pacai.util.time
 
 DEFAULT_PROBLEM: str = pacai.util.alias.SEARCH_PROBLEM_POSITION.long
+DEFAULT_PROBLEM_COST: str = pacai.util.alias.COST_FUNC_UNIT.long
 DEFAULT_SOLVER: str = pacai.util.alias.SEARCH_SOLVER_RANDOM.long
 DEFAULT_HEURISTIC: str = pacai.util.alias.HEURISTIC_NULL.long
 
@@ -29,6 +30,8 @@ class SearchProblemAgent(pacai.core.agent.Agent):
         Additional agent arguments are:
          - `problem: str` - A reflection reference to the search problem (pacai.core.search.SearchProblem) for this agent.
                             Defaults to DEFAULT_PROBLEM.
+         - `problem_cost: str` - A reflection reference to the optional cost function (pacai.core.search.CostFunction) for this problem.
+                            Defaults to DEFAULT_PROBLEM_COST.
          - `solver: str` - A reflection reference to the problem solver (pacai.core.search.SearchProblemSolver) for this agent.
                             Defaults to DEFAULT_SOLVER.
          - `heuristic: str` - A reflection reference to the optional heuristic (pacai.core.search.SearchHeuristic) for this solver.
@@ -36,6 +39,11 @@ class SearchProblemAgent(pacai.core.agent.Agent):
         """
 
         super().__init__(agent_info, *args, **kwargs)
+
+        problem_cost_function_reference = pacai.util.reflection.Reference(agent_info.extra_arguments.get('problem_cost', DEFAULT_PROBLEM_COST))
+
+        self._problem_cost_function: pacai.core.search.CostFunction = pacai.util.reflection.fetch(problem_cost_function_reference)
+        """ The cost function for this agent's search problem. """
 
         problem_reference = pacai.util.reflection.Reference(agent_info.extra_arguments.get('problem', DEFAULT_PROBLEM))
 
@@ -77,7 +85,7 @@ class SearchProblemAgent(pacai.core.agent.Agent):
 
         start_time = pacai.util.time.now()
 
-        search_problem = self._problem_class(game_state = initial_state)
+        search_problem = self._problem_class(game_state = initial_state, cost_function = self._problem_cost_function)
         solution = self._solver_function(search_problem, self._heuristic_function, self._rng)
 
         if (solution.goal_node is not None):

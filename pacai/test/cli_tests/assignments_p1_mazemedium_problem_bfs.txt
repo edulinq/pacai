@@ -1,0 +1,22 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--ui", "null",
+        "--board", "maze-medium",
+        "--pacman", "search-problem",
+        "--agent-arg", "0::solver=search-solver-bfs"
+    ]
+}
+---
+<LOG_PREFIX> -- Created a SearchProblemAgent using problem 'pacai.search.position.PositionSearchProblem', solver 'pacai.student.search.breadth_first_search', and heuristic 'pacai.search.common.null_heuristic'.
+<LOG_PREFIX> -- Agent 0 crashed.
+Traceback (most recent call last):
+<TRACEBACK_LINE>
+<TRACEBACK_LINE>
+<TRACEBACK_LINE>
+NotImplementedError: breadth_first_search
+<LOG_PREFIX> -- Average Score: -1000000.0
+<LOG_PREFIX> -- Scores:        -1000000
+<LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
+<LOG_PREFIX> -- Record:        Loss
