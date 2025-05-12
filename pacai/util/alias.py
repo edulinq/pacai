@@ -65,6 +65,7 @@ AGENT_LEFT_TURN: Alias = Alias('left-turn', 'pacai.agents.leftturn.LeftTurnAgent
 AGENT_RANDOM: Alias = Alias('random', 'pacai.agents.random.RandomAgent')
 AGENT_SCRIPTED: Alias = Alias('scripted', 'pacai.agents.scripted.ScriptedAgent')
 AGENT_SEARCH_PROBLEM: Alias = Alias('search-problem', 'pacai.agents.search.problem.SearchProblemAgent')
+AGENT_SEARCH_CLOSEST_DOT: Alias = Alias('search-closest-dot', 'pacai.student.singlesearch.ClosestDotSearchAgent')
 AGENT_USER_INPUT: Alias = Alias('user-input', 'pacai.agents.userinput.UserInputAgent')
 
 AGENT_SHORT_NAMES: list[str] = [
@@ -76,6 +77,7 @@ AGENT_SHORT_NAMES: list[str] = [
     AGENT_RANDOM.short,
     AGENT_SCRIPTED.short,
     AGENT_SEARCH_PROBLEM.short,
+    AGENT_SEARCH_CLOSEST_DOT.short,
     AGENT_USER_INPUT.short,
 ]
 
@@ -101,9 +103,9 @@ COST_FUNC_SHORT_NAMES: list[str] = [
     COST_FUNC_UNIT.short,
 ]
 
-HEURISTIC_CORNERS: Alias = Alias('heuristic-corners', 'pacai.student.problem.corners_heuristic')
+HEURISTIC_CORNERS: Alias = Alias('heuristic-corners', 'pacai.student.singlesearch.corners_heuristic')
 HEURISTIC_EUCLIDEAN: Alias = Alias('heuristic-euclidean', 'pacai.search.distance.euclidean_heuristic')
-HEURISTIC_FOOD: Alias = Alias('heuristic-food', 'pacai.student.problem.food_heuristic')
+HEURISTIC_FOOD: Alias = Alias('heuristic-food', 'pacai.student.singlesearch.food_heuristic')
 HEURISTIC_MANHATTAN: Alias = Alias('heuristic-manhattan', 'pacai.search.distance.manhattan_heuristic')
 HEURISTIC_NULL: Alias = Alias('heuristic-null', 'pacai.search.common.null_heuristic')
 
@@ -115,7 +117,7 @@ HEURISTIC_SHORT_NAMES: list[str] = [
     HEURISTIC_NULL.short,
 ]
 
-SEARCH_PROBLEM_CORNERS: Alias = Alias('search-problem-corners', 'pacai.student.problem.CornersSearchProblem')
+SEARCH_PROBLEM_CORNERS: Alias = Alias('search-problem-corners', 'pacai.student.singlesearch.CornersSearchProblem')
 SEARCH_PROBLEM_FOOD: Alias = Alias('search-problem-food', 'pacai.search.food.FoodSearchProblem')
 SEARCH_PROBLEM_POSITION: Alias = Alias('search-problem-position', 'pacai.search.position.PositionSearchProblem')
 
@@ -125,12 +127,12 @@ SEARCH_PROBLEM_SHORT_NAMES: list[str] = [
     SEARCH_PROBLEM_POSITION.short,
 ]
 
-SEARCH_SOLVER_ASTAR: Alias = Alias('search-solver-astar', 'pacai.student.search.astar_search')
-SEARCH_SOLVER_BFS: Alias = Alias('search-solver-bfs', 'pacai.student.search.breadth_first_search')
-SEARCH_SOLVER_DFS: Alias = Alias('search-solver-dfs', 'pacai.student.search.depth_first_search')
+SEARCH_SOLVER_ASTAR: Alias = Alias('search-solver-astar', 'pacai.student.singlesearch.astar_search')
+SEARCH_SOLVER_BFS: Alias = Alias('search-solver-bfs', 'pacai.student.singlesearch.breadth_first_search')
+SEARCH_SOLVER_DFS: Alias = Alias('search-solver-dfs', 'pacai.student.singlesearch.depth_first_search')
 SEARCH_SOLVER_MAZE_TINY: Alias = Alias('search-solver-maze-tiny', 'pacai.search.mazetiny.maze_tiny_search')
 SEARCH_SOLVER_RANDOM: Alias = Alias('search-solver-random', 'pacai.search.random.random_search')
-SEARCH_SOLVER_UCS: Alias = Alias('search-solver-ucs', 'pacai.student.search.uniform_cost_search')
+SEARCH_SOLVER_UCS: Alias = Alias('search-solver-ucs', 'pacai.student.singlesearch.uniform_cost_search')
 
 SEARCH_SOLVER_SHORT_NAMES: list[str] = [
     SEARCH_SOLVER_ASTAR.short,
@@ -139,6 +141,12 @@ SEARCH_SOLVER_SHORT_NAMES: list[str] = [
     SEARCH_SOLVER_MAZE_TINY.short,
     SEARCH_SOLVER_RANDOM.short,
     SEARCH_SOLVER_UCS.short,
+]
+
+STATE_EVAL_BASE: Alias = Alias('state-eval-base', 'pacai.core.gamestate.base_eval')
+
+STATE_EVAL_SHORT_NAMES: list[str] = [
+    STATE_EVAL_BASE.short,
 ]
 
 UI_NULL: Alias = Alias('null', 'pacai.ui.null.NullUI')
