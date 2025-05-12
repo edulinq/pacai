@@ -227,12 +227,21 @@ class EvaluationFunction(typing.Protocol):
     A function that can be used to score a game state.
     """
 
-    def __call__(self, state: GameState) -> float:
+    def __call__(self,
+            state: GameState,
+            action: pacai.core.action.Action | None = None,
+            old_state: GameState | None = None,
+            ) -> float:
         """
         Compute a score for a state that an agent can use to decide actions.
+        The current state is the only required argument, the others are optional.
         """
 
-def base_eval(state: GameState) -> float:
+def base_eval(
+        state: GameState,
+        action: pacai.core.action.Action | None = None,
+        old_state: GameState | None = None,
+        ) -> float:
     """ The most basic evaluation function, which just uses the state's current score. """
 
     return float(state.score)

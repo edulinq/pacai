@@ -1,0 +1,13 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--pacman", "agent-reflex",
+        "--ui", "null"
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: 481.0
+<LOG_PREFIX> -- Scores:        481
+<LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
+<LOG_PREFIX> -- Record:        Loss
