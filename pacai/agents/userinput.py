@@ -14,21 +14,31 @@ class UserInputAgent(pacai.core.agent.Agent):
             ) -> pacai.core.agentaction.AgentAction:
         legal_actions = state.get_legal_actions()
 
+        # Specifically note if we used an input from the user.
+        # If we did, then we can clear the input buffer.
+        # This allows users to input actions without needing to be frame perfect,
+        # e.g., a user can input a turn before the agent is in the intersection.
+        used_user_input = False
+
         # If actions were provided, take the most recent one.
         intended_action = None
         if (len(user_inputs) > 0):
             intended_action = user_inputs[-1]
+            used_user_input = True
 
             # If the intended action is not legal, then ignore it.
             if (intended_action not in legal_actions):
                 intended_action = None
+                used_user_input = False
 
         # If we got no legal input from the user, then assume the last action.
         if (intended_action is None):
             intended_action = state.get_agent_last_action()
+            used_user_input = False
 
         # If the action is illegal, then just stop.
         if (intended_action not in legal_actions):
             intended_action = pacai.core.action.STOP
+            used_user_input = False
 
-        return pacai.core.agentaction.AgentAction(intended_action)
+        return pacai.core.agentaction.AgentAction(intended_action, clear_inputs = used_user_input)

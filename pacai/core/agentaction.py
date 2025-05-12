@@ -18,6 +18,7 @@ class AgentAction(pacai.util.json.DictConverter):
     def __init__(self,
             action: pacai.core.action.Action = pacai.core.action.STOP,
             board_highlights: list[pacai.core.board.Highlight] | None = None,
+            clear_inputs: bool = False,
             other_info: dict[str, typing.Any] | None = None,
             ) -> None:
         self.action: pacai.core.action.Action = action
@@ -27,9 +28,10 @@ class AgentAction(pacai.util.json.DictConverter):
             board_highlights = []
 
         self.board_highlights: list[pacai.core.board.Highlight] = board_highlights
-        """
-        Board highlights that the agent would like to take effect.
-        """
+        """ Board highlights that the agent would like to take effect. """
+
+        self.clear_inputs = clear_inputs
+        """ Instruct the game that the agent has consumed the user inputs and any buffered inputs should be cleared. """
 
         if (other_info is None):
             other_info = {}
@@ -83,6 +85,14 @@ class AgentActionRecord(pacai.util.json.DictConverter):
             return pacai.core.action.STOP
 
         return self.agent_action.action
+
+    def get_clear_inputs(self) -> bool:
+        """ Get if the agent indicated that inputs should be cleated, or False if there is no action. """
+
+        if (self.agent_action is None):
+            return False
+
+        return self.agent_action.clear_inputs
 
     def get_board_highlights(self) -> list[pacai.core.board.Highlight]:
         """ Get the board highlights. """

@@ -284,11 +284,15 @@ class Game(abc.ABC):
         while (not self.check_end(state)):
             logging.debug("Turn %d, agent %d.", state.turn_count, state.agent_index)
 
-            # Get any user inputs.
-            user_inputs = self._get_user_inputs(state.agent_index, agent_user_inputs, ui)
+            # Receive any user inputs from the UI.
+            self._receive_user_inputs(agent_user_inputs, ui)
 
             # Get the next action from the agent.
-            action_record = isolator.get_action(state, user_inputs)
+            action_record = isolator.get_action(state, agent_user_inputs[state.agent_index])
+
+            # Check if we need to clear any user inputs.
+            if (action_record.get_clear_inputs()):
+                agent_user_inputs[state.agent_index] = []
 
             # Execute the next action and update the state.
             state = self.process_turn(state, action_record, result)
@@ -340,25 +344,16 @@ class Game(abc.ABC):
 
         return result
 
-    def _get_user_inputs(self,
-            agent_index: int,
+    def _receive_user_inputs(self,
             agent_user_inputs: dict[int, list[pacai.core.action.Action]],
             ui: pacai.core.ui.UI,
-            ) -> list[pacai.core.action.Action]:
-        """
-        Add the current user inputs to the running list for each agent,
-        and return (and clear) the inputs for the current agent.
-        """
+            ) -> None:
+        """ Add the current user inputs to the running list for each agent. """
 
         new_user_inputs = ui.get_user_inputs()
 
         for user_inputs in agent_user_inputs.values():
             user_inputs += new_user_inputs
-
-        agent_inputs = agent_user_inputs[agent_index]
-        agent_user_inputs[agent_index] = []
-
-        return agent_inputs
 
 def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = None) -> None:
     """
