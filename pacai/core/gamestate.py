@@ -102,6 +102,23 @@ class GameState(pacai.util.json.DictConverter):
 
         return []
 
+    def get_agent_indexes(self) -> list[int]:
+        """ Get the index of all agents tracked by this game state. """
+
+        return list(sorted(self.tickets.keys()))
+
+    def get_agent_positions(self) -> dict[int, pacai.core.board.Position | None]:
+        """
+        Get the positions of all agents.
+        If an agent is tracked by the game state but not on the board, it will have a None value.
+        """
+
+        positions: dict[int, pacai.core.board.Position | None] = {}
+        for agent_index in self.tickets:
+            positions[agent_index] = self.get_agent_position(agent_index)
+
+        return positions
+
     def get_agent_position(self, agent_index: int | None = None) -> pacai.core.board.Position | None:
         """ Get the position of the specified agent (or current agent if no agent is specified). """
 

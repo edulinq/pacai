@@ -73,7 +73,6 @@ class GameState(pacai.core.gamestate.GameState):
             agent_index = self.agent_index
 
         return self.scared_timers.get(agent_index, 0) > 0
-
     def get_legal_actions(self) -> list[pacai.core.action.Action]:
         if (self.agent_index == -1):
             raise ValueError("Cannot get legal actions when no agent is active.")
@@ -93,6 +92,11 @@ class GameState(pacai.core.gamestate.GameState):
             self._get_ghost_legal_actions(actions)
 
         return actions
+
+    def get_food(self) -> set[pacai.core.board.Position]:
+        """ Get the positions of all food currently on the board. """
+
+        return self.board.get_marker_positions(pacai.pacman.board.MARKER_PELLET)
 
     def _get_ghost_legal_actions(self, actions: list[pacai.core.action.Action]) -> None:
         """
