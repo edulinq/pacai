@@ -134,3 +134,98 @@ def euclidean_heuristic(
     """
 
     return distance_heuristic(node, problem, euclidean_distance, **kwargs)
+
+class DistancePreComputer:
+    """
+    An object that pre-computes and caches the maze_distance between EVERY pair of non-wall points in a board.
+    The initial cost is high, but this can be continually reused for the same board.
+    """
+
+    def __init__(self) -> None:
+        self._distances: dict[pacai.core.board.Position, dict[pacai.core.board.Position, int]] = {}
+        """
+        The distances for the computed layout.
+        The lower (according to `<`) position is always indexed first.
+        Internally, we use int distances since we are computing maze distances (respecting walls).
+        """
+
+    def get_distance(self,
+            a: pacai.core.board.Position,
+            b: pacai.core.board.Position,
+            ) -> float | None:
+        """
+        Get the distance between two points in the computed board.
+        If no distance exists, then None will be returned.
+        No distance can mean several things:
+         - one or more positions are outside the board,
+         - one or more positions are a wall,
+         - or there is no path between the two positions.
+
+        compute() must be called before calling this method,
+        """
+
+        lower, upper = sorted((a, b))
+
+        return self._distances.get(lower, {}).get(upper, None)
+
+    def compute(self, board: pacai.core.board.Board) -> None:
+        """
+        Compute ALL non-wall distances in this board.
+        This must be called before get_distance().
+        """
+
+        if (len(self._distances) > 0):
+            raise ValueError("Cannot compute distances more than once.")
+
+        # First, load in all the neighbors.
+        self._load_identities_and_adjacencies(board)
+
+        # Now continually go through all current distances and see if one more node can be added to the path.
+        # Stop when no distances get added.
+        target_length = 0
+        added_distance = True
+        while (added_distance):  # pylint: disable=too-many-nested-blocks
+            target_length += 1
+            added_distance = False
+
+            # Note that we make copies of the collections we are iterating over because they may be changed during iteration.
+            for a in list(self._distances.keys()):
+                for (b, distance) in list(self._distances[a].items()):
+                    # Only look at the current greatest length paths.
+                    if (distance != target_length):
+                        continue
+
+                    # Take turns trying to add to each end of the path.
+                    for (start, end) in ((a, b), (b, a)):
+                        for (_, neighbor) in board.get_neighbors(end):
+                            old_distance = self.get_distance(start, neighbor)
+
+                            # Skip shorter distances.
+                            if ((old_distance is not None) and (old_distance <= target_length)):
+                                continue
+
+                            self._put_distance(start, neighbor, target_length + 1)
+                            added_distance = True
+
+    def _load_identities_and_adjacencies(self, board: pacai.core.board.Board) -> None:
+        """ Load identity (0) and adjacency (1) distances. """
+
+        for row in range(board.height):
+            for col in range(board.width):
+                position = pacai.core.board.Position(row, col)
+
+                if (board.is_wall(position)):
+                    continue
+
+                self._put_distance(position, position, 0)
+
+                for (_, neighbor) in board.get_neighbors(position):
+                    self._put_distance(position, neighbor, 1)
+
+    def _put_distance(self, a: pacai.core.board.Position, b: pacai.core.board.Position, distance: int) -> None:
+        lower, upper = sorted((a, b))
+
+        if (lower not in self._distances):
+            self._distances[lower] = {}
+
+        self._distances[lower][upper] = distance

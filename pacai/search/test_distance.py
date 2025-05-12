@@ -111,3 +111,34 @@ class DistanceTest(pacai.test.base.BaseTest):
             with self.subTest(msg = f"Case {i}: {a} vs {b}"):
                 distance = pacai.search.distance.maze_distance(a, b, state = test_state)
                 self.assertAlmostEqual(expected, distance)
+
+    def test_distanceprecomputer_base(self):
+        """ Test precomputing distances. """
+
+        test_board = pacai.core.board.load_path('maze-tiny')
+        precomputer = pacai.search.distance.DistancePreComputer()
+        precomputer.compute(test_board)
+
+        # [(a, b, expected), ...]
+        test_cases = [
+            (pacai.core.board.Position(-1, -1), pacai.core.board.Position(-2, -2), None),
+            (pacai.core.board.Position(0, 0), pacai.core.board.Position(0, 0), None),
+
+            (pacai.core.board.Position(1, 1), pacai.core.board.Position(1, 2), 1.0),
+            (pacai.core.board.Position(1, 1), pacai.core.board.Position(3, 5), 6.0),
+            (pacai.core.board.Position(1, 1), pacai.core.board.Position(3, 4), 7.0),
+            (pacai.core.board.Position(1, 1), pacai.core.board.Position(4, 4), 6.0),
+            (pacai.core.board.Position(1, 1), pacai.core.board.Position(5, 2), 5.0),
+            (pacai.core.board.Position(1, 1), pacai.core.board.Position(5, 1), 6.0),
+
+            (pacai.core.board.Position(3, 5), pacai.core.board.Position(4, 4), 2.0),
+        ]
+
+        for (i, test_case) in enumerate(test_cases):
+            (a, b, expected) = test_case
+            with self.subTest(msg = f"Case {i}: {a} vs {b}"):
+                distance_forward = precomputer.get_distance(a, b)
+                self.assertAlmostEqual(expected, distance_forward)
+
+                distance_backwards = precomputer.get_distance(b, a)  # pylint: disable=arguments-out-of-order
+                self.assertAlmostEqual(distance_forward, distance_backwards)
