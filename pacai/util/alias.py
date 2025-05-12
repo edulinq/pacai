@@ -57,16 +57,17 @@ def lookup(short: str, default: str | None = None) -> str:
 
     raise ValueError(f"Could not find alias: '{short}'.")
 
-AGENT_CHEATING: Alias = Alias('cheating', 'pacai.agents.cheating.CheatingAgent')
-AGENT_DUMMY: Alias = Alias('dummy', 'pacai.agents.dummy.DummyAgent')
-AGENT_GO_WEST: Alias = Alias('go-west', 'pacai.agents.gowest.GoWestAgent')
-AGENT_GREEDY: Alias = Alias('greedy', 'pacai.agents.greedy.GreedyAgent')
-AGENT_LEFT_TURN: Alias = Alias('left-turn', 'pacai.agents.leftturn.LeftTurnAgent')
-AGENT_RANDOM: Alias = Alias('random', 'pacai.agents.random.RandomAgent')
-AGENT_SCRIPTED: Alias = Alias('scripted', 'pacai.agents.scripted.ScriptedAgent')
-AGENT_SEARCH_PROBLEM: Alias = Alias('search-problem', 'pacai.agents.search.problem.SearchProblemAgent')
-AGENT_SEARCH_CLOSEST_DOT: Alias = Alias('search-closest-dot', 'pacai.student.singlesearch.ClosestDotSearchAgent')
-AGENT_USER_INPUT: Alias = Alias('user-input', 'pacai.agents.userinput.UserInputAgent')
+AGENT_CHEATING: Alias = Alias('agent-cheating', 'pacai.agents.cheating.CheatingAgent')
+AGENT_DUMMY: Alias = Alias('agent-dummy', 'pacai.agents.dummy.DummyAgent')
+AGENT_GO_WEST: Alias = Alias('agent-go-west', 'pacai.agents.gowest.GoWestAgent')
+AGENT_GREEDY: Alias = Alias('agent-greedy', 'pacai.agents.greedy.GreedyAgent')
+AGENT_LEFT_TURN: Alias = Alias('agent-left-turn', 'pacai.agents.leftturn.LeftTurnAgent')
+AGENT_RANDOM: Alias = Alias('agent-random', 'pacai.agents.random.RandomAgent')
+AGENT_REFLEX: Alias = Alias('agent-reflex', 'pacai.student.multiagents.ReflexAgent')
+AGENT_SCRIPTED: Alias = Alias('agent-scripted', 'pacai.agents.scripted.ScriptedAgent')
+AGENT_SEARCH_PROBLEM: Alias = Alias('agent-search-problem', 'pacai.agents.search.problem.SearchProblemAgent')
+AGENT_SEARCH_CLOSEST_DOT: Alias = Alias('agent-search-closest-dot', 'pacai.student.singlesearch.ClosestDotSearchAgent')
+AGENT_USER_INPUT: Alias = Alias('agent-user-input', 'pacai.agents.userinput.UserInputAgent')
 
 AGENT_SHORT_NAMES: list[str] = [
     AGENT_CHEATING.short,
@@ -74,6 +75,7 @@ AGENT_SHORT_NAMES: list[str] = [
     AGENT_GO_WEST.short,
     AGENT_GREEDY.short,
     AGENT_LEFT_TURN.short,
+    AGENT_REFLEX.short,
     AGENT_RANDOM.short,
     AGENT_SCRIPTED.short,
     AGENT_SEARCH_PROBLEM.short,

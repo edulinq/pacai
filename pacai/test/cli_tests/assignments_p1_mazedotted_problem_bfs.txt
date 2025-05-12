@@ -4,7 +4,7 @@
         "--seed", "4",
         "--ui", "null",
         "--board", "maze-medium-dotted",
-        "--pacman", "search-problem",
+        "--pacman", "agent-search-problem",
         "--agent-arg", "0::solver=search-solver-bfs"
     ]
 }

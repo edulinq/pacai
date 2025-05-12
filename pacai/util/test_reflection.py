@@ -36,7 +36,7 @@ class ReflectionTest(pacai.test.base.BaseTest):
             ),
 
             (
-                'dummy',
+                'agent-dummy',
                 None,
                 (None, 'pacai.agents.dummy', 'DummyAgent'),
             ),

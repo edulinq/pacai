@@ -3,7 +3,7 @@
     "arguments": [
         "--seed", "4",
         "--board", "maze-test",
-        "--pacman", "scripted",
+        "--pacman", "agent-scripted",
         "--ui", "null",
         "--max-turns", "10",
     ]

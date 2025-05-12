@@ -3,7 +3,7 @@
     "arguments": [
         "--seed", "4",
         "--board", "maze-test",
-        "--pacman", "go-west",
+        "--pacman", "agent-go-west",
         "--ui", "null"
     ]
 }

@@ -4,7 +4,7 @@
         "--seed", "4",
         "--ui", "null",
         "--board", "maze-test",
-        "--pacman", "go-west"
+        "--pacman", "agent-go-west"
     ]
 }
 ---

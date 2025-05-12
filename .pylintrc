@@ -450,6 +450,7 @@ disable=bad-inline-option,
         use-symbolic-message-instead,
         use-implicit-booleaness-not-comparison-to-string,
         use-implicit-booleaness-not-comparison-to-zero,
+        useless-parent-delegation,
         useless-suppression,
 
 # Enable the message, report, category or checker with the given id(s). You can

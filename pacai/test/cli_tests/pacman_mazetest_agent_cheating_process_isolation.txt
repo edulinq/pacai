@@ -4,7 +4,7 @@
     "arguments": [
         "--seed", "4",
         "--board", "maze-test",
-        "--pacman", "pacai.agents.cheating.CheatingAgent",
+        "--pacman", "agent-cheating",
         "--isolation", "process",
         "--ui", "null",
         "--max-turns", "10",
