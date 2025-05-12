@@ -23,48 +23,38 @@ class SearchProblemAgent(pacai.core.agent.Agent):
     and then executing the path found during the search.
     """
 
-    def __init__(self, agent_info: pacai.core.agentinfo.AgentInfo, *args, **kwargs) -> None:
-        """
-        Create a SearchProblemAgent.
+    def __init__(self,
+            problem: type[pacai.core.search.SearchProblem] | pacai.util.reflection.Reference | str = DEFAULT_PROBLEM,
+            problem_cost: pacai.core.search.CostFunction | pacai.util.reflection.Reference | str = DEFAULT_PROBLEM_COST,
+            solver: pacai.core.search.SearchProblemSolver | pacai.util.reflection.Reference | str = DEFAULT_SOLVER,
+            heuristic: pacai.core.search.SearchHeuristic | pacai.util.reflection.Reference | str = DEFAULT_HEURISTIC,
+            **kwargs) -> None:
+        super().__init__(**kwargs)
 
-        Additional agent arguments are:
-         - `problem: str` - A reflection reference to the search problem (pacai.core.search.SearchProblem) for this agent.
-                            Defaults to DEFAULT_PROBLEM.
-         - `problem_cost: str` - A reflection reference to the optional cost function (pacai.core.search.CostFunction) for this problem.
-                            Defaults to DEFAULT_PROBLEM_COST.
-         - `solver: str` - A reflection reference to the problem solver (pacai.core.search.SearchProblemSolver) for this agent.
-                            Defaults to DEFAULT_SOLVER.
-         - `heuristic: str` - A reflection reference to the optional heuristic (pacai.core.search.SearchHeuristic) for this solver.
-                            Defaults to DEFAULT_HEURISTIC.
-        """
-
-        super().__init__(agent_info, *args, **kwargs)
-
-        problem_cost_function_reference = pacai.util.reflection.Reference(agent_info.extra_arguments.get('problem_cost', DEFAULT_PROBLEM_COST))
-
-        self._problem_cost_function: pacai.core.search.CostFunction = pacai.util.reflection.fetch(problem_cost_function_reference)
-        """ The cost function for this agent's search problem. """
-
-        problem_reference = pacai.util.reflection.Reference(agent_info.extra_arguments.get('problem', DEFAULT_PROBLEM))
-
-        self._problem_class: type[pacai.core.search.SearchProblem] = pacai.util.reflection.fetch(problem_reference)
+        claen_problem_class = pacai.util.reflection.resolve_and_fetch(type, problem)
+        self._problem_class: type[pacai.core.search.SearchProblem] = claen_problem_class
         """ The search problem class this agent will use. """
 
-        solver_reference = pacai.util.reflection.Reference(agent_info.extra_arguments.get('solver', DEFAULT_SOLVER))
+        claen_problem_cost_function = pacai.util.reflection.resolve_and_fetch(pacai.core.search.CostFunction, problem_cost)
+        self._problem_cost_function: pacai.core.search.CostFunction = claen_problem_cost_function
+        """ The cost function for this agent's search problem. """
 
-        self._solver_function: pacai.core.search.SearchProblemSolver = pacai.util.reflection.fetch(solver_reference)
+        claen_solver_function = pacai.util.reflection.resolve_and_fetch(pacai.core.search.SearchProblemSolver, solver)
+        self._solver_function: pacai.core.search.SearchProblemSolver = claen_solver_function
         """ The search solver function this agent will use. """
 
-        heuristic_reference = pacai.util.reflection.Reference(agent_info.extra_arguments.get('heuristic', DEFAULT_HEURISTIC))
-
-        self._heuristic_function: pacai.core.search.SearchHeuristic = pacai.util.reflection.fetch(heuristic_reference)
+        claen_heuristic_function = pacai.util.reflection.resolve_and_fetch(pacai.core.search.SearchHeuristic, heuristic)
+        self._heuristic_function: pacai.core.search.SearchHeuristic = claen_heuristic_function
         """ The search heuristic function this agent will use. """
 
         self._actions: list[pacai.core.action.Action] = []
         """ The actions that the search solver came up with. """
 
-        logging.info("Created a SearchProblemAgent using problem '%s', solver '%s', and heuristic '%s'.",
-                problem_reference, solver_reference, heuristic_reference)
+        logging.info("Created a SearchProblemAgent using problem '%s', cost function '%s', solver '%s', and heuristic '%s'.",
+                pacai.util.reflection.get_qualified_name(problem),
+                pacai.util.reflection.get_qualified_name(problem_cost),
+                pacai.util.reflection.get_qualified_name(solver),
+                pacai.util.reflection.get_qualified_name(heuristic))
 
     def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         if (len(self._actions) == 0):
@@ -84,26 +74,37 @@ class SearchProblemAgent(pacai.core.agent.Agent):
         # Create a search problem using the game's state, and solve the problem.
 
         start_time = pacai.util.time.now()
-
-        search_problem = self._problem_class(game_state = initial_state, cost_function = self._problem_cost_function)
-        solution = self._solver_function(search_problem, self._heuristic_function, self._rng)
-
-        if (solution.goal_node is not None):
-            search_problem.complete(solution.goal_node)
-
+        (solution, position_history, expanded_node_count) = self._do_search(initial_state)
         end_time = pacai.util.time.now()
 
         self._actions = solution.actions
 
         logging.info("Path found with %d steps and a total cost of %0.2f in %0.2f seconds. %d search nodes expanded.",
-                len(solution.actions), solution.cost, (end_time.sub(start_time).to_secs()), search_problem.expanded_node_count)
+                len(solution.actions), solution.cost, (end_time.sub(start_time).to_secs()), expanded_node_count)
 
         # Highlight visited locations in the UI to visually represent our search pattern.
         highlights = []
-        for (i, position) in enumerate(search_problem.position_history):
+        for (i, position) in enumerate(position_history):
             # Gradually increase the highlight intensity from the start to the end.
-            intensity = (i + 1) / len(search_problem.position_history)
+            intensity = (i + 1) / len(position_history)
 
             highlights.append(pacai.core.board.Highlight(position, intensity))
 
         return pacai.core.agentaction.AgentAction(board_highlights = highlights)
+
+    def _do_search(self,
+            state: pacai.core.gamestate.GameState,
+            ) -> tuple[pacai.core.search.SearchSolution, list[pacai.core.board.Position], int]:
+        """
+        Perform the actual search operation.
+        Children may override this to change searching behavior.
+        Return: (solution, position history, expanded node count).
+        """
+
+        search_problem = self._problem_class(game_state = state, cost_function = self._problem_cost_function)
+        solution = self._solver_function(search_problem, self._heuristic_function, self._rng)
+
+        if (solution.goal_node is not None):
+            search_problem.complete(solution.goal_node)
+
+        return (solution, search_problem.position_history, search_problem.expanded_node_count)

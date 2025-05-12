@@ -41,12 +41,12 @@ class PositionSearchProblem(pacai.core.search.SearchProblem[PositionSearchNode])
 
         super().__init__()
 
-        self._board = game_state.board
+        self.board = game_state.board
         """ Keep track of the board so we can navigate walls. """
 
         if (goal_position is None):
-            if (self._board.search_target is not None):
-                goal_position = self._board.search_target
+            if (self.board.search_target is not None):
+                goal_position = self.board.search_target
             else:
                 goal_position = DEFAULT_GOAL_POSITION
 
@@ -82,7 +82,7 @@ class PositionSearchProblem(pacai.core.search.SearchProblem[PositionSearchNode])
         successors = []
 
         # Check all the non-wall neighbors.
-        for (action, position) in self._board.get_neighbors(node.position):
+        for (action, position) in self.board.get_neighbors(node.position):
             next_node = PositionSearchNode(position)
             cost = self._cost_function(next_node)
 

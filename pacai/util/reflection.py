@@ -50,6 +50,9 @@ class Reference(pacai.util.json.DictConverter):
     def __str__(self) -> str:
         return Reference.build_string(self.short_name, self.file_path, self.module_name)
 
+    def __repr__(self) -> str:
+        return str(self)
+
     @staticmethod
     def build_string(short_name: str, file_path: str | None, module_name: str | None) -> str:
         """
@@ -137,6 +140,29 @@ def new_object(reference: Reference | str, *args, **kwargs) -> typing.Any:
     target_class = fetch(reference)
     return target_class(*args, **kwargs)
 
+T = typing.TypeVar('T')
+
+def resolve_and_fetch(
+        cls: typing.Type,
+        raw_object: T | Reference | str,
+        ) -> typing.Any:
+    """
+    Resolve the given raw object into the specified class.
+    If it is already an object of that type, just return it.
+    If it is a reference or string, resolve the reference and fetch the reference.
+    """
+
+    if (isinstance(raw_object, cls)):
+        return raw_object
+
+    reference = Reference(typing.cast(Reference | str, raw_object))
+    result = fetch(reference)
+
+    if (not isinstance(result, cls)):
+        raise ValueError(f"Target '{reference}' is not of type '{cls}', found type '{type(result)}'.")
+
+    return result
+
 def _import_module(reference):
     """
     Import and return the module for the given reflection reference.
@@ -156,3 +182,38 @@ def _import_module(reference):
         return importlib.import_module(reference.module_name)
     except ImportError as ex:
         raise ValueError(f"Unable to locate module '{reference.module_name}'.") from ex
+
+def get_qualified_name(target: type | object | Reference | str) -> str:
+    """
+    Try to get a qualified name for a type (or for the type of an object).
+    Names will not always come out clean.
+    """
+
+    # If this is a string or reference, just resolve the reference.
+    if (isinstance(target, (Reference, str))):
+        return str(Reference(target))
+
+    # Get the type for this target.
+    if (isinstance(target, type)):
+        target_class = target
+    elif (callable(target)):
+        target_class = typing.cast(type, target)
+    else:
+        target_class = type(target)
+
+    # Check for various name components.
+    parts = []
+
+    if (hasattr(target_class, '__module__')):
+        parts.append(str(getattr(target_class, '__module__')))
+
+    if (hasattr(target_class, '__qualname__')):
+        parts.append(str(getattr(target_class, '__qualname__')))
+    elif (hasattr(target_class, '__name__')):
+        parts.append(str(getattr(target_class, '__name__')))
+
+    # Fall back to just the string reprsentation.
+    if (len(parts) == 0):
+        return str(target_class)
+
+    return '.'.join(parts)

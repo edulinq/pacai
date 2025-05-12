@@ -28,8 +28,11 @@ LOG_PREFIX_REPLACEMENT: str = '<LOG_PREFIX> -- '
 TIME_SECS_REGEX: str = r'\d+\.\d+ seconds'
 TIME_SECS_REPLACEMENT: str = '<DURATION_SECONDS>'
 
-TRACEBACK_LINE_REGEX: str = r'^\s*File "[^"]+", line \d+,.*$\n.*$(\n\s*\^+\s*$)?'
+TRACEBACK_LINE_REGEX: str = r'^\s*File "[^"]+", line \d+,.*$\n.*$(\n\s*[\^~]+\s*$)?'
 TRACEBACK_LINE_REPLACEMENT: str = '<TRACEBACK_LINE>'
+
+TRACEBACK_FULL_REGEX: str = rf'{TRACEBACK_LINE_REPLACEMENT}(\n{TRACEBACK_LINE_REPLACEMENT})*'
+TRACEBACK_FULL_REPLACEMENT: str = '<TRACEBACK>'
 
 class CLITest(pacai.test.base.BaseTest):
     """
@@ -225,6 +228,9 @@ def content_equals_normalize(test: CLITest, expected: str, actual: str, **kwargs
 
     expected = re.sub(TRACEBACK_LINE_REGEX, TRACEBACK_LINE_REPLACEMENT, expected, flags = re.MULTILINE)
     actual = re.sub(TRACEBACK_LINE_REGEX, TRACEBACK_LINE_REPLACEMENT, actual, flags = re.MULTILINE)
+
+    expected = re.sub(TRACEBACK_FULL_REGEX, TRACEBACK_FULL_REPLACEMENT, expected, flags = re.MULTILINE)
+    actual = re.sub(TRACEBACK_FULL_REGEX, TRACEBACK_FULL_REPLACEMENT, actual, flags = re.MULTILINE)
 
     content_equals_raw(test, expected, actual)
 

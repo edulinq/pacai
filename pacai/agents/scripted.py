@@ -1,13 +1,6 @@
 import pacai.core.action
 import pacai.core.agent
-import pacai.core.agentinfo
 import pacai.core.gamestate
-
-ACTIONS_KEY: str = 'actions'
-""" The extra arguments key for the agent's scripted actions. """
-
-DEFAULT_ACTIONS: list[str] = []
-""" The default scripted actions (no actions). """
 
 class ScriptedAgent(pacai.core.agent.Agent):
     """
@@ -18,12 +11,19 @@ class ScriptedAgent(pacai.core.agent.Agent):
     This agent is particularly useful for things like replays.
     """
 
-    def __init__(self, agent_info: pacai.core.agentinfo.AgentInfo, *args, **kwargs) -> None:
-        super().__init__(agent_info, *args, **kwargs)
+    def __init__(self,
+            actions: list[pacai.core.action.Action] | list[str] | None = None,
+            **kwargs) -> None:
+        super().__init__(**kwargs)
 
-        raw_actions = agent_info.extra_arguments.get(ACTIONS_KEY, DEFAULT_ACTIONS)
+        if (actions is None):
+            actions = []
 
-        self._actions: list[pacai.core.action.Action] = [pacai.core.action.Action(raw_action) for raw_action in raw_actions]
+        clean_actions = []
+        for action in actions:
+            clean_actions.append(pacai.core.action.Action(action))
+
+        self._actions: list[pacai.core.action.Action] = clean_actions
         """ The scripted actions this agent will take. """
 
     def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:

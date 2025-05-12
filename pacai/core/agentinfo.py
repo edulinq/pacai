@@ -66,6 +66,19 @@ class AgentInfo(pacai.util.json.DictConverter):
         self.move_delay = other.move_delay
         self.extra_arguments.update(other.extra_arguments)
 
+    def to_flat_dict(self) -> dict[str, typing.Any]:
+        """
+        Convert this information to a flat dictionary,
+        where the extra arguments are on the same level as name and move_delay.
+        """
+
+        result = self.extra_arguments.copy()
+
+        result['name'] = self.name
+        result['move_delay'] = self.move_delay
+
+        return result
+
     def to_dict(self) -> dict[str, typing.Any]:
         data = vars(self).copy()
         data['name'] = self.name.to_dict()

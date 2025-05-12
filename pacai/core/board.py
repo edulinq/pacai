@@ -503,12 +503,17 @@ class Board(pacai.util.json.DictConverter):
 
         return True
 
-    def is_wall(self, position) -> bool:
-        """ Check if the given position is a wall. """
+    def is_marker(self, marker: Marker, position: Position) -> bool:
+        """ Check if the given position is a the target marker. """
 
         self._check_bounds(position)
 
-        return (position in self._all_objects.get(MARKER_WALL, set()))
+        return (position in self._all_objects.get(marker, set()))
+
+    def is_wall(self, position: Position) -> bool:
+        """ Check if the given position is a wall. """
+
+        return self.is_marker(MARKER_WALL, position)
 
     def get_agent_position(self, agent_index: int) -> Position | None:
         """

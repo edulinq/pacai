@@ -8,7 +8,7 @@
     ]
 }
 ---
-<LOG_PREFIX> -- Created a SearchProblemAgent using problem 'pacai.search.position.PositionSearchProblem', solver 'pacai.search.random.random_search', and heuristic 'pacai.search.common.null_heuristic'.
+<LOG_PREFIX> -- Created a SearchProblemAgent using problem 'pacai.search.position.PositionSearchProblem', cost function 'pacai.search.common.unit_cost_function', solver 'pacai.search.random.random_search', and heuristic 'pacai.search.common.null_heuristic'.
 <LOG_PREFIX> -- Path found with 28 steps and a total cost of 28.00 in <DURATION_SECONDS>. 28 search nodes expanded.
 <LOG_PREFIX> -- Average Score: 482.0
 <LOG_PREFIX> -- Scores:        482

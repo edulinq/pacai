@@ -9,12 +9,10 @@
     ]
 }
 ---
-<LOG_PREFIX> -- Created a SearchProblemAgent using problem 'pacai.search.position.PositionSearchProblem', solver 'pacai.student.search.depth_first_search', and heuristic 'pacai.search.common.null_heuristic'.
+<LOG_PREFIX> -- Created a SearchProblemAgent using problem 'pacai.search.position.PositionSearchProblem', cost function 'pacai.search.common.unit_cost_function', solver 'pacai.student.singlesearch.depth_first_search', and heuristic 'pacai.search.common.null_heuristic'.
 <LOG_PREFIX> -- Agent 0 crashed.
 Traceback (most recent call last):
-<TRACEBACK_LINE>
-<TRACEBACK_LINE>
-<TRACEBACK_LINE>
+<TRACEBACK>
 NotImplementedError: depth_first_search
 <LOG_PREFIX> -- Average Score: -1000000.0
 <LOG_PREFIX> -- Scores:        -1000000

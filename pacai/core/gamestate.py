@@ -220,3 +220,19 @@ class GameState(pacai.util.json.DictConverter):
         """ Get the moves that the current agent is allowed to make. """
 
         return []
+
+@typing.runtime_checkable
+class EvaluationFunction(typing.Protocol):
+    """
+    A function that can be used to score a game state.
+    """
+
+    def __call__(self, state: GameState) -> float:
+        """
+        Compute a score for a state that an agent can use to decide actions.
+        """
+
+def base_eval(state: GameState) -> float:
+    """ The most basic evaluation function, which just uses the state's current score. """
+
+    return float(state.score)

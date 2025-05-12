@@ -1,19 +1,19 @@
 import abc
 import random
-import typing
 
 import pacai.core.agentaction
 import pacai.core.action
 import pacai.core.agentinfo
 import pacai.core.gamestate
 import pacai.util.reflection
+import pacai.util.alias
 
 class Agent(abc.ABC):
     """
     The base for all agents in the pacai system.
 
     Agents are called on by the game engine for three things:
-    1) `game_start()` - a notification that the game has started.
+    1) `game_start_full()`/`game_start()` - a notification that the game has started.
     2) `game_complete()` - a notification that the game has ended.
     3) `get_action()` - a request for the agent to provide its next action.
 
@@ -25,11 +25,14 @@ class Agent(abc.ABC):
     allowing children to just implement the simple methods.
     """
 
-    def __init__(self, agent_info: pacai.core.agentinfo.AgentInfo, *args, **kwargs) -> None:
-        self.name: pacai.util.reflection.Reference = agent_info.name
+    def __init__(self,
+            name: pacai.util.reflection.Reference | str = pacai.util.alias.AGENT_DUMMY.long,
+            move_delay: int = pacai.core.agentinfo.DEFAULT_MOVE_DELAY,
+            **kwargs) -> None:
+        self.name: pacai.util.reflection.Reference = pacai.util.reflection.Reference(name)
         """ The name of this agent. """
 
-        self.move_delay: int = agent_info.move_delay
+        self.move_delay: int = move_delay
         """
         The delay between moves for this agent.
         This value is abstract and has not real units,
@@ -43,7 +46,7 @@ class Agent(abc.ABC):
         """
         The RNG this agent should use whenever it wants randomness.
         This object will be constructed right away,
-        but will be recreated with the suggested seed from the game engine during game_start().
+        but will be recreated with the suggested seed from the game engine during game_start_full().
         """
 
     def get_action_full(self,
@@ -130,25 +133,9 @@ def load(agent_info: pacai.core.agentinfo.AgentInfo) -> Agent:
     The name of the agent will be used as a reference to (e.g., name of) the agent's class.
     """
 
-    agent = pacai.util.reflection.new_object(agent_info.name, agent_info)
+    agent = pacai.util.reflection.new_object(agent_info.name, **agent_info.to_flat_dict())
 
     if (not isinstance(agent, Agent)):
         raise ValueError(f"Loaded class is not an agent: '{agent_info.name}'.")
 
     return agent
-
-@typing.runtime_checkable
-class EvaluationFunction(typing.Protocol):
-    """
-    A function that an agent can use to score a game state.
-    """
-
-    def __call__(self, state: pacai.core.gamestate.GameState) -> float:
-        """
-        Compute a score for a state that an agent can use to decide actions.
-        """
-
-def base_eval(state: pacai.core.gamestate.GameState) -> float:
-    """ The most basic evaluation function, which just uses the state's current score. """
-
-    return float(state.score)
