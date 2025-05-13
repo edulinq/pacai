@@ -14,3 +14,5 @@
 <LOG_PREFIX> -- Scores:        502
 <LOG_PREFIX> -- Win Rate:      1 / 1 (1.00)
 <LOG_PREFIX> -- Record:        Win
+<LOG_PREFIX> -- Average Turns: 8.0
+<LOG_PREFIX> -- Turn Counts:   8

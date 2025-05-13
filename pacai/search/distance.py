@@ -2,6 +2,7 @@
 This files contains functions and tools to computing and keeping track of distances between two positions on a board.
 """
 
+import logging
 import random
 import typing
 
@@ -174,6 +175,8 @@ class DistancePreComputer:
         This must be called before get_distance().
         """
 
+        logging.debug("Computing distances on board '%s'.", board.source)
+
         if (len(self._distances) > 0):
             raise ValueError("Cannot compute distances more than once.")
 
@@ -206,6 +209,8 @@ class DistancePreComputer:
 
                             self._put_distance(start, neighbor, target_length + 1)
                             added_distance = True
+
+        logging.debug("Finished computing distances on board '%s'.", board.source)
 
     def _load_identities_and_adjacencies(self, board: pacai.core.board.Board) -> None:
         """ Load identity (0) and adjacency (1) distances. """

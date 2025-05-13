@@ -13,3 +13,5 @@
 <LOG_PREFIX> -- Scores:        502, 430, 453, 376, 436, 501, 403, 427, 444, 451
 <LOG_PREFIX> -- Win Rate:      10 / 10 (1.00)
 <LOG_PREFIX> -- Record:        Win, Win, Win, Win, Win, Win, Win, Win, Win, Win
+<LOG_PREFIX> -- Average Turns: 67.7
+<LOG_PREFIX> -- Turn Counts:   8, 80, 57, 134, 74, 9, 107, 83, 66, 59

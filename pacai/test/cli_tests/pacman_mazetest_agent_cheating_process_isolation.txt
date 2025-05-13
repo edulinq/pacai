@@ -15,3 +15,5 @@
 <LOG_PREFIX> -- Scores:        -10
 <LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
 <LOG_PREFIX> -- Record:        Loss
+<LOG_PREFIX> -- Average Turns: 10.0
+<LOG_PREFIX> -- Turn Counts:   10

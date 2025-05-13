@@ -18,3 +18,5 @@ NotImplementedError: astar_search
 <LOG_PREFIX> -- Scores:        -1000000
 <LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
 <LOG_PREFIX> -- Record:        Loss
+<LOG_PREFIX> -- Average Turns: 0.0
+<LOG_PREFIX> -- Turn Counts:   0
