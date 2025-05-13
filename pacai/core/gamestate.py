@@ -128,7 +128,7 @@ class GameState(pacai.util.json.DictConverter):
         if (self.agent_index < 0):
             raise ValueError("No agent is active, cannot get position.")
 
-        return self.board.get_agent_position(self.agent_index)
+        return self.board.get_agent_position(agent_index)
 
     def get_agent_last_action(self, agent_index: int | None = None) -> pacai.core.action.Action | None:
         """ Get the last action of the specified agent (or current agent if no agent is specified). """
