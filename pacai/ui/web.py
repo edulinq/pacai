@@ -1,5 +1,4 @@
 import base64
-import copy
 import errno
 import http
 import http.server
@@ -112,7 +111,7 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
         data_url = f"data:image/png;base64,{data_64}"
 
         with cls._lock:
-            cls._state = copy.deepcopy(state)
+            cls._state = state.copy()
             cls._image_url = data_url
 
     @classmethod

@@ -1,3 +1,4 @@
+import copy
 import os
 import re
 import typing
@@ -363,6 +364,11 @@ class Board(pacai.util.json.DictConverter):
             self.width = _width  # type: ignore
             self._all_objects = _all_objects  # type: ignore
             self._agent_initial_positions = _agent_initial_positions  # type: ignore
+
+    def copy(self) -> 'Board':
+        """ Get a deep copy of this board. """
+
+        return copy.deepcopy(self)
 
     def size(self) -> int:
         """ Get the total number of places in this board. """

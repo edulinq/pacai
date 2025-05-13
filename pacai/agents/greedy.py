@@ -10,15 +10,6 @@ class GreedyAgent(pacai.core.agent.Agent):
     If multiple moves have the same score, this agent will just randomly choose between them.
     """
 
-    def __init__(self,
-            eval_func: pacai.core.gamestate.EvaluationFunction | pacai.util.reflection.Reference | str = pacai.util.alias.STATE_EVAL_BASE.long,
-            **kwargs) -> None:
-        super().__init__(**kwargs)
-
-        clean_eval_func = pacai.util.reflection.resolve_and_fetch(pacai.core.gamestate.EvaluationFunction, eval_func)
-        self._evaluation_function: pacai.core.gamestate.EvaluationFunction = clean_eval_func
-        """ The evaluation function that agent will use to assess game states. """
-
     def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         legal_actions = state.get_legal_actions()
         if (len(legal_actions) == 1):

@@ -466,7 +466,7 @@ def init_from_args(
     for i in range(args.num_games):
         game_seed = rng.randint(0, 2**64)
 
-        all_boards.append(copy.deepcopy(board))
+        all_boards.append(board.copy())
         all_agent_infos.append(copy.deepcopy(agent_infos))
 
         game_info = GameInfo(

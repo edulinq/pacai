@@ -5,8 +5,8 @@ import pacai.core.agentaction
 import pacai.core.action
 import pacai.core.agentinfo
 import pacai.core.gamestate
-import pacai.util.reflection
 import pacai.util.alias
+import pacai.util.reflection
 
 class Agent(abc.ABC):
     """
@@ -28,6 +28,8 @@ class Agent(abc.ABC):
     def __init__(self,
             name: pacai.util.reflection.Reference | str = pacai.util.alias.AGENT_DUMMY.long,
             move_delay: int = pacai.core.agentinfo.DEFAULT_MOVE_DELAY,
+            state_eval_func: pacai.core.gamestate.EvaluationFunction | pacai.util.reflection.Reference | str =
+                    pacai.core.agentinfo.DEFAULT_STATE_EVAL,
             **kwargs) -> None:
         self.name: pacai.util.reflection.Reference = pacai.util.reflection.Reference(name)
         """ The name of this agent. """
@@ -41,6 +43,10 @@ class Agent(abc.ABC):
         Lower values (relative to other agents) times means the agent will move more times and thus be "faster".
         For example, an agent with a move delay of 50 will move twice as often as an agent with a move delay of 100.
         """
+
+        clean_state_eval_func = pacai.util.reflection.resolve_and_fetch(pacai.core.gamestate.EvaluationFunction, state_eval_func)
+        self._evaluation_function: pacai.core.gamestate.EvaluationFunction = clean_state_eval_func
+        """ The evaluation function that agent will use to assess game states. """
 
         self._rng: random.Random = random.Random()
         """

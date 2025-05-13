@@ -47,6 +47,11 @@ class JSONTest(pacai.test.base.BaseTest):
                         'file_path': None,
                     },
                     'move_delay': 100,
+                    'state_eval_func': {
+                        'short_name': 'base_eval',
+                        'module_name': 'pacai.core.gamestate',
+                        'file_path': None,
+                    },
                     'extra_arguments': {},
                 },
                 None,
@@ -60,6 +65,11 @@ class JSONTest(pacai.test.base.BaseTest):
                         'file_path': None,
                     },
                     'move_delay': 100,
+                    'state_eval_func': {
+                        'short_name': 'base_eval',
+                        'module_name': 'pacai.core.gamestate',
+                        'file_path': None,
+                    },
                     'extra_arguments': {
                         'foo': 'bar',
                     },
@@ -84,6 +94,11 @@ class JSONTest(pacai.test.base.BaseTest):
                                 "short_name": "b"
                             },
                             "move_delay": 100,
+                            'state_eval_func': {
+                                'short_name': 'base_eval',
+                                'module_name': 'pacai.core.gamestate',
+                                'file_path': None,
+                            },
                             "extra_arguments": {}
                         }
                     },
@@ -111,6 +126,11 @@ class JSONTest(pacai.test.base.BaseTest):
                                 "short_name": "b"
                             },
                             "move_delay": 100,
+                            'state_eval_func': {
+                                'short_name': 'base_eval',
+                                'module_name': 'pacai.core.gamestate',
+                                'file_path': None,
+                            },
                             "extra_arguments": {}
                         }
                     },
@@ -348,6 +368,11 @@ class JSONTest(pacai.test.base.BaseTest):
                                     "short_name": "b"
                                 },
                                 "move_delay": 100,
+                                'state_eval_func': {
+                                    'short_name': 'base_eval',
+                                    'module_name': 'pacai.core.gamestate',
+                                    'file_path': None,
+                                },
                                 "extra_arguments": {}
                             }
                         },
@@ -404,6 +429,11 @@ class JSONTest(pacai.test.base.BaseTest):
                                     "short_name": "b"
                                 },
                                 "move_delay": 100,
+                                'state_eval_func': {
+                                    'short_name': 'base_eval',
+                                    'module_name': 'pacai.core.gamestate',
+                                    'file_path': None,
+                                },
                                 "extra_arguments": {}
                             }
                         },

@@ -1,5 +1,3 @@
-import copy
-
 import pacai.agents.search.problem
 import pacai.core.board
 import pacai.core.gamestate
@@ -16,7 +14,7 @@ class GreedySubproblemSearchAgent(pacai.agents.search.problem.SearchProblemAgent
     def _do_search(self,
             state: pacai.core.gamestate.GameState,
             ) -> tuple[pacai.core.search.SearchSolution, list[pacai.core.board.Position], int]:
-        state = copy.deepcopy(state)
+        state = state.copy()
 
         actions = []
         total_cost = 0.0

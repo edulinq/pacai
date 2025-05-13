@@ -1,10 +1,13 @@
 import typing
 
+import pacai.util.alias
 import pacai.util.json
 import pacai.util.reflection
 
 DEFAULT_MOVE_DELAY: int = 100
 """ The default delay between agent moves. """
+
+DEFAULT_STATE_EVAL: str = pacai.util.alias.STATE_EVAL_BASE.long
 
 class AgentInfo(pacai.util.json.DictConverter):
     """
@@ -19,13 +22,14 @@ class AgentInfo(pacai.util.json.DictConverter):
     def __init__(self,
             name: str | pacai.util.reflection.Reference = '',
             move_delay: int | None = DEFAULT_MOVE_DELAY,
+            state_eval_func: pacai.util.reflection.Reference | str = DEFAULT_STATE_EVAL,
             extra_arguments: dict[str, typing.Any] | None = None,
             **kwargs) -> None:
         if (isinstance(name, str)):
             name = pacai.util.reflection.Reference(name)
 
         self.name: pacai.util.reflection.Reference = name
-        """ The name of the agent's class (as a reflection reference). """
+        """ The name of the agent's class. """
 
         if (move_delay is None):
             move_delay = DEFAULT_MOVE_DELAY
@@ -35,6 +39,12 @@ class AgentInfo(pacai.util.json.DictConverter):
 
         self.move_delay: int = move_delay
         """ The move delay of the agent. """
+
+        if (isinstance(state_eval_func, str)):
+            state_eval_func = pacai.util.reflection.Reference(state_eval_func)
+
+        self.state_eval_func: pacai.util.reflection.Reference = state_eval_func
+        """ The state evaluation function this agent will use. """
 
         self.extra_arguments: dict[str, typing.Any] = {}
         """
@@ -76,16 +86,22 @@ class AgentInfo(pacai.util.json.DictConverter):
 
         result['name'] = self.name
         result['move_delay'] = self.move_delay
+        result['state_eval_func'] = str(self.state_eval_func)
 
         return result
 
     def to_dict(self) -> dict[str, typing.Any]:
         data = vars(self).copy()
         data['name'] = self.name.to_dict()
+        data['state_eval_func'] = self.state_eval_func.to_dict()
         return data
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
         data = data.copy()
         data['name'] = pacai.util.reflection.Reference.from_dict(data['name'])
+
+        if ('state_eval_func' in data):
+            data['state_eval_func'] = pacai.util.reflection.Reference.from_dict(data['state_eval_func'])
+
         return cls(**data)

@@ -81,6 +81,11 @@ class GameState(pacai.util.json.DictConverter):
             for (info_agent_index, agent_info) in agent_infos.items():
                 self.move_delays[info_agent_index] = agent_info.move_delay
 
+    def copy(self) -> 'GameState':
+        """ Get a deep copy of this state. """
+
+        return copy.deepcopy(self)
+
     def game_start(self):
         """
         Indicate that the game is starting.
@@ -156,7 +161,7 @@ class GameState(pacai.util.json.DictConverter):
         To just apply an action to the current state, use process_turn().
         """
 
-        successor = copy.deepcopy(self)
+        successor = self.copy()
         successor.process_turn(action)
 
         return successor
