@@ -26,16 +26,3 @@ class GreedyAgent(pacai.core.agent.Agent):
         best_actions = [pair[1] for pair in scores if pair[0] == best_score]
 
         return self._rng.choice(best_actions)
-
-    def evaluate_state(self,
-            state: pacai.core.gamestate.GameState,
-            action: pacai.core.action.Action,
-            old_state: pacai.core.gamestate.GameState,
-            ) -> float:
-        """
-        Evaluate the state to get a decide how good an action was.
-        The base implementation for this function just calls `self._evaluation_function`,
-        but child classes may override this method to easily implement their own evaluations.
-        """
-
-        return self._evaluation_function(state, action = action, old_state = old_state)

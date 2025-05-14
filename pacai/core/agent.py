@@ -55,6 +55,19 @@ class Agent(abc.ABC):
         but will be recreated with the suggested seed from the game engine during game_start_full().
         """
 
+        self.agent_index: int = -1
+        """
+        The index this agent has been assigned for this game.
+        It is initialized to -1 (before the game starts), but gets populated during game_start_full().
+        """
+
+        self.last_positions: list[pacai.core.board.Position | None] = []
+        """
+        Keep track of the last positions this agent was in.
+        This is updated in the beginning of get_action_full().
+        This will include times when the agent was not on the board (a None position).
+        """
+
     def get_action_full(self,
             state: pacai.core.gamestate.GameState,
             user_inputs: list[pacai.core.action.Action],
@@ -68,6 +81,8 @@ class Agent(abc.ABC):
         Agent classes should typically just implement get_action(),
         and only implement this if they need additional functionality.
         """
+
+        self.last_positions.append(state.get_agent_position())
 
         action = self.get_action(state)
         return pacai.core.agentaction.AgentAction(action)
@@ -96,6 +111,7 @@ class Agent(abc.ABC):
         Calls to this method may be subject to a timeout.
         """
 
+        self.agent_index = agent_index
         self._rng = random.Random(suggested_seed)
 
         self.game_start(initial_state)
@@ -132,6 +148,19 @@ class Agent(abc.ABC):
         Notify this agent that the game has concluded.
         Agents should use this as an opportunity to make any final calculations and close any game-related resources.
         """
+
+    def evaluate_state(self,
+            state: pacai.core.gamestate.GameState,
+            action: pacai.core.action.Action,
+            old_state: pacai.core.gamestate.GameState,
+            ) -> float:
+        """
+        Evaluate the state to get a decide how good an action was.
+        The base implementation for this function just calls `self._evaluation_function`,
+        but child classes may override this method to easily implement their own evaluations.
+        """
+
+        return self._evaluation_function(state, action = action, old_state = old_state)
 
 def load(agent_info: pacai.core.agentinfo.AgentInfo) -> Agent:
     """
