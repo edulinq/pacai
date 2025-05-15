@@ -14,8 +14,6 @@ class GreedySubproblemSearchAgent(pacai.agents.search.problem.SearchProblemAgent
     def _do_search(self,
             state: pacai.core.gamestate.GameState,
             ) -> tuple[pacai.core.search.SearchSolution, list[pacai.core.board.Position], int]:
-        state = state.copy()
-
         actions = []
         total_cost = 0.0
         goal_node = None
@@ -38,7 +36,7 @@ class GreedySubproblemSearchAgent(pacai.agents.search.problem.SearchProblemAgent
 
             # Move to the next state by applying all the actions.
             for action in solution.actions:
-                state.process_turn(action)
+                state = state.generate_successor(action)
 
         solution = pacai.core.search.SearchSolution(actions, total_cost, goal_node)
         return (solution, total_position_history, total_expanded_node_count)

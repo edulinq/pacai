@@ -23,9 +23,9 @@ class ReflexAgent(pacai.agents.greedy.GreedyAgent):
 
     def evaluate_state(self,
             state: pacai.core.gamestate.GameState,
-            action: pacai.core.action.Action,
-            old_state: pacai.core.gamestate.GameState,
-            ) -> float:
+            action: pacai.core.action.Action | None = None,
+            old_state: pacai.core.gamestate.GameState | None = None,
+            **kwargs) -> float:
         # *** Your Code Here ***
 
         # By default, we will just call the parent's method.

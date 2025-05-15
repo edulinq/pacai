@@ -80,6 +80,8 @@ class GameState(pacai.core.gamestate.GameState):
         actions = [pacai.core.action.STOP]
 
         position = self.get_agent_position()
+
+        # If the agent is not on the board, it can only stop.
         if (position is None):
             return actions
 

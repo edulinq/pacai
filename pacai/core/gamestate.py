@@ -155,14 +155,14 @@ class GameState(pacai.util.json.DictConverter):
 
         return action.get_reverse_direction()
 
-    def generate_sucessor(self, action: pacai.core.action.Action) -> 'GameState':
+    def generate_successor(self, action: pacai.core.action.Action) -> 'GameState':
         """
         Create a new deep copy of this state that represents the current agent taking the given action.
         To just apply an action to the current state, use process_turn().
         """
 
         successor = self.copy()
-        successor.process_turn(action)
+        successor.process_turn_full(action)
 
         return successor
 
@@ -185,12 +185,22 @@ class GameState(pacai.util.json.DictConverter):
     def process_turn(self, action: pacai.core.action.Action) -> None:
         """
         Process the current agent's turn with the given action.
-        This will modify the current state.
-        To get a copy of a potential successor state, use generate_sucessor().
+        This may modify the current state.
+        To get a copy of a potential successor state, use generate_successor().
         """
 
-    def finish_turn(self, action: pacai.core.action.Action) -> None:
-        """ Perform all the final bookkeeping steps when a turn is over. """
+    def process_turn_full(self, action: pacai.core.action.Action) -> None:
+        """
+        Process the current agent's turn with the given action.
+        This will modify the current state.
+        First procecss_turn() will be called,
+        then any bookkeeping will be performed.
+        Child classes should prefer overriding the simpler process_turn().
+
+        To get a copy of a potential successor state, use generate_successor().
+        """
+
+        self.process_turn(action)
 
         # Track this last action.
         self.last_actions[self.agent_index] = action
@@ -239,9 +249,12 @@ class GameState(pacai.util.json.DictConverter):
         return cls(**data)
 
     def get_legal_actions(self) -> list[pacai.core.action.Action]:
-        """ Get the moves that the current agent is allowed to make. """
+        """
+        Get the moves that the current agent is allowed to make.
+        Stopping is generally always considered a legal action (unless a game re-defines this behavior).
+        """
 
-        return []
+        return [pacai.core.action.STOP]
 
 @typing.runtime_checkable
 class EvaluationFunction(typing.Protocol):
@@ -253,7 +266,7 @@ class EvaluationFunction(typing.Protocol):
             state: GameState,
             action: pacai.core.action.Action | None = None,
             old_state: GameState | None = None,
-            ) -> float:
+            **kwargs) -> float:
         """
         Compute a score for a state that an agent can use to decide actions.
         The current state is the only required argument, the others are optional.
@@ -263,7 +276,7 @@ def base_eval(
         state: GameState,
         action: pacai.core.action.Action | None = None,
         old_state: GameState | None = None,
-        ) -> float:
+        **kwargs) -> float:
     """ The most basic evaluation function, which just uses the state's current score. """
 
     return float(state.score)

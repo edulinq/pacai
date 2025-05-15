@@ -32,7 +32,7 @@ def run(args: argparse.Namespace) -> int:
     current_puzzle = puzzle
     for (i, action) in enumerate(solution.actions):
         if (args.interactive):
-            input('Press return for the next step...')
+            input('Press return for the next step ...')
 
         current_puzzle = current_puzzle.apply_action(action)
         print(f"After {i + 1} moves:\n{current_puzzle}\n")

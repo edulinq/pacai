@@ -218,7 +218,7 @@ class Game(abc.ABC):
         if (action not in state.get_legal_actions()):
             raise ValueError(f"Illegal action for agent {action_record.agent_index}: '{action}'.")
 
-        state.process_turn(action)
+        state.process_turn_full(action)
         return state
 
     def check_end(self, state: pacai.core.gamestate.GameState) -> bool:
@@ -306,9 +306,6 @@ class Game(abc.ABC):
             # Check for game ending conditions.
             if (self.check_end(state)):
                 break
-
-            # End this agent's turn.
-            state.finish_turn(action_record.get_action())
 
             # Check if this game has ran for the maximum number of turns.
             if ((self._game_info.max_turns > 0) and (state.turn_count >= self._game_info.max_turns)):
