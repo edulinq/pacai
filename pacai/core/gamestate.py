@@ -82,9 +82,20 @@ class GameState(pacai.util.json.DictConverter):
                 self.move_delays[info_agent_index] = agent_info.move_delay
 
     def copy(self) -> 'GameState':
-        """ Get a deep copy of this state. """
+        """
+        Get a deep copy of this state.
 
-        return copy.deepcopy(self)
+        Child classes are responsible for making any deep copies they need to.
+        """
+
+        new_state = copy.copy(self)
+
+        new_state.board = self.board.copy()
+        new_state.last_actions = self.last_actions.copy()
+        new_state.move_delays = self.move_delays.copy()
+        new_state.tickets = self.tickets.copy()
+
+        return new_state
 
     def game_start(self):
         """

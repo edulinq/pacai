@@ -1,3 +1,5 @@
+import typing
+
 import pacai.core.action
 import pacai.core.gamestate
 import pacai.pacman.board
@@ -59,6 +61,14 @@ class GameState(pacai.core.gamestate.GameState):
         When a ghost dies their scared timer resets,
         so all ghosts need an independent timer.
         """
+
+    def copy(self) -> pacai.core.gamestate.GameState:
+        new_state = super().copy()
+        new_state = typing.cast(GameState, new_state)
+
+        new_state.scared_timers = self.scared_timers.copy()
+
+        return new_state
 
     def process_agent_crash(self, agent_index: int):
         super().process_agent_crash(agent_index)

@@ -386,8 +386,8 @@ class UI(abc.ABC):
             canvas.rectangle([start_coord, end_coord], fill = tuple(highlight_color))
 
         # Draw non-agent (non-wall) markers.
-        for (marker, positions) in state.board._all_objects.items():
-            if (marker.is_wall() or marker.is_agent()):
+        for (marker, positions) in state.board._nonwall_objects.items():
+            if (marker.is_agent()):
                 continue
 
             for position in positions:
@@ -395,7 +395,7 @@ class UI(abc.ABC):
                 self._place_sprite(position, sprite, image)
 
         # Draw agent markers.
-        for (marker, positions) in state.board._all_objects.items():
+        for (marker, positions) in state.board._nonwall_objects.items():
             if (not marker.is_agent()):
                 continue
 

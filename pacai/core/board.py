@@ -106,26 +106,40 @@ for agent_marker in AGENT_MARKERS:
 
 class Position(pacai.util.json.DictConverter):
     """
-    A 2-dimension location.
-    The first value represent row/y/height,
-    and the second value represents col/x/width.
+    An immutable 2-dimension location
+    representing row/y/height/y-offset and col/x/width/x-offset.
     """
 
-    def __init__(self,
-            row: int,
-            col: int) -> None:
-        self.row: int = row
-        """ The row / y / height of this position. """
+    ROW_INDEX: int = 0
+    COL_INDEX: int = 1
 
-        self.col: int = col
-        """ The col / x / width of this position. """
+    def __init__(self, row: int, col: int) -> None:
+        self._point: tuple[int, int] = (row, col)
+        """ The location as a tuple (row, col). """
+
+        self._hash: int = hash(self._point)
+        """ Cache the hash value to speed up checks. """
+
+    @property
+    def row(self) -> int:
+        """ Get this position's row. """
+
+        return self._point[Position.ROW_INDEX]
+
+    @property
+    def col(self) -> int:
+        """ Get this position's col. """
+
+        return self._point[Position.COL_INDEX]
 
     def add(self, other: 'Position') -> 'Position':
         """
         Add another position (offset) to this one and return the result.
         """
 
-        return Position(self.row + other.row, self.col + other.col)
+        row = self._point[Position.ROW_INDEX] + other._point[Position.ROW_INDEX]
+        col = self._point[Position.COL_INDEX] + other._point[Position.COL_INDEX]
+        return Position(row, col)
 
     def apply_action(self, action: pacai.core.action.Action) -> 'Position':
         """
@@ -141,16 +155,16 @@ class Position(pacai.util.json.DictConverter):
         return self.add(offset)
 
     def __lt__(self, other: 'Position') -> bool:
-        return (self.row, self.col) < (other.row, other.col)
+        return (self._point < other._point)
 
     def __eq__(self, other: object) -> bool:
         if (not isinstance(other, Position)):
             return False
 
-        return (self.row == other.row) and (self.col == other.col)
+        return (self._point == other._point)
 
     def __hash__(self) -> int:
-        return (self.row, self.col).__hash__()
+        return self._hash
 
     def __str__(self) -> str:
         return f"({self.row}, {self.col})"
@@ -159,11 +173,13 @@ class Position(pacai.util.json.DictConverter):
         return str(self)
 
     def to_dict(self) -> dict[str, typing.Any]:
-        return vars(self).copy()
+        return {
+            'row': self.row,
+            'col': self.col,
+        }
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        data = data.copy()
         return cls(**data)
 
 CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
@@ -286,6 +302,9 @@ class Board(pacai.util.json.DictConverter):
     The specific board class (usually specified by the board options) should know how to interpret the text-based board.
     Agents on the text-based board are numbered by their index (0-9).
 
+    Walls are treated (and stored) specially,
+    and are not expected to change once a board is created (they are considered fixed).
+
     Callers should generally stick to the provided methods,
     as some of the underlying data structures may be optimized for performance.
     """
@@ -299,7 +318,8 @@ class Board(pacai.util.json.DictConverter):
             search_target: Position | dict[str, typing.Any] | None = None,
             _height: int | None = None,
             _width: int | None = None,
-            _all_objects: dict[Marker, set[Position]] | None = None,
+            _walls: set[Position] | None = None,
+            _nonwall_objects: dict[Marker, set[Position]] | None = None,
             _agent_initial_positions: dict[Marker, Position] | None = None,
             **kwargs) -> None:
         """
@@ -327,8 +347,11 @@ class Board(pacai.util.json.DictConverter):
         self.width: int = -1
         """ The width (number of columns, "x") of the board. """
 
-        self._all_objects: dict[Marker, set[Position]] = {}
-        """ All the objects that appear on the board. """
+        self._walls: set[Position] = set()
+        """ The walls for this board. """
+
+        self._nonwall_objects: dict[Marker, set[Position]] = {}
+        """ All the non-wall objects that appear on the board. """
 
         self._agent_initial_positions: dict[Marker, Position] = {}
         """ Keep track of where each agent started. """
@@ -339,20 +362,32 @@ class Board(pacai.util.json.DictConverter):
         self.search_target: Position | None = search_target  # type: ignore
         """ Some boards (especially mazes) will have a specific positional search target. """
 
+        self._is_shallow: bool = False
+        """
+        Keep track of if the variable components of the board have been copied.
+        We will only make a copy of these component on a write.
+        """
+
         # The board text has been provided, parse the data from it.
         if (board_text is not None):
             height, width, all_objects, agents = self._process_text(board_text, strip = strip)
 
+            walls = set()
+            if (MARKER_WALL in all_objects):
+                walls = all_objects[MARKER_WALL]
+                del all_objects[MARKER_WALL]
+
             self.height = height
             self.width = width
-            self._all_objects = all_objects
+            self._walls = walls
+            self._nonwall_objects = all_objects
             self._agent_initial_positions = agents
         else:
             # No board text has been provided, all attributes must be provided.
             checks = [
                 (_height, 'height'),
                 (_width, 'width'),
-                (_all_objects, 'objects'),
+                (_nonwall_objects, 'objects'),
                 (_agent_initial_positions, 'agent initial positions'),
             ]
 
@@ -362,13 +397,27 @@ class Board(pacai.util.json.DictConverter):
 
             self.height = _height  # type: ignore
             self.width = _width  # type: ignore
-            self._all_objects = _all_objects  # type: ignore
+            self._walls = _walls  # type: ignore
+            self._nonwall_objects = _nonwall_objects  # type: ignore
             self._agent_initial_positions = _agent_initial_positions  # type: ignore
 
     def copy(self) -> 'Board':
-        """ Get a deep copy of this board. """
+        """ Get a copy of this board. """
 
-        return copy.deepcopy(self)
+        # Make a shallow copy and mark it as such.
+        new_board = copy.copy(self)
+        new_board._is_shallow = True
+
+        return new_board
+
+    def _copy_on_write(self) -> None:
+        """ Copy any copy-on-write components if necessary. """
+
+        if (not self._is_shallow):
+            return
+
+        self._nonwall_objects = copy.deepcopy(self._nonwall_objects)
+        self._is_shallow = False
 
     def size(self) -> int:
         """ Get the total number of places in this board. """
@@ -397,27 +446,27 @@ class Board(pacai.util.json.DictConverter):
 
     def get(self, position: Position) -> set[Marker]:
         """
-        Get all objects at the given position.
+        Get all non-wall objects at the given position.
         """
 
         self._check_bounds(position)
 
         found_objects: set[Marker] = set()
-        for (marker, objects) in self._all_objects.items():
+        for (marker, objects) in self._nonwall_objects.items():
             if position in objects:
                 found_objects.add(marker)
 
         return found_objects
 
     def get_marker_positions(self, marker: Marker) -> set[Position]:
-        """ Get all the positions for a specific marker. """
+        """ Get all the non-wall positions for a specific marker. """
 
-        return self._all_objects.get(marker, set())
+        return self._nonwall_objects.get(marker, set())
 
     def get_walls(self) -> set[Position]:
-        """ Shortcut for get_marker_positions() with MARKER_WALL. """
+        """ Get all the walls. """
 
-        return self.get_marker_positions(MARKER_WALL)
+        return self._walls
 
     def remove_agent(self, agent_index: int) -> None:
         """
@@ -429,10 +478,12 @@ class Board(pacai.util.json.DictConverter):
         if ((agent_index < 0) or (agent_index >= MAX_AGENTS)):
             return
 
+        self._copy_on_write()
+
         marker = Marker(str(agent_index))
 
-        if (marker in self._all_objects):
-            del self._all_objects[marker]
+        if (marker in self._nonwall_objects):
+            del self._nonwall_objects[marker]
 
         if (marker in self._agent_initial_positions):
             del self._agent_initial_positions[marker]
@@ -443,7 +494,9 @@ class Board(pacai.util.json.DictConverter):
         """
 
         self._check_bounds(position)
-        self._all_objects.get(marker, set()).discard(position)
+        self._copy_on_write()
+
+        self._nonwall_objects.get(marker, set()).discard(position)
 
     def place_marker(self, marker: Marker, position: Position) -> None:
         """
@@ -451,11 +504,12 @@ class Board(pacai.util.json.DictConverter):
         """
 
         self._check_bounds(position)
+        self._copy_on_write()
 
-        if (marker not in self._all_objects):
-            self._all_objects[marker] = set()
+        if (marker not in self._nonwall_objects):
+            self._nonwall_objects[marker] = set()
 
-        self._all_objects[marker].add(position)
+        self._nonwall_objects[marker].add(position)
 
     def get_neighbors(self, position: Position) -> list[tuple[pacai.core.action.Action, Position]]:
         """
@@ -467,6 +521,7 @@ class Board(pacai.util.json.DictConverter):
         neighbors = []
         for (action, offset) in CARDINAL_OFFSETS.items():
             neighbor = position.add(offset)
+
             if (not self._check_bounds(neighbor, throw = False)):
                 continue
 
@@ -483,12 +538,18 @@ class Board(pacai.util.json.DictConverter):
         An out-of-bounds position always counts as non-adjacent.
         """
 
+        # Get the set of positions to compare against.
+        if (marker == MARKER_WALL):
+            positions = self._walls
+        else:
+            positions = self._nonwall_objects[marker]
+
         adjacency = []
         for direction in pacai.core.action.CARDINAL_DIRECTIONS:
             neighbor = position.apply_action(direction)
 
             adjacent = 'F'
-            if ((marker in self._all_objects) and (neighbor in self._all_objects[marker])):
+            if (neighbor in positions):
                 adjacent = 'T'
 
             adjacency.append(adjacent)
@@ -503,23 +564,28 @@ class Board(pacai.util.json.DictConverter):
     def is_empty(self, position: Position) -> bool:
         """ Check if the given position is empty. """
 
-        for objects in self._all_objects.values():
+        for objects in self._nonwall_objects.values():
             if (position in objects):
                 return False
 
-        return True
+        return (position not in self._walls)
 
     def is_marker(self, marker: Marker, position: Position) -> bool:
-        """ Check if the given position is a the target marker. """
+        """ Check if the given position is has the target marker. """
 
-        self._check_bounds(position)
+        # Get the set of positions to compare against.
+        if (marker == MARKER_WALL):
+            positions = self._walls
+        else:
+            positions = self._nonwall_objects[marker]
 
-        return (position in self._all_objects.get(marker, set()))
+        return (position in positions)
 
     def is_wall(self, position: Position) -> bool:
         """ Check if the given position is a wall. """
 
-        return self.is_marker(MARKER_WALL, position)
+        # Note that we are not using is_marker() for a slight speedup (since this is a common method).
+        return (position in self._walls)
 
     def get_agent_position(self, agent_index: int) -> Position | None:
         """
@@ -528,7 +594,7 @@ class Board(pacai.util.json.DictConverter):
         """
 
         marker = Marker(str(agent_index))
-        positions = self._all_objects.get(marker, set())
+        positions = self._nonwall_objects.get(marker, set())
 
         if (len(positions) > 1):
             raise ValueError(f"Found too many agent positions ({len(positions)}) for agent {marker}. There should only be one.")
@@ -609,13 +675,25 @@ class Board(pacai.util.json.DictConverter):
 
         grid = [[MARKER_EMPTY] * self.width for _ in range(self.height)]
 
-        for (marker, positions) in self._all_objects.items():
-            for position in positions:
-                existing_marker = grid[position.row][position.col]
+        # Place walls first.
+        for position in self._walls:
+            grid[position.row][position.col] = MARKER_WALL
 
-                # Don't replace agents.
-                if (not existing_marker.is_agent()):
-                    grid[position.row][position.col] = marker
+        # Place non-agents.
+        for (marker, positions) in self._nonwall_objects.items():
+            if (marker.is_agent()):
+                continue
+
+            for position in positions:
+                grid[position.row][position.col] = marker
+
+        # Place agents.
+        for (marker, positions) in self._nonwall_objects.items():
+            if (not marker.is_agent()):
+                continue
+
+            for position in positions:
+                grid[position.row][position.col] = marker
 
         return grid
 
@@ -642,7 +720,7 @@ class Board(pacai.util.json.DictConverter):
 
     def to_dict(self) -> dict[str, typing.Any]:
         all_objects = {}
-        for (marker, positions) in sorted(self._all_objects.items()):
+        for (marker, positions) in sorted(self._nonwall_objects.items()):
             all_objects[str(marker)] = [position.to_dict() for position in sorted(positions)]
 
         agent_initial_positions = {}
@@ -659,14 +737,15 @@ class Board(pacai.util.json.DictConverter):
             'height': self.height,
             'width': self.width,
             'search_target': search_target,
-            '_all_objects': all_objects,
+            '_walls': [position.to_dict() for position in sorted(self._walls)],
+            '_nonwall_objects': all_objects,
             '_agent_initial_positions': agent_initial_positions,
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
         all_objects: dict[Marker, set[Position]] = {}
-        for (raw_marker, raw_positions) in data['_all_objects'].items():
+        for (raw_marker, raw_positions) in data['_nonwall_objects'].items():
             all_objects[Marker(raw_marker)] = {Position.from_dict(raw_position) for raw_position in raw_positions}
 
         agent_initial_positions = {}
@@ -683,7 +762,8 @@ class Board(pacai.util.json.DictConverter):
             search_target = search_target,
             _height = data['height'],
             _width = data['width'],
-            _all_objects = all_objects,
+            _walls = {Position.from_dict(raw_position) for raw_position in data.get('_walls', [])},
+            _nonwall_objects = all_objects,
             _agent_initial_positions = agent_initial_positions,
         )
 

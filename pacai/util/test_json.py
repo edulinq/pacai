@@ -519,17 +519,17 @@ class JSONTest(pacai.test.base.BaseTest):
                     },
                     'height': 3,
                     'width': 3,
-                    '_all_objects': {
-                        "%": [
-                            {"row": 0, "col": 0},
-                            {"row": 0, "col": 1},
-                            {"row": 0, "col": 2},
-                            {"row": 1, "col": 0},
-                            {"row": 1, "col": 2},
-                            {"row": 2, "col": 0},
-                            {"row": 2, "col": 1},
-                            {"row": 2, "col": 2},
-                        ],
+                    '_walls': [
+                        {"row": 0, "col": 0},
+                        {"row": 0, "col": 1},
+                        {"row": 0, "col": 2},
+                        {"row": 1, "col": 0},
+                        {"row": 1, "col": 2},
+                        {"row": 2, "col": 0},
+                        {"row": 2, "col": 1},
+                        {"row": 2, "col": 2},
+                    ],
+                    '_nonwall_objects': {
                         "0": [
                             {"row": 1, "col": 1},
                         ],
@@ -561,18 +561,17 @@ class JSONTest(pacai.test.base.BaseTest):
                     },
                     'height': 3,
                     'width': 3,
-                    '_all_objects': {
-                        "%": [
-                            {"row": 0, "col": 0},
-                            {"row": 0, "col": 1},
-                            {"row": 0, "col": 2},
-                            {"row": 1, "col": 0},
-                            {"row": 1, "col": 2},
-                            {"row": 2, "col": 0},
-                            {"row": 2, "col": 1},
-                            {"row": 2, "col": 2},
-                        ],
-                    },
+                    '_walls': [
+                        {"row": 0, "col": 0},
+                        {"row": 0, "col": 1},
+                        {"row": 0, "col": 2},
+                        {"row": 1, "col": 0},
+                        {"row": 1, "col": 2},
+                        {"row": 2, "col": 0},
+                        {"row": 2, "col": 1},
+                        {"row": 2, "col": 2},
+                    ],
+                    '_nonwall_objects': {},
                     '_agent_initial_positions': {
                     },
                     'search_target': {
@@ -620,17 +619,17 @@ class JSONTest(pacai.test.base.BaseTest):
                         },
                         'height': 3,
                         'width': 3,
-                        '_all_objects': {
-                            "%": [
-                                {"row": 0, "col": 0},
-                                {"row": 0, "col": 1},
-                                {"row": 0, "col": 2},
-                                {"row": 1, "col": 0},
-                                {"row": 1, "col": 2},
-                                {"row": 2, "col": 0},
-                                {"row": 2, "col": 1},
-                                {"row": 2, "col": 2},
-                            ],
+                        '_walls': [
+                            {"row": 0, "col": 0},
+                            {"row": 0, "col": 1},
+                            {"row": 0, "col": 2},
+                            {"row": 1, "col": 0},
+                            {"row": 1, "col": 2},
+                            {"row": 2, "col": 0},
+                            {"row": 2, "col": 1},
+                            {"row": 2, "col": 2},
+                        ],
+                        '_nonwall_objects': {
                             "0": [
                                 {"row": 1, "col": 1},
                             ],
