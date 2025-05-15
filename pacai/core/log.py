@@ -5,6 +5,7 @@ DEFAULT_LOGGING_LEVEL: str = logging.getLevelName(logging.INFO)
 DEFAULT_LOGGING_FORMAT: str = '%(asctime)s [%(levelname)-8s] - %(filename)s:%(lineno)s -- %(message)s'
 
 LEVELS: list[str] = [
+    'TRACE',
     logging.getLevelName(logging.DEBUG),
     logging.getLevelName(logging.INFO),
     logging.getLevelName(logging.WARNING),
@@ -16,6 +17,9 @@ def init(level: str = DEFAULT_LOGGING_LEVEL, log_format: str = DEFAULT_LOGGING_F
     """
     Initialize or re-initialize the logging infrastructure.
     """
+
+    # Add trace.
+    _add_logging_level('TRACE', logging.DEBUG - 5)
 
     logging.basicConfig(level = level, format = log_format, force = True)
 
@@ -58,6 +62,32 @@ def init_from_args(args: argparse.Namespace) -> argparse.Namespace:
     init(level)
 
     return args
+
+def _add_logging_level(level_name: str, level_number: int, method_name: str | None = None) -> None:
+    """
+    Add a new logging level.
+
+    See https://stackoverflow.com/questions/2183233/how-to-add-a-custom-loglevel-to-pythons-logging-facility/35804945#35804945 .
+    """
+
+    if (method_name is None):
+        method_name = level_name.lower()
+
+    # Level has already been defined.
+    if hasattr(logging, level_name):
+        return
+
+    def log_for_level(self, message, *args, **kwargs):
+        if self.isEnabledFor(level_number):
+            self._log(level_number, message, args, **kwargs)
+
+    def log_to_root(message, *args, **kwargs):
+        logging.log(level_number, message, *args, **kwargs)
+
+    logging.addLevelName(level_number, level_name)
+    setattr(logging, level_name, level_number)
+    setattr(logging.getLoggerClass(), method_name, log_for_level)
+    setattr(logging, method_name, log_to_root)
 
 # Load the default logging when this module is loaded.
 init()

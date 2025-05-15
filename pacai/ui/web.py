@@ -147,7 +147,7 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
         self._handle_request(self._get_get_data)
 
     def _handle_request(self, data_handler: typing.Callable) -> None:
-        logging.debug("Serving: '%s'.", self.path)
+        logging.trace("Serving: '%s'.", self.path)  # type: ignore[attr-defined]  # pylint: disable=no-member
 
         code: int = http.HTTPStatus.OK
         headers: dict[str, typing.Any] = {}
@@ -404,7 +404,7 @@ def _handler_static(handler: HTTPHandler, path: str, params: dict) -> RequestHan
         parts.pop(0)
 
     static_path = os.path.join(STATIC_DIR, *parts)
-    logging.debug("Serving static path: '%s'.", static_path)
+    logging.trace("Serving static path: '%s'.", static_path)  # type: ignore[attr-defined]  # pylint: disable=no-member
 
     if (not os.path.isfile(static_path)):
         return (f"404 static path not found '{path}'.", http.HTTPStatus.NOT_FOUND, None)
