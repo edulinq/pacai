@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Profile a pacai module.
-# Any arguments passed to this script will be forwarded to the module.
+# Profile a pacai module or script.
+# Any arguments passed to this script will be forwarded to the profiling target.
 
 readonly THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly ROOT_DIR="${THIS_DIR}/.."
@@ -12,22 +12,24 @@ readonly ROW_COUNT=50
 
 function main() {
     if [[ $# -eq 0 ]]; then
-        echo "USAGE: $0 <module> [args ...]"
+        echo "USAGE: $0 <target> [args ...]"
         exit 1
     fi
 
     set -e
     trap exit SIGINT
 
-    local module="$1"
+    local target="$1"
     shift
+
+    if [[ $target != *.py ]] ; then
+        target="-m ${target}"
+    fi
 
     cd "${ROOT_DIR}"
 
     echo "Profiling ..."
-    # TEST
-    # python -m cProfile -o "${TEMP_STATS_PATH}" -m "${module}" "$@" > "${TEMP_STATS_PATH}.out" 2> "${TEMP_STATS_PATH}.err"
-    python -m cProfile -o "${TEMP_STATS_PATH}" -m "${module}" "$@"
+    python -m cProfile -o "${TEMP_STATS_PATH}" ${target} "$@"
     echo "Profiling Complete"
     echo ""
 
