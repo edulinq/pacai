@@ -177,13 +177,20 @@ class UI(abc.ABC):
         This can be reused as the base image every time we draw an image (since the walls do not change).
         """
 
-        self._sprite_sheet: pacai.core.spritesheet.SpriteSheet = pacai.core.spritesheet.load(sprite_sheet_path)
-        """ The sprite sheet to use for this UI. """
-
         self._sprite_lookup_func: SpriteLookup | None = sprite_lookup_func
         """ An optional custom lookup for sprites. """
 
-        self._font: PIL.ImageFont.FreeTypeFont = PIL.ImageFont.truetype(font_path, self._sprite_sheet.height + FONT_SIZE_OFFSET)
+        # Only load sprites (and fonts) if we need them.
+        sprite_sheet = None
+        font = None
+        if (self.requires_sprites() or (self._animation_path is not None)):
+            sprite_sheet = pacai.core.spritesheet.load(sprite_sheet_path)
+            font = PIL.ImageFont.truetype(font_path, sprite_sheet.height + FONT_SIZE_OFFSET)
+
+        self._sprite_sheet: pacai.core.spritesheet.SpriteSheet | None = sprite_sheet
+        """ The sprite sheet to use for this UI. """
+
+        self._font: PIL.ImageFont.FreeTypeFont | None = font
         """ The font to use for this UI. """
 
         self._image_cache: dict[int, PIL.Image.Image] = {}
@@ -289,6 +296,11 @@ class UI(abc.ABC):
         # Mark the time this method completed.
         self._last_fps_wait = pacai.util.time.now()
 
+    def requires_sprites(self) -> bool:
+        """ Check if this specific UI needs sprites or sprite sheets. """
+
+        return True
+
     def sleep(self, sleep_time_ms: int) -> None:
         """
         Sleep for the specified number of ms.
@@ -321,6 +333,12 @@ class UI(abc.ABC):
         This method is typically used for rendering the game to an animation.
         each call to this method is one frame in the animation.
         """
+
+        if (self._sprite_sheet is None):
+            raise ValueError("Cannot draw images without a sprite sheet.")
+
+        if (self._font is None):
+            raise ValueError("Cannot draw images without a font.")
 
         # First, check the cache for the image.
         if (state.turn_count in self._image_cache):
@@ -405,6 +423,9 @@ class UI(abc.ABC):
         or through the sprite sheet.
         """
 
+        if (self._sprite_sheet is None):
+            raise ValueError("Sprites are not loaded in this UI.")
+
         if (self._sprite_lookup_func is not None):
             return self._sprite_lookup_func(state, self._sprite_sheet, **kwargs)
 
@@ -419,6 +440,9 @@ class UI(abc.ABC):
         image.paste(sprite, image_coordinates, sprite)
 
     def _position_to_image_coords(self, position: pacai.core.board.Position) -> tuple[int, int]:
+        if (self._sprite_sheet is None):
+            raise ValueError("Sprites are not loaded in this UI.")
+
         return (position.col * self._sprite_sheet.width, position.row * self._sprite_sheet.height)
 
     @abc.abstractmethod

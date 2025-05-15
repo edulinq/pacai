@@ -120,6 +120,9 @@ class TkUI(pacai.core.ui.UI):
         Initialize all the Tk components using the initial game state.
         """
 
+        if (self._sprite_sheet is None):
+            raise ValueError("Sprites are not loaded in this UI.")
+
         self._root.protocol('WM_DELETE_WINDOW', self._handle_window_closed)
         self._root.minsize(width = MIN_WINDOW_WIDTH, height = MIN_WINDOW_HEIGHT)
         self._root.resizable(True, True)

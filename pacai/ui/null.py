@@ -14,3 +14,6 @@ class NullUI(pacai.core.ui.UI):
 
     def wait_for_fps(self) -> None:
         pass
+
+    def requires_sprites(self) -> bool:
+        return False
