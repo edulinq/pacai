@@ -1,0 +1,19 @@
+{
+    "cli": "pacai.pacman.bin",
+    "skip_windows": true,
+    "arguments": [
+        "--seed", "4",
+        "--board", "maze-test",
+        "--pacman", "agent-reflex",
+        "--isolation", "process",
+        "--ui", "null",
+        "--num-games", "10"
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: 485.6
+<LOG_PREFIX> -- Scores:        497, 499, 489, 459, 503, 499, 473, 499, 477, 461
+<LOG_PREFIX> -- Win Rate:      10 / 10 (1.00)
+<LOG_PREFIX> -- Record:        Win, Win, Win, Win, Win, Win, Win, Win, Win, Win
+<LOG_PREFIX> -- Average Turns: 24.4
+<LOG_PREFIX> -- Turn Counts:   13, 11, 21, 51, 7, 11, 37, 11, 33, 49

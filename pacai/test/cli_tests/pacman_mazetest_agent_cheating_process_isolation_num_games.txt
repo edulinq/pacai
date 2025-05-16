@@ -1,0 +1,20 @@
+{
+    "cli": "pacai.pacman.bin",
+    "skip_windows": true,
+    "arguments": [
+        "--seed", "4",
+        "--board", "maze-test",
+        "--pacman", "agent-cheating",
+        "--isolation", "process",
+        "--ui", "null",
+        "--num-games", "10",
+        "--max-turns", "10",
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: -10.0
+<LOG_PREFIX> -- Scores:        -10, -10, -10, -10, -10, -10, -10, -10, -10, -10
+<LOG_PREFIX> -- Win Rate:      0 / 10 (0.00)
+<LOG_PREFIX> -- Record:        Loss, Loss, Loss, Loss, Loss, Loss, Loss, Loss, Loss, Loss
+<LOG_PREFIX> -- Average Turns: 10.0
+<LOG_PREFIX> -- Turn Counts:   10, 10, 10, 10, 10, 10, 10, 10, 10, 10

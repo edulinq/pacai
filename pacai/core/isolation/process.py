@@ -211,11 +211,19 @@ def _empty_queue(queue: multiprocessing.Queue) -> None:
     Ignore anyhting that is pulled out of the queue and ignore any queue closed error.
     """
 
-    while (not queue.empty()):
-        try:
-            queue.get(False)
-        except ValueError:
+    try:
+        while (not queue.empty()):
+            try:
+                queue.get(False)
+            except ValueError:
+                return
+    except OSError as ex:
+        # When checking if a queue is empty, we can get an error if the queue was already closed.
+        if (str(ex) == 'handle is closed'):
             return
+
+        # This was not the expected/allowed error.
+        raise ex
 
 def _get_agent_action(
         agent: pacai.core.agent.Agent,
