@@ -416,7 +416,7 @@ class Board(pacai.util.json.DictConverter):
         if (not self._is_shallow):
             return
 
-        self._nonwall_objects = copy.deepcopy(self._nonwall_objects)
+        self._nonwall_objects = {marker: positions.copy() for (marker, positions) in self._nonwall_objects.items()}
         self._is_shallow = False
 
     def size(self) -> int:
