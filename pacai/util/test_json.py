@@ -643,6 +643,7 @@ class JSONTest(pacai.test.base.BaseTest):
                         0: "STOP",
                         1: "NORTH",
                     },
+                    "last_agent_index": -1,
                     'move_delays': {
                         0: 10,
                         1: 11,

@@ -43,6 +43,12 @@ class GameState(pacai.util.json.DictConverter):
         -1 indicates that the agent to move has not been selected yet.
         """
 
+        self.last_agent_index: int = -1
+        """
+        The index of the agent who just moved.
+        -1 indicates that no move has been made yet.
+        """
+
         self.game_over: bool = game_over
         """ Indicates that this state represents a complete game. """
 
@@ -108,6 +114,7 @@ class GameState(pacai.util.json.DictConverter):
             self.tickets[agent_index] = pacai.core.ticket.Ticket(agent_index + move_delay, 0, 0)
 
         # Choose the first agent to move.
+        self.last_agent_index = self.agent_index
         self.agent_index = self.get_next_agent_index()
 
     def game_complete(self) -> list[int]:
@@ -117,6 +124,11 @@ class GameState(pacai.util.json.DictConverter):
         """
 
         return []
+
+    def get_num_agents(self) -> int:
+        """ Get the number of agents this state is tracking. """
+
+        return len(self.tickets)
 
     def get_agent_indexes(self) -> list[int]:
         """ Get the index of all agents tracked by this game state. """
@@ -220,6 +232,7 @@ class GameState(pacai.util.json.DictConverter):
         self.tickets[self.agent_index] = self.tickets[self.agent_index].next(self.move_delays[self.agent_index])
 
         # If the game is not over, pick an agent for the next turn.
+        self.last_agent_index = self.agent_index
         self.agent_index = -1
         if (not self.game_over):
             self.agent_index = self.get_next_agent_index()
@@ -268,23 +281,27 @@ class GameState(pacai.util.json.DictConverter):
         return [pacai.core.action.STOP]
 
 @typing.runtime_checkable
-class EvaluationFunction(typing.Protocol):
+class AgentStateEvaluationFunction(typing.Protocol):
     """
     A function that can be used to score a game state.
     """
 
     def __call__(self,
             state: GameState,
+            agent: typing.Any | None = None,
             action: pacai.core.action.Action | None = None,
             old_state: GameState | None = None,
             **kwargs) -> float:
         """
-        Compute a score for a state that an agent can use to decide actions.
+        Compute a score for a state that the provided agent can use to decide actions.
         The current state is the only required argument, the others are optional.
+        Passing the agent asking for this evaluation is a simple way to pass persistent state
+        (like pre-computed distances) from the agent to this function.
         """
 
 def base_eval(
         state: GameState,
+        agent: typing.Any | None = None,
         action: pacai.core.action.Action | None = None,
         old_state: GameState | None = None,
         **kwargs) -> float:

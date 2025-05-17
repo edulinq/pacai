@@ -28,7 +28,7 @@ class Agent(abc.ABC):
     def __init__(self,
             name: pacai.util.reflection.Reference | str = pacai.util.alias.AGENT_DUMMY.long,
             move_delay: int = pacai.core.agentinfo.DEFAULT_MOVE_DELAY,
-            state_eval_func: pacai.core.gamestate.EvaluationFunction | pacai.util.reflection.Reference | str =
+            state_eval_func: pacai.core.gamestate.AgentStateEvaluationFunction | pacai.util.reflection.Reference | str =
                     pacai.core.agentinfo.DEFAULT_STATE_EVAL,
             **kwargs) -> None:
         self.name: pacai.util.reflection.Reference = pacai.util.reflection.Reference(name)
@@ -44,8 +44,8 @@ class Agent(abc.ABC):
         For example, an agent with a move delay of 50 will move twice as often as an agent with a move delay of 100.
         """
 
-        clean_state_eval_func = pacai.util.reflection.resolve_and_fetch(pacai.core.gamestate.EvaluationFunction, state_eval_func)
-        self._evaluation_function: pacai.core.gamestate.EvaluationFunction = clean_state_eval_func
+        clean_state_eval_func = pacai.util.reflection.resolve_and_fetch(pacai.core.gamestate.AgentStateEvaluationFunction, state_eval_func)
+        self._evaluation_function: pacai.core.gamestate.AgentStateEvaluationFunction = clean_state_eval_func
         """ The evaluation function that agent will use to assess game states. """
 
         self._rng: random.Random = random.Random()
@@ -82,7 +82,7 @@ class Agent(abc.ABC):
         and only implement this if they need additional functionality.
         """
 
-        self.last_positions.append(state.get_agent_position())
+        self.last_positions.append(state.get_agent_position(self.agent_index))
 
         action = self.get_action(state)
         return pacai.core.agentaction.AgentAction(action)
@@ -160,7 +160,7 @@ class Agent(abc.ABC):
         but child classes may override this method to easily implement their own evaluations.
         """
 
-        return self._evaluation_function(state, action = action, old_state = old_state, **kwargs)
+        return self._evaluation_function(state, agent = self, action = action, old_state = old_state, **kwargs)
 
 def load(agent_info: pacai.core.agentinfo.AgentInfo) -> Agent:
     """

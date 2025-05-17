@@ -563,7 +563,7 @@ def _parse_agent_infos(
         key = parts[0].strip()
         value = parts[1].strip()
 
-        agent_info[agent_index].set(key, value)
+        agent_info[agent_index].set_from_string(key, value)
 
     # Remove specified agents.
     for remove_agent_index in remove_agent_indexes:

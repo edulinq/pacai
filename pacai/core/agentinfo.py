@@ -40,10 +40,7 @@ class AgentInfo(pacai.util.json.DictConverter):
         self.move_delay: int = move_delay
         """ The move delay of the agent. """
 
-        if (isinstance(state_eval_func, str)):
-            state_eval_func = pacai.util.reflection.Reference(state_eval_func)
-
-        self.state_eval_func: pacai.util.reflection.Reference = state_eval_func
+        self.state_eval_func: pacai.util.reflection.Reference = pacai.util.reflection.Reference(state_eval_func)
         """ The state evaluation function this agent will use. """
 
         self.extra_arguments: dict[str, typing.Any] = {}
@@ -56,16 +53,15 @@ class AgentInfo(pacai.util.json.DictConverter):
         if (extra_arguments is not None):
             self.extra_arguments.update(extra_arguments)
 
-    def set(self, name: str, value: typing.Any) -> None:
+    def set_from_string(self, name: str, value: str) -> None:
         """ Set an attribute by name. """
 
         if (name == 'name'):
-            if (isinstance(value, pacai.util.reflection.Reference)):
-                self.name = value
-            else:
-                self.name = pacai.util.reflection.Reference(str(value))
+            self.name = pacai.util.reflection.Reference(value)
         elif (name == 'move_delay'):
             self.move_delay = int(value)
+        elif (name == 'state_eval_func'):
+            self.state_eval_func = pacai.util.reflection.Reference(value)
         else:
             self.extra_arguments[name] = value
 
@@ -74,6 +70,7 @@ class AgentInfo(pacai.util.json.DictConverter):
 
         self.name = other.name
         self.move_delay = other.move_delay
+        self.state_eval_func = other.state_eval_func
         self.extra_arguments.update(other.extra_arguments)
 
     def to_flat_dict(self) -> dict[str, typing.Any]:

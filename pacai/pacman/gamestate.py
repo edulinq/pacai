@@ -83,6 +83,7 @@ class GameState(pacai.core.gamestate.GameState):
             agent_index = self.agent_index
 
         return self.scared_timers.get(agent_index, 0) > 0
+
     def get_legal_actions(self) -> list[pacai.core.action.Action]:
         if (self.agent_index == -1):
             raise ValueError("Cannot get legal actions when no agent is active.")
