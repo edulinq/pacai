@@ -3,6 +3,7 @@
     "arguments": [
         "--seed", "4",
         "--pacman", "agent-reflex",
+        "--board", "classic-medium",
         "--ui", "null"
     ]
 }

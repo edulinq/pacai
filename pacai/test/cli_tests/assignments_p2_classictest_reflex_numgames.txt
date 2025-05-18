@@ -1,0 +1,17 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--pacman", "agent-reflex",
+        "--board", "classic-test",
+        "--ui", "null",
+        "--num-games", "10"
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: 538.6
+<LOG_PREFIX> -- Scores:        524, 536, 536, 540, 540, 542, 536, 550, 542, 540
+<LOG_PREFIX> -- Win Rate:      10 / 10 (1.00)
+<LOG_PREFIX> -- Record:        Win, Win, Win, Win, Win, Win, Win, Win, Win, Win
+<LOG_PREFIX> -- Average Turns: 81.8
+<LOG_PREFIX> -- Turn Counts:   111, 87, 87, 79, 79, 75, 87, 59, 75, 79
