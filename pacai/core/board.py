@@ -613,63 +613,6 @@ class Board(pacai.util.json.DictConverter):
         marker = Marker(str(agent_index))
         return self._agent_initial_positions.get(marker, None)
 
-    def _process_text(self,
-            board_text: str,
-            strip: bool = True,
-            ) -> tuple[int, int, dict[Marker, set[Position]], dict[Marker, Position]]:
-        """
-        Parse out a board from text.
-        """
-
-        if (strip):
-            board_text = board_text.strip()
-
-        if (len(board_text) == 0):
-            raise ValueError('A board cannot be empty.')
-
-        lines = board_text.split("\n")
-
-        height: int = len(lines)
-        width: int = -1
-        all_objects: dict[Marker, set[Position]] = {}
-        agents: dict[Marker, Position] = {}
-
-        for (row, line) in enumerate(lines):
-            if (strip):
-                line = line.strip()
-
-            if (width == -1):
-                width = len(line)
-
-            if (width != len(line)):
-                raise ValueError(f"Unexpected width ({len(line)}) for row at index {row}. Expected {width}.")
-
-            for (col, char) in enumerate(line):
-                marker = self._markers.get(char, None)
-                if (marker is None):
-                    raise ValueError(f"Unknown marker '{char}' found at position ({row}, {col}).")
-
-                if (marker.is_empty()):
-                    continue
-
-                position = Position(row, col)
-
-                if (marker not in all_objects):
-                    all_objects[marker] = set()
-
-                all_objects[marker].add(position)
-
-                if (marker.is_agent()):
-                    if (marker in agents):
-                        raise ValueError(f"Duplicate agents ('{marker}') seen on board.")
-
-                    agents[marker] = position
-
-        if (width == 0):
-            raise ValueError("A board must have at least one column.")
-
-        return height, width, all_objects, agents
-
     def to_grid(self) -> list[list[Marker]]:
         """ Convert this board to a 2-d grid. """
 
@@ -766,6 +709,89 @@ class Board(pacai.util.json.DictConverter):
             _nonwall_objects = all_objects,
             _agent_initial_positions = agent_initial_positions,
         )
+
+    def _process_text(self,
+            board_text: str,
+            strip: bool = True,
+            ) -> tuple[int, int, dict[Marker, set[Position]], dict[Marker, Position]]:
+        """
+        Parse out a board from text.
+        """
+
+        if (strip):
+            board_text = board_text.strip()
+
+        if (len(board_text) == 0):
+            raise ValueError('A board cannot be empty.')
+
+        lines = board_text.split("\n")
+
+        height: int = len(lines)
+        width: int = -1
+        all_objects: dict[Marker, set[Position]] = {}
+        agents: dict[Marker, Position] = {}
+
+        row_skip_count = 0
+        for (raw_row, line) in enumerate(lines):
+            row = raw_row - row_skip_count
+
+            if (strip):
+                line = line.strip()
+
+            raw_markers = self._split_line(line)
+
+            # Skip empty lines.
+            if (len(raw_markers) == 0):
+                row_skip_count += 1
+                continue
+
+            if (width == -1):
+                width = len(raw_markers)
+
+            if (width != len(raw_markers)):
+                raise ValueError(f"Unexpected width ({len(raw_markers)}) for row at index {row}. Expected {width}.")
+
+            for (col, raw_marker) in enumerate(raw_markers):
+                position = Position(row, col)
+
+                marker = self._translate_marker(raw_marker, position)
+                if (marker is None):
+                    raise ValueError(f"Unknown marker '{raw_marker}' found at position ({row}, {col}).")
+
+                if (marker.is_empty()):
+                    continue
+
+                if (marker not in all_objects):
+                    all_objects[marker] = set()
+
+                all_objects[marker].add(position)
+
+                if (marker.is_agent()):
+                    if (marker in agents):
+                        raise ValueError(f"Duplicate agents ('{marker}') seen on board.")
+
+                    agents[marker] = position
+
+        if (width <= 0):
+            raise ValueError("A board must have at least one column.")
+
+        return height, width, all_objects, agents
+
+    def _split_line(self, line: str) -> list[str]:
+        """
+        Split a line in the text representation of a board.
+        By default, this just splits into characters.
+        """
+
+        return list(line)
+
+    def _translate_marker(self, text: str, position: Position) -> Marker | None:
+        """
+        Translate the given text into the correct marker.
+        By default, this just looks up the text in self._markers.
+        """
+
+        return self._markers.get(text, None)
 
 def load_path(path: str) -> Board:
     """
