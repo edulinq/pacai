@@ -62,6 +62,7 @@ AGENT_DUMMY: Alias = Alias('agent-dummy', 'pacai.agents.dummy.DummyAgent')
 AGENT_GO_WEST: Alias = Alias('agent-go-west', 'pacai.agents.gowest.GoWestAgent')
 AGENT_GREEDY: Alias = Alias('agent-greedy', 'pacai.agents.greedy.GreedyAgent')
 AGENT_LEFT_TURN: Alias = Alias('agent-left-turn', 'pacai.agents.leftturn.LeftTurnAgent')
+AGENT_MINIMAX: Alias = Alias('agent-minimax', 'pacai.student.multiagents.MyMinimaxLikeAgent')
 AGENT_RANDOM: Alias = Alias('agent-random', 'pacai.agents.random.RandomAgent')
 AGENT_REFLEX: Alias = Alias('agent-reflex', 'pacai.student.multiagents.ReflexAgent')
 AGENT_SCRIPTED: Alias = Alias('agent-scripted', 'pacai.agents.scripted.ScriptedAgent')
@@ -146,9 +147,11 @@ SEARCH_SOLVER_SHORT_NAMES: list[str] = [
 ]
 
 STATE_EVAL_BASE: Alias = Alias('state-eval-base', 'pacai.core.gamestate.base_eval')
+STATE_EVAL_MINIMAX_BETTER: Alias = Alias('state-eval-minimax-better', 'pacai.student.multiagents.better_state_eval')
 
 STATE_EVAL_SHORT_NAMES: list[str] = [
     STATE_EVAL_BASE.short,
+    STATE_EVAL_MINIMAX_BETTER.short,
 ]
 
 UI_NULL: Alias = Alias('null', 'pacai.ui.null.NullUI')

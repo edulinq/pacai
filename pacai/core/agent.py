@@ -1,4 +1,5 @@
 import abc
+import logging
 import random
 
 import pacai.core.agentaction
@@ -67,6 +68,11 @@ class Agent(abc.ABC):
         This is updated in the beginning of get_action_full().
         This will include times when the agent was not on the board (a None position).
         """
+
+        logging.debug("Created agent '%s' with move delay %d and state evaluation function '%s'.",
+                pacai.util.reflection.get_qualified_name(self.name),
+                self.move_delay,
+                pacai.util.reflection.get_qualified_name(state_eval_func))
 
     def get_action_full(self,
             state: pacai.core.gamestate.GameState,

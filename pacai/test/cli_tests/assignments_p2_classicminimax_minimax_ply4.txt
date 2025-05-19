@@ -1,0 +1,17 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--pacman", "agent-minimax",
+        "--board", "classic-minimax",
+        "--ui", "null",
+        "--agent-arg", "0::ply_count=4"
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: -494.0
+<LOG_PREFIX> -- Scores:        -494
+<LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
+<LOG_PREFIX> -- Record:        Loss
+<LOG_PREFIX> -- Average Turns: 15.0
+<LOG_PREFIX> -- Turn Counts:   15

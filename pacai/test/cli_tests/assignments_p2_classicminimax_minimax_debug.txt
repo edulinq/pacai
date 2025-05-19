@@ -1,0 +1,47 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--pacman", "agent-minimax",
+        "--board", "classic-minimax",
+        "--ui", "null",
+        "--debug"
+    ]
+}
+---
+<LOG_PREFIX> -- Starting a game with seed: 5594871498841892311.
+<LOG_PREFIX> -- Created agent 'pacai.student.multiagents.MyMinimaxLikeAgent' with move delay 100 and state evaluation function 'pacai.core.gamestate.base_eval'.
+<LOG_PREFIX> -- Created agent 'pacai.agents.random.RandomAgent' with move delay 100 and state evaluation function 'pacai.core.gamestate.base_eval'.
+<LOG_PREFIX> -- Created agent 'pacai.agents.random.RandomAgent' with move delay 100 and state evaluation function 'pacai.core.gamestate.base_eval'.
+<LOG_PREFIX> -- Created agent 'pacai.agents.random.RandomAgent' with move delay 100 and state evaluation function 'pacai.core.gamestate.base_eval'.
+<LOG_PREFIX> -- Turn 0, agent 0.
+<LOG_PREFIX> -- Turn: 0, Game State Score: 0, Minimax Score: 8, Chosen Action: WEST, States Evaluated: 1, Nodes Visited: 9.
+<LOG_PREFIX> -- Turn 1, agent 1.
+<LOG_PREFIX> -- Turn 2, agent 2.
+<LOG_PREFIX> -- Turn 3, agent 3.
+<LOG_PREFIX> -- Turn 4, agent 0.
+<LOG_PREFIX> -- Turn: 4, Game State Score: 9, Minimax Score: 7, Chosen Action: SOUTH, States Evaluated: 1, Nodes Visited: 9.
+<LOG_PREFIX> -- Turn 5, agent 1.
+<LOG_PREFIX> -- Turn 6, agent 2.
+<LOG_PREFIX> -- Turn 7, agent 3.
+<LOG_PREFIX> -- Turn 8, agent 0.
+<LOG_PREFIX> -- Turn: 8, Game State Score: 8, Minimax Score: 6, Chosen Action: NORTH, States Evaluated: 1, Nodes Visited: 9.
+<LOG_PREFIX> -- Turn 9, agent 1.
+<LOG_PREFIX> -- Turn 10, agent 2.
+<LOG_PREFIX> -- Turn 11, agent 3.
+<LOG_PREFIX> -- Turn 12, agent 0.
+<LOG_PREFIX> -- Turn: 12, Game State Score: 7, Minimax Score: 5, Chosen Action: SOUTH, States Evaluated: 1, Nodes Visited: 9.
+<LOG_PREFIX> -- Turn 13, agent 1.
+<LOG_PREFIX> -- Turn 14, agent 2.
+<LOG_PREFIX> -- Turn 15, agent 3.
+<LOG_PREFIX> -- Turn 16, agent 0.
+<LOG_PREFIX> -- Turn: 16, Game State Score: 6, Minimax Score: -495, Chosen Action: SOUTH, States Evaluated: 1, Nodes Visited: 4.
+<LOG_PREFIX> -- Turn 17, agent 1.
+<LOG_PREFIX> -- Turn 18, agent 2.
+<LOG_PREFIX> -- Minimax-like agent complete. Agent Index: 0, Ply Count: 2, Use Alpha-Beta Pruning: False, Use Expectimax: False, States Evaluated: 5, Nodes Visited: 40.
+<LOG_PREFIX> -- Average Score: -495.0
+<LOG_PREFIX> -- Scores:        -495
+<LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
+<LOG_PREFIX> -- Record:        Loss
+<LOG_PREFIX> -- Average Turns: 19.0
+<LOG_PREFIX> -- Turn Counts:   19
