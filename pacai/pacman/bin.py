@@ -3,7 +3,6 @@ The main executable for running a game of Pac-Man.
 """
 
 import argparse
-import logging
 import sys
 import typing
 
@@ -17,6 +16,7 @@ import pacai.core.spritesheet
 import pacai.core.ui
 import pacai.pacman.game
 import pacai.pacman.gamestate
+import pacai.util.bin
 import pacai.util.alias
 
 DEFAULT_BOARD: str = 'classic-medium'
@@ -25,29 +25,13 @@ DEFAULT_SPRITE_SHEET: str = 'pacman'
 SCARED_GHOST_MARKER: pacai.core.board.Marker = pacai.core.board.Marker('!')
 
 def run(args: argparse.Namespace) -> int:
-    """ Run one or more gaames of pacman using pre-parsed arguments. """
+    """ Run one or more gaames of Pac-Man using pre-parsed arguments. """
 
-    results = []
-    for game in args._games:
-        results.append(game.run(args._ui))
-
-    scores = [result.score for result in results]
-    wins = [(pacai.pacman.gamestate.PACMAN_AGENT_INDEX in result.winning_agent_indexes) for result in results]
-    win_rate = wins.count(True) / float(len(wins))
-    turn_counts = [len(result.history) for result in results]
-
-    logging.info('Average Score: %s', sum(scores) / float(len(scores)))
-    logging.info('Scores:        %s', ', '.join([str(score) for score in scores]))
-    logging.info('Win Rate:      %d / %d (%0.2f)', wins.count(True), len(wins), win_rate)
-    logging.info('Record:        %s', ', '.join([['Loss', 'Win'][int(win)] for win in wins]))
-    logging.info('Average Turns: %s', sum(turn_counts) / float(len(turn_counts)))
-    logging.info('Turn Counts:   %s', ', '.join([str(turn_count) for turn_count in turn_counts]))
-
-    return 0
+    return pacai.util.bin.run_games(args, {pacai.pacman.gamestate.PACMAN_AGENT_INDEX})
 
 def set_cli_args(parser: argparse.ArgumentParser) -> None:
     """
-    Set pacman-specific CLI arguments.
+    Set Pac-Man-specific CLI arguments.
     This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
     """
 
@@ -95,7 +79,7 @@ def _sprite_lookup(
         sprite_sheet: pacai.core.spritesheet.SpriteSheet,
         marker: pacai.core.board.Marker | None = None,
         **kwargs) -> PIL.Image.Image:
-    """ Pacman requires a special lookup function since ghosts need a special sprite when scared. """
+    """ Pac-Man requires a special lookup function since ghosts need a special sprite when scared. """
 
     state = typing.cast(pacai.pacman.gamestate.GameState, state)
     if ((marker is not None)
@@ -121,7 +105,7 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     }
     args = pacai.core.ui.init_from_args(args, additional_args = additional_ui_args)
 
-    # Parse pacman-specific options.
+    # Parse Pac-Man-specific options.
     base_agent_infos, remove_agent_indexes = init_from_args(args)
 
     # Parse game arguments.
@@ -131,7 +115,7 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     return args
 
 def _get_parser() -> argparse.ArgumentParser:
-    """ Get a parser with all the options set to handle PacMan. """
+    """ Get a parser with all the options set to handle Pac-Man. """
 
     parser = argparse.ArgumentParser(description = "Play a game of Pac-Man.")
 
@@ -144,13 +128,13 @@ def _get_parser() -> argparse.ArgumentParser:
     # Add game arguments.
     pacai.core.game.set_cli_args(parser, default_board = DEFAULT_BOARD)
 
-    # Add pacman-specific options.
+    # Add Pac-Man-specific options.
     set_cli_args(parser)
 
     return parser
 
 def main() -> int:
-    """ Invoke a game of PacMan. """
+    """ Invoke a game of Pac-Man. """
 
     args = _parse_args(_get_parser())
     return run(args)
