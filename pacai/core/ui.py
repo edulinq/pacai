@@ -22,7 +22,8 @@ DEFAULT_ANIMATION_SKIP_FRAMES: int = 1
 MIN_ANIMATION_FPS: int = 1
 DEFAULT_ANIMATION_OPTIMIZE: bool = False
 
-FONT_SIZE_OFFSET: int = -14
+FONT_SIZE_RATIO: float = 0.75
+SMALL_FONT_SIZE_RATIO: float = 0.25
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 DEFAULT_FONT_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'fonts', 'roboto', 'RobotoMono-Regular.ttf')
@@ -171,10 +172,10 @@ class UI(abc.ABC):
         self._animation_frames: list[PIL.Image.Image] = []
         """ The frames for the animation (one per call to update(). """
 
-        self._walls_image: PIL.Image.Image | None = None
+        self._static_base_image: PIL.Image.Image | None = None
         """
-        Cache an image that just has the walls drawn.
-        This can be reused as the base image every time we draw an image (since the walls do not change).
+        Cache an image that has all of the static (non-changing) elements (like walls) drawn.
+        This can be reused as the base image every time we draw an image.
         """
 
         self._sprite_lookup_func: SpriteLookup | None = sprite_lookup_func
@@ -183,15 +184,20 @@ class UI(abc.ABC):
         # Only load sprites (and fonts) if we need them.
         sprite_sheet = None
         font = None
+        small_font = None
         if (self.requires_sprites() or (self._animation_path is not None)):
             sprite_sheet = pacai.core.spritesheet.load(sprite_sheet_path)
-            font = PIL.ImageFont.truetype(font_path, sprite_sheet.height + FONT_SIZE_OFFSET)
+            font = PIL.ImageFont.truetype(font_path, int(sprite_sheet.height * FONT_SIZE_RATIO))
+            small_font = PIL.ImageFont.truetype(font_path, int(sprite_sheet.height * SMALL_FONT_SIZE_RATIO))
 
         self._sprite_sheet: pacai.core.spritesheet.SpriteSheet | None = sprite_sheet
         """ The sprite sheet to use for this UI. """
 
         self._font: PIL.ImageFont.FreeTypeFont | None = font
         """ The font to use for this UI. """
+
+        self._small_font: PIL.ImageFont.FreeTypeFont | None = small_font
+        """ The small font to use for this UI. """
 
         self._image_cache: dict[int, PIL.Image.Image] = {}
         """ Cache images (by game state turn count) to avoid redrawing images. """
@@ -344,28 +350,7 @@ class UI(abc.ABC):
         if (state.turn_count in self._image_cache):
             return self._image_cache[state.turn_count]
 
-        if (self._walls_image is None):
-            # Height is +1 to leave room for the score.
-            size = (
-                state.board.width * self._sprite_sheet.width,
-                (state.board.height + 1) * self._sprite_sheet.height,
-            )
-
-            # Add in an alpha channel to the background.
-            background_color = list(self._sprite_sheet.background)
-            background_color.append(255)
-
-            image = PIL.Image.new('RGB', size, tuple(background_color))
-
-            # Draw wall markers.
-            for position in state.board.get_walls():
-                adjacency = state.board.get_adjacent_walls(position)
-                sprite = self._get_sprite(state, marker = pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
-                self._place_sprite(position, sprite, image)
-
-            self._walls_image = image.copy()
-        else:
-            image = self._walls_image.copy()
+        image = self._get_static_image(state, **kwargs)
 
         canvas = PIL.ImageDraw.Draw(image)
 
@@ -384,6 +369,9 @@ class UI(abc.ABC):
             )
 
             canvas.rectangle([start_coord, end_coord], fill = tuple(highlight_color))
+
+        # Draw non-static text.
+        self._draw_position_text(state.board.get_nonstatic_text(), image)
 
         # Draw non-agent (non-wall) markers.
         for (marker, positions) in state.board._nonwall_objects.items():
@@ -416,6 +404,67 @@ class UI(abc.ABC):
         self._image_cache[state.turn_count] = image
 
         return image
+
+    def _get_static_image(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
+        """
+        Get the base image that only contains static objects.
+        This method will handle caching the base static image.
+        """
+
+        if (self._sprite_sheet is None):
+            raise ValueError("Cannot draw images without a sprite sheet.")
+
+        # Check the cache.
+        if (self._static_base_image is not None):
+            return self._static_base_image.copy()
+
+        # Height is +1 to leave room for the score.
+        size = (
+            state.board.width * self._sprite_sheet.width,
+            (state.board.height + 1) * self._sprite_sheet.height,
+        )
+
+        # Add in an alpha channel to the background.
+        background_color = list(self._sprite_sheet.background)
+        background_color.append(255)
+
+        image = PIL.Image.new('RGB', size, tuple(background_color))
+
+        # Draw wall markers.
+        for position in state.board.get_walls():
+            adjacency = state.board.get_adjacent_walls(position)
+            sprite = self._get_sprite(state, marker = pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
+            self._place_sprite(position, sprite, image)
+
+        # Draw static text.
+        self._draw_position_text(state.board.get_static_text(), image)
+
+        # Cache the image.
+        self._static_base_image = image.copy()
+
+        return image
+
+    def _draw_position_text(self, texts: dict[pacai.core.board.Position, str], image: PIL.Image.Image) -> None:
+        """ Draw text on a board position. """
+
+        if (len(texts) == 0):
+            return
+
+        if (self._sprite_sheet is None):
+            raise ValueError("Cannot draw images without a sprite sheet.")
+
+        if (self._small_font is None):
+            raise ValueError("Cannot draw position text without a font.")
+
+        canvas = PIL.ImageDraw.Draw(image)
+        for (position, text) in texts.items():
+            # Get the center of the position (since we will center the text).
+            (base_x, base_y) = self._position_to_image_coords(position)
+            x = base_x + (self._sprite_sheet.width / 2)
+            y = base_y + (self._sprite_sheet.height / 2)
+
+            canvas.text((x, y), text, self._sprite_sheet.text, self._small_font,
+                    anchor = 'mm', align = 'center')
 
     def _get_sprite(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
         """

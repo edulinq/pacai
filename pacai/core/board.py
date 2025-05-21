@@ -640,6 +640,16 @@ class Board(pacai.util.json.DictConverter):
 
         return grid
 
+    def get_static_text(self) -> dict[Position, str]:
+        """ Get any static text to display on board positions. """
+
+        return {}
+
+    def get_nonstatic_text(self) -> dict[Position, str]:
+        """ Get any non-static text to display on board positions. """
+
+        return {}
+
     def __str__(self) -> str:
         """ Get a rough string representation of the board. """
 
