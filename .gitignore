@@ -27,3 +27,4 @@ out*/
 *.gz
 /._site/
 *.zip
+*.xcf
