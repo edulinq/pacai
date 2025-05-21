@@ -278,7 +278,24 @@ class GameState(pacai.util.json.DictConverter):
         Stopping is generally always considered a legal action (unless a game re-defines this behavior).
         """
 
-        return [pacai.core.action.STOP]
+        if (self.agent_index == -1):
+            raise ValueError("Cannot get legal actions when no agent is active.")
+
+        # Stopping is generally safe.
+        actions = [pacai.core.action.STOP]
+
+        position = self.get_agent_position()
+
+        # If the agent is not on the board, it can only stop.
+        if (position is None):
+            return actions
+
+        # Get moves to adjacent positions.
+        neighbor_moves = self.board.get_neighbors(position)
+        for (action, position) in neighbor_moves:
+            actions.append(action)
+
+        return actions
 
 @typing.runtime_checkable
 class AgentStateEvaluationFunction(typing.Protocol):
