@@ -50,3 +50,6 @@ class Board(pacai.core.board.Board):
         self._terminal_values[position] = value
 
         return MARKER_TERMINAL
+
+    def get_static_text(self) -> dict[pacai.core.board.Position, str]:
+        return {position: str(value) for (position, value) in self._terminal_values.items()}
