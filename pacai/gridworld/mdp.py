@@ -1,0 +1,190 @@
+import typing
+
+import pacai.core.action
+import pacai.core.board
+import pacai.core.mdp
+import pacai.gridworld.board
+
+DEFAULT_LIVING_REWARD: float = 0.0
+
+TERMINAL_POSITION: pacai.core.board.Position = pacai.core.board.Position(-1, -1)
+""" A special (impossible) position representing the terminal state. """
+
+ACTION_EXIT: pacai.core.action.Action = pacai.core.action.Action('exit')
+""" A new action for exiting the MDP (used to reach the true terminal state). """
+
+class GridWorldMDPState(pacai.core.mdp.MDPState):
+    """ An MDP state for GridWorld. """
+
+    def __init__(self, position: pacai.core.board.Position) -> None:
+        self.position: pacai.core.board.Position = position
+        """ The current position of the GridWorld agent. """
+
+        self.is_terminal: bool = (position == TERMINAL_POSITION)
+        """ Whether or not this state is the terminal state. """
+
+class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
+    """ An MDP that represents the GridWorld game. """
+
+    def __init__(self,
+            game_state: pacai.core.gamestate.GameState,
+            start_position: pacai.core.board.Position | None = None,
+            living_reward: float = DEFAULT_LIVING_REWARD,
+            **kwargs) -> None:
+        super().__init__(**kwargs)
+
+        self.board: pacai.gridworld.board.Board = typing.cast(pacai.gridworld.board.Board, game_state.board)
+        """ The board this MDP is operating on. """
+
+        if (start_position is None):
+            start_position = game_state.get_agent_position()
+
+        if (start_position is None):
+            raise ValueError("Could not find starting position.")
+
+        self.start_position: pacai.core.board.Position = start_position
+        """ The position to start from. """
+
+        self.living_reward: float = living_reward
+        """ The reward for living for a time step (action). """
+
+    def get_starting_state(self) -> GridWorldMDPState:
+        return GridWorldMDPState(self.start_position)
+
+    def get_states(self) -> list[GridWorldMDPState]:
+        # Start with the terminal state.
+        states = [GridWorldMDPState(TERMINAL_POSITION)]
+
+        # Every non-wall is a possible state.
+        for row in range(self.board.height):
+            for col in range(self.board.width):
+                position = pacai.core.board.Position(row, col)
+                if (not self.board.is_wall(position)):
+                    states.append(GridWorldMDPState(position))
+
+        return states
+
+    def is_terminal_state(self, state: GridWorldMDPState) -> bool:
+        return state.is_terminal
+
+    def get_possible_actions(self, state: GridWorldMDPState) -> list[pacai.core.action.Action]:
+        """
+        There are special rules for actions in GridWorld.
+
+        If you are on the true terminal state, no actions should be returned.
+        If you are on a state that transitions to the true terminal state, you can exit.
+        Otherwise, you can try to move in all cardinal direction (even into walls).
+        STOP is not allowed.
+        """
+
+        # True terminal states have actions.
+        if (self.is_terminal_state(state)):
+            return []
+
+        # Positions with scores transition to the true terminal.
+        if (self.board.is_terminal_position(state.position)):
+            return [ACTION_EXIT]
+
+        # All other states can try moving in any cardinal direction.
+        return list(pacai.core.board.CARDINAL_OFFSETS.keys())
+
+    def get_transitions(self, state: GridWorldMDPState, action: pacai.core.action.Action) -> list[pacai.core.mdp.Transition]:
+        """
+        In GridWorld, you may not move in the direction you are intending.
+
+        You have a (1.0 - noise) chance of moving in the desired direction,
+        and a (noise / 2) chance of moving to the left or right of your intended direction.
+        You cannot move into a wall, but you can "bump" against a wall (causing you not to move).
+        """
+
+        possible_actions = self.get_possible_actions(state)
+        if (action not in possible_actions):
+            raise ValueError(f"Got an illegal action '{action}'. Available actions are: {possible_actions}.")
+
+        # True terminal states are done.
+        if (self.is_terminal_state(state)):
+            return []
+
+        # Positions with values will always transition to the true terminal state.
+        if (self.board.is_terminal_position(state.position)):
+            value = self.board.get_terminal_value(state.position)
+            return [pacai.core.mdp.Transition(GridWorldMDPState(TERMINAL_POSITION), 1.0, value)]
+
+        (north_state, east_state, south_state, west_state) = self._get_move_states(state)
+
+        transitions = []
+
+        if (action == pacai.core.action.NORTH):
+            transitions.append(pacai.core.mdp.Transition(north_state, (1.0 - self.noise), self._get_reward(north_state)))
+            transitions.append(pacai.core.mdp.Transition(east_state, (self.noise / 2.0), self._get_reward(east_state)))
+            transitions.append(pacai.core.mdp.Transition(west_state, (self.noise / 2.0), self._get_reward(west_state)))
+        elif (action == pacai.core.action.EAST):
+            transitions.append(pacai.core.mdp.Transition(east_state, (1.0 - self.noise), self._get_reward(east_state)))
+            transitions.append(pacai.core.mdp.Transition(north_state, (self.noise / 2.0), self._get_reward(north_state)))
+            transitions.append(pacai.core.mdp.Transition(south_state, (self.noise / 2.0), self._get_reward(south_state)))
+        elif (action == pacai.core.action.SOUTH):
+            transitions.append(pacai.core.mdp.Transition(south_state, (1.0 - self.noise), self._get_reward(south_state)))
+            transitions.append(pacai.core.mdp.Transition(east_state, (self.noise / 2.0), self._get_reward(east_state)))
+            transitions.append(pacai.core.mdp.Transition(west_state, (self.noise / 2.0), self._get_reward(west_state)))
+        elif (action == pacai.core.action.WEST):
+            transitions.append(pacai.core.mdp.Transition(west_state, (1.0 - self.noise), self._get_reward(west_state)))
+            transitions.append(pacai.core.mdp.Transition(north_state, (self.noise / 2.0), self._get_reward(north_state)))
+            transitions.append(pacai.core.mdp.Transition(south_state, (self.noise / 2.0), self._get_reward(south_state)))
+        else:
+            raise ValueError(f"Unknown action: '{action}'.")
+
+        # Because of bonking against walls, we may have multiple transitions pointing to the same state.
+        # Merge them and return the results.
+        return self._merge_transitions(transitions)
+
+    def _merge_transitions(self, transitions: list[pacai.core.mdp.Transition]) -> list[pacai.core.mdp.Transition]:
+        """ Merge transitions that are pointing to the same state together. """
+
+        merged: dict[GridWorldMDPState, pacai.core.mdp.Transition] = {}
+        for transition in transitions:
+            if (transition.state in merged):
+                merged[transition.state].update(transition)
+            else:
+                merged[transition.state] = transition
+
+        return list(merged.values())
+
+    def _get_reward(self, state: GridWorldMDPState) -> float:
+        if (self.board.is_terminal_position(state.position)):
+            return self.board.get_terminal_value(state.position)
+
+        return self.living_reward
+
+    def _get_move_states(self,
+            state: GridWorldMDPState,
+            ) -> tuple[GridWorldMDPState, GridWorldMDPState, GridWorldMDPState, GridWorldMDPState]:
+        """
+        Get the positions an agent could move to.
+        If a move would put the agent into a wall, they will "bonk" the wall and not move.
+
+        Positions are returned in NESW order.
+        """
+
+        states = []
+
+        # CARDINAL_OFFSETS is in NESW order.
+        for offset in pacai.core.board.CARDINAL_OFFSETS.values():
+            new_position = state.position.add(offset)
+
+            if (self.board.is_wall(new_position)):
+                states.append(state)
+            else:
+                states.append(GridWorldMDPState(new_position))
+
+        return tuple(states)  # type: ignore[return-value]
+
+    def to_dict(self) -> dict[str, typing.Any]:
+        data = super().to_dict()
+        data['board'] = self.board.to_dict()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        mdp = super().from_dict(data)
+        mdp.board = pacai.gridworld.board.Board.from_dict(data['board'])
+        return mdp
