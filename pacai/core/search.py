@@ -8,12 +8,12 @@ import typing
 
 import pacai.core.action
 import pacai.core.board
-import pacai.util.json
+import pacai.util.comparable
 
 class SolutionNotFoundError(Exception):
     """ An error for when a search problem solver cannot find a solution. """
 
-class SearchNode(abc.ABC):
+class SearchNode(abc.ABC, pacai.util.comparable.SimpleComparable):
     """
     A node or "state" in a search problem/tree.
     A search node represents one possible state of the problem.
@@ -21,55 +21,6 @@ class SearchNode(abc.ABC):
     It is common to refer to search nodes as "search states" or "states".
     To avoid confusion with game states, this project will use "node" when referencing search problems.
     """
-
-    def __eq__(self, other: object) -> bool:
-        """
-        Attempt to override the default Python `==` operator so nodes can be used in dicts and sets.
-        This will not work for all subclasses, see _to_json_string().
-        """
-
-        # Note the hard type check (done so we can keep this method general).
-        if (type(self) != type(other)):  # pylint: disable=unidiomatic-typecheck
-            return False
-
-        other = typing.cast(SearchNode, other)
-        return self._to_json_string() == other._to_json_string()
-
-    def __hash__(self) -> int:
-        """
-        Attempt to override the default Python hash function so nodes can be used in dicts and sets.
-        This will not work for all subclasses, see _to_json_string().
-        """
-
-        return hash(self._to_json_string())
-
-    def __lt__(self, other: object) -> bool:
-        """
-        Attempt to override the default Python `<` operator so nodes can be sorted.
-        This will not work for all subclasses, see _to_json_string().
-        """
-
-        # Note the hard type check (done so we can keep this method general).
-        if (type(self) != type(other)):  # pylint: disable=unidiomatic-typecheck
-            return False
-
-        other = typing.cast(SearchNode, other)
-        return self._to_json_string() > other._to_json_string()
-
-    def _to_json_string(self) -> str:
-        """
-        Attempt to convert this object into a JSON string.
-
-        This method will generally only be used by low-level methods that are trying their best to be general.
-        We want to target a string, because it has well-defined semantics for most builtin Python operations (like `==` and `<`).
-
-        The general nature of this method will come at the cost of performance (i.e., this will be relatively slow).
-        If a subclass has complex data that this method won't work on (or needs to speed things up),
-        then they should implement any method in this class that uses this method
-        (see comments for notes on who uses this method).
-        """
-
-        return pacai.util.json.dumps(self)
 
 NodeType = typing.TypeVar('NodeType', bound = SearchNode)  # pylint: disable=invalid-name
 
