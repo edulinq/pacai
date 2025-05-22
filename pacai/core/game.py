@@ -77,7 +77,7 @@ class GameResult(pacai.util.json.DictConverter):
     def __init__(self,
             game_id: int,
             game_info: GameInfo,
-            score: int = 0,
+            score: float = 0,
             game_timeout: bool = False,
             timeout_agent_indexes: list[int] | None = None,
             crash_agent_indexes: list[int] | None = None,
@@ -107,7 +107,7 @@ class GameResult(pacai.util.json.DictConverter):
         self.history: list[pacai.core.agentaction.AgentActionRecord] = history
         """ The history of actions taken by each agent in this game. """
 
-        self.score: int = score
+        self.score: float = score
         """ The score of the game. """
 
         self.game_timeout: bool = game_timeout
@@ -202,6 +202,7 @@ class Game(abc.ABC):
             state: pacai.core.gamestate.GameState,
             action_record: pacai.core.agentaction.AgentActionRecord,
             result: GameResult,
+            rng: random.Random,
             ) -> pacai.core.gamestate.GameState:
         """
         Process the given agent action and return an updated game state.
@@ -218,7 +219,7 @@ class Game(abc.ABC):
         if (action not in state.get_legal_actions()):
             raise ValueError(f"Illegal action for agent {action_record.agent_index}: '{action}'.")
 
-        state.process_turn_full(action)
+        state.process_turn_full(action, rng)
         return state
 
     def check_end(self, state: pacai.core.gamestate.GameState) -> bool:
@@ -295,7 +296,7 @@ class Game(abc.ABC):
                 agent_user_inputs[state.agent_index] = []
 
             # Execute the next action and update the state.
-            state = self.process_turn(state, action_record, result)
+            state = self.process_turn(state, action_record, result, rng)
 
             # Update the UI.
             ui.update(state, board_highlights = action_record.get_board_highlights())

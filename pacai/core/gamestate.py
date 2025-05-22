@@ -1,4 +1,5 @@
 import copy
+import random
 import typing
 
 import pacai.core.action
@@ -22,7 +23,7 @@ class GameState(pacai.util.json.DictConverter):
             agent_index: int = -1,
             game_over: bool = False,
             last_actions: dict[int, pacai.core.action.Action] | None = None,
-            score: int = 0,
+            score: float = 0,
             turn_count: int = 0,
             move_delays: dict[int, int] | None = None,
             tickets: dict[int, pacai.core.ticket.Ticket] | None = None,
@@ -58,7 +59,7 @@ class GameState(pacai.util.json.DictConverter):
         self.last_actions: dict[int, pacai.core.action.Action] = last_actions
         """ Keep track of the last action that each agent made. """
 
-        self.score: int = score
+        self.score: float = score
         """ The current score of the game. """
 
         self.turn_count: int = turn_count
@@ -178,14 +179,16 @@ class GameState(pacai.util.json.DictConverter):
 
         return action.get_reverse_direction()
 
-    def generate_successor(self, action: pacai.core.action.Action) -> 'GameState':
+    def generate_successor(self,
+            action: pacai.core.action.Action,
+            rng: random.Random | None = None) -> 'GameState':
         """
         Create a new deep copy of this state that represents the current agent taking the given action.
         To just apply an action to the current state, use process_turn().
         """
 
         successor = self.copy()
-        successor.process_turn_full(action)
+        successor.process_turn_full(action, rng)
 
         return successor
 
@@ -205,14 +208,14 @@ class GameState(pacai.util.json.DictConverter):
 
         self.game_over = True
 
-    def process_turn(self, action: pacai.core.action.Action) -> None:
+    def process_turn(self, action: pacai.core.action.Action, rng: random.Random | None = None) -> None:
         """
         Process the current agent's turn with the given action.
         This may modify the current state.
         To get a copy of a potential successor state, use generate_successor().
         """
 
-    def process_turn_full(self, action: pacai.core.action.Action) -> None:
+    def process_turn_full(self, action: pacai.core.action.Action, rng: random.Random | None = None) -> None:
         """
         Process the current agent's turn with the given action.
         This will modify the current state.
@@ -223,7 +226,7 @@ class GameState(pacai.util.json.DictConverter):
         To get a copy of a potential successor state, use generate_successor().
         """
 
-        self.process_turn(action)
+        self.process_turn(action, rng)
 
         # Track this last action.
         self.last_actions[self.agent_index] = action

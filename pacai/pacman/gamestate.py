@@ -1,3 +1,4 @@
+import random
 import typing
 
 import pacai.core.action
@@ -129,8 +130,11 @@ class GameState(pacai.core.gamestate.GameState):
 
         return ghost_indexes
 
-    def process_turn(self, action: pacai.core.action.Action) -> None:
-        # Do actions specific to pacman/ghosts.
+    def process_turn(self,
+            action: pacai.core.action.Action,
+            rng: random.Random | None = None,
+            ) -> None:
+        # Do actions specific to Pac-Man or ghosts.
         if (self.agent_index == PACMAN_AGENT_INDEX):
             self._process_pacman_turn(action)
         else:
@@ -138,7 +142,7 @@ class GameState(pacai.core.gamestate.GameState):
 
     def _process_pacman_turn(self, action: pacai.core.action.Action) -> None:
         """
-        Process pacman-specific interactions for a turn.
+        Process Pac-Man-specific interactions for a turn.
         """
 
         agent_marker = pacai.core.board.Marker(str(self.agent_index))

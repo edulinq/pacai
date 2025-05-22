@@ -26,11 +26,15 @@ class Transition(typing.Generic[StateType]):
 
     def __init__(self,
             state: StateType,
+            action: pacai.core.action.Action,
             probability: float,
             reward: float,
             **kwargs) -> None:
         self.state = state
         """ The MDP state reached by this transition. """
+
+        self.action = action
+        """ The action taken to reach the given state. """
 
         self.probability = probability
         """ The probability that this transition will be taken. """

@@ -108,28 +108,28 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         # Positions with values will always transition to the true terminal state.
         if (self.board.is_terminal_position(state.position)):
             value = self.board.get_terminal_value(state.position)
-            return [pacai.core.mdp.Transition(GridWorldMDPState(TERMINAL_POSITION), 1.0, value)]
+            return [pacai.core.mdp.Transition(GridWorldMDPState(TERMINAL_POSITION), ACTION_EXIT, 1.0, value)]
 
         (north_state, east_state, south_state, west_state) = self._get_move_states(state)
 
         transitions = []
 
         if (action == pacai.core.action.NORTH):
-            transitions.append(pacai.core.mdp.Transition(north_state, (1.0 - self.noise), self._get_reward(north_state)))
-            transitions.append(pacai.core.mdp.Transition(east_state, (self.noise / 2.0), self._get_reward(east_state)))
-            transitions.append(pacai.core.mdp.Transition(west_state, (self.noise / 2.0), self._get_reward(west_state)))
+            transitions.append(pacai.core.mdp.Transition(north_state, pacai.core.action.NORTH, (1.0 - self.noise), self._get_reward(north_state)))
+            transitions.append(pacai.core.mdp.Transition(east_state, pacai.core.action.EAST, (self.noise / 2.0), self._get_reward(east_state)))
+            transitions.append(pacai.core.mdp.Transition(west_state, pacai.core.action.WEST, (self.noise / 2.0), self._get_reward(west_state)))
         elif (action == pacai.core.action.EAST):
-            transitions.append(pacai.core.mdp.Transition(east_state, (1.0 - self.noise), self._get_reward(east_state)))
-            transitions.append(pacai.core.mdp.Transition(north_state, (self.noise / 2.0), self._get_reward(north_state)))
-            transitions.append(pacai.core.mdp.Transition(south_state, (self.noise / 2.0), self._get_reward(south_state)))
+            transitions.append(pacai.core.mdp.Transition(east_state, pacai.core.action.EAST, (1.0 - self.noise), self._get_reward(east_state)))
+            transitions.append(pacai.core.mdp.Transition(north_state, pacai.core.action.NORTH, (self.noise / 2.0), self._get_reward(north_state)))
+            transitions.append(pacai.core.mdp.Transition(south_state, pacai.core.action.SOUTH, (self.noise / 2.0), self._get_reward(south_state)))
         elif (action == pacai.core.action.SOUTH):
-            transitions.append(pacai.core.mdp.Transition(south_state, (1.0 - self.noise), self._get_reward(south_state)))
-            transitions.append(pacai.core.mdp.Transition(east_state, (self.noise / 2.0), self._get_reward(east_state)))
-            transitions.append(pacai.core.mdp.Transition(west_state, (self.noise / 2.0), self._get_reward(west_state)))
+            transitions.append(pacai.core.mdp.Transition(south_state, pacai.core.action.SOUTH, (1.0 - self.noise), self._get_reward(south_state)))
+            transitions.append(pacai.core.mdp.Transition(east_state, pacai.core.action.EAST, (self.noise / 2.0), self._get_reward(east_state)))
+            transitions.append(pacai.core.mdp.Transition(west_state, pacai.core.action.WEST, (self.noise / 2.0), self._get_reward(west_state)))
         elif (action == pacai.core.action.WEST):
-            transitions.append(pacai.core.mdp.Transition(west_state, (1.0 - self.noise), self._get_reward(west_state)))
-            transitions.append(pacai.core.mdp.Transition(north_state, (self.noise / 2.0), self._get_reward(north_state)))
-            transitions.append(pacai.core.mdp.Transition(south_state, (self.noise / 2.0), self._get_reward(south_state)))
+            transitions.append(pacai.core.mdp.Transition(west_state, pacai.core.action.WEST, (1.0 - self.noise), self._get_reward(west_state)))
+            transitions.append(pacai.core.mdp.Transition(north_state, pacai.core.action.NORTH, (self.noise / 2.0), self._get_reward(north_state)))
+            transitions.append(pacai.core.mdp.Transition(south_state, pacai.core.action.SOUTH, (self.noise / 2.0), self._get_reward(south_state)))
         else:
             raise ValueError(f"Unknown action: '{action}'.")
 

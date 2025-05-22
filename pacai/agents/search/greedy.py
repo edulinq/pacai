@@ -36,7 +36,7 @@ class GreedySubproblemSearchAgent(pacai.agents.search.problem.SearchProblemAgent
 
             # Move to the next state by applying all the actions.
             for action in solution.actions:
-                state = state.generate_successor(action)
+                state = state.generate_successor(action, self._rng)
 
         solution = pacai.core.search.SearchSolution(actions, total_cost, goal_node)
         return (solution, total_position_history, total_expanded_node_count)

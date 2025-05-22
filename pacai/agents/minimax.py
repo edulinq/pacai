@@ -159,7 +159,7 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
         action = self._rng.choice(legal_actions)
 
         # Score the action.
-        successor = state.generate_successor(action)
+        successor = state.generate_successor(action, self._rng)
         _, score = self.minimax_step(successor, ply_count, alpha, beta)
 
         return [action], score
@@ -188,7 +188,7 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
         action = self._rng.choice(legal_actions)
 
         # Score the action.
-        successor = state.generate_successor(action)
+        successor = state.generate_successor(action, self._rng)
         _, score = self.minimax_step(successor, ply_count, alpha, beta)
 
         return [action], score
@@ -218,7 +218,7 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
         action = self._rng.choice(legal_actions)
 
         # Score the action.
-        successor = state.generate_successor(action)
+        successor = state.generate_successor(action, self._rng)
         _, score = self.minimax_step(successor, ply_count, alpha, beta)
 
         return score
