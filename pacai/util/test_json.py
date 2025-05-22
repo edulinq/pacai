@@ -143,10 +143,7 @@ class JSONTest(pacai.test.base.BaseTest):
             (
                 pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
-                    "position": {
-                        "row": 1,
-                        "col": 2,
-                    },
+                    "position": {"row": 1, "col": 2},
                     "intensity": 1,
                 },
                 None,
@@ -154,10 +151,7 @@ class JSONTest(pacai.test.base.BaseTest):
             (
                 pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 0.5),
                 {
-                    "position": {
-                        "row": 1,
-                        "col": 2,
-                    },
+                    "position": {"row": 1, "col": 2},
                     "intensity": 500,
                 },
                 None,
@@ -165,10 +159,7 @@ class JSONTest(pacai.test.base.BaseTest):
             (
                 pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), None),
                 {
-                    "position": {
-                        "row": 1,
-                        "col": 2,
-                    },
+                    "position": {"row": 1, "col": 2},
                     "intensity": None,
                 },
                 None,
@@ -176,10 +167,7 @@ class JSONTest(pacai.test.base.BaseTest):
             (
                 pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
-                    "position": {
-                        "row": 1,
-                        "col": 2,
-                    },
+                    "position": {"row": 1, "col": 2},
                     "intensity": -1,
                 },
                 'Integer highlight intensity must be in',
@@ -187,10 +175,7 @@ class JSONTest(pacai.test.base.BaseTest):
             (
                 pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
-                    "position": {
-                        "row": 1,
-                        "col": 2,
-                    },
+                    "position": {"row": 1, "col": 2},
                     "intensity": 10000000,
                 },
                 'Integer highlight intensity must be in',
@@ -198,10 +183,7 @@ class JSONTest(pacai.test.base.BaseTest):
             (
                 pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
-                    "position": {
-                        "row": 1,
-                        "col": 2,
-                    },
+                    "position": {"row": 1, "col": 2},
                     "intensity": -0.1,
                 },
                 'Floating point highlight intensity must be in',
@@ -209,10 +191,7 @@ class JSONTest(pacai.test.base.BaseTest):
             (
                 pacai.core.board.Highlight(pacai.core.board.Position(row = 1, col = 2), 1),
                 {
-                    "position": {
-                        "row": 1,
-                        "col": 2,
-                    },
+                    "position": {"row": 1, "col": 2},
                     "intensity": 1.1,
                 },
                 'Floating point highlight intensity must be in',
@@ -242,17 +221,11 @@ class JSONTest(pacai.test.base.BaseTest):
                     "action": "STOP",
                     "board_highlights": [
                         {
-                            "position": {
-                                "row": 1,
-                                "col": 2,
-                            },
+                            "position": {"row": 1, "col": 2},
                             "intensity": 0,
                         },
                         {
-                            "position": {
-                                "row": 3,
-                                "col": 4,
-                            },
+                            "position": {"row": 3, "col": 4},
                             "intensity": 1,
                         }
                     ],
@@ -320,17 +293,11 @@ class JSONTest(pacai.test.base.BaseTest):
                         "action": "STOP",
                         "board_highlights": [
                             {
-                                "position": {
-                                    "row": 1,
-                                    "col": 2,
-                                },
+                                "position": {"row": 1, "col": 2},
                                 "intensity": 0,
                             },
                             {
-                                "position": {
-                                    "row": 3,
-                                    "col": 4,
-                                },
+                                "position": {"row": 3, "col": 4},
                                 "intensity": 1,
                             }
                         ],
@@ -492,10 +459,7 @@ class JSONTest(pacai.test.base.BaseTest):
 
             (
                 pacai.core.board.Position(1, 2),
-                {
-                    "row": 1,
-                    "col": 2,
-                },
+                {"row": 1, "col": 2},
                 None
             ),
 
@@ -666,6 +630,75 @@ class JSONTest(pacai.test.base.BaseTest):
                     "turn_count": 0,
                     "food_count": 0,
                     "scared_timers": {},
+                },
+                None,
+            ),
+
+            (
+                pacai.core.board.load_path('gridworld-book'),
+                {
+                    "_agent_initial_positions": {
+                        "0": {"row": 3, "col": 1}
+                    },
+                    "_nonwall_objects": {
+                        "0": [
+                            {"row": 3, "col": 1},
+                        ],
+                        "T": [
+                            {"row": 1, "col": 4},
+                            {"row": 2, "col": 4},
+                        ]
+                    },
+                    "_terminal_values": [
+                        (
+                            {"row": 1, "col": 4},
+                            1
+                        ),
+                        (
+                            {"row": 2, "col": 4},
+                            -1
+                        )
+                    ],
+                    "_walls": [
+                        {"row": 0, "col": 0},
+                        {"row": 0, "col": 1},
+                        {"row": 0, "col": 2},
+                        {"row": 0, "col": 3},
+                        {"row": 0, "col": 4},
+                        {"row": 0, "col": 5},
+                        {"row": 1, "col": 0},
+                        {"row": 1, "col": 5},
+                        {"row": 2, "col": 0},
+                        {"row": 2, "col": 2},
+                        {"row": 2, "col": 5},
+                        {"row": 3, "col": 0},
+                        {"row": 3, "col": 5},
+                        {"row": 4, "col": 0},
+                        {"row": 4, "col": 1},
+                        {"row": 4, "col": 2},
+                        {"row": 4, "col": 3},
+                        {"row": 4, "col": 4},
+                        {"row": 4, "col": 5},
+                    ],
+                    "height": 6,
+                    "markers": {
+                        " ": " ",
+                        "%": "%",
+                        "0": "0",
+                        "1": "1",
+                        "2": "2",
+                        "3": "3",
+                        "4": "4",
+                        "5": "5",
+                        "6": "6",
+                        "7": "7",
+                        "8": "8",
+                        "9": "9",
+                        "T": "T"
+                    },
+                    "search_target": None,
+                    "source": "gridworld-book",
+                    "width": 6
                 },
                 None,
             ),
