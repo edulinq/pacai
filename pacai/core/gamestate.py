@@ -154,7 +154,7 @@ class GameState(pacai.util.json.DictConverter):
         if (agent_index is None):
             agent_index = self.agent_index
 
-        if (self.agent_index < 0):
+        if (agent_index < 0):
             raise ValueError("No agent is active, cannot get position.")
 
         return self.board.get_agent_position(agent_index)

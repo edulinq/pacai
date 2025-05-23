@@ -71,35 +71,33 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         """
         There are special rules for actions in GridWorld.
 
-        If you are on the true terminal state, no actions should be returned.
+        If you are on the true terminal state, [STOP] should be returned.
         If you are on a state that transitions to the true terminal state, you can exit.
-        Otherwise, you can try to move in all cardinal direction (even into walls).
-        STOP is not allowed.
+        Otherwise, you can try to move in all cardinal direction (even into walls),
+        or just stop (stay still).
         """
 
-        # True terminal states have actions.
+        # True terminal states can only stop.
         if (self.is_terminal_state(state)):
-            return []
+            return [pacai.core.action.STOP]
 
         # Positions with scores transition to the true terminal.
         if (self.board.is_terminal_position(state.position)):
             return [ACTION_EXIT]
 
         # All other states can try moving in any cardinal direction.
-        return list(pacai.core.board.CARDINAL_OFFSETS.keys())
+        return [pacai.core.action.STOP] + list(pacai.core.board.CARDINAL_OFFSETS.keys())
 
     def get_transitions(self, state: GridWorldMDPState, action: pacai.core.action.Action) -> list[pacai.core.mdp.Transition]:
         """
         In GridWorld, you may not move in the direction you are intending.
 
+        Agents that are stopped (taking the STOP action) will not move or gain any rewards.
+
         You have a (1.0 - noise) chance of moving in the desired direction,
         and a (noise / 2) chance of moving to the left or right of your intended direction.
         You cannot move into a wall, but you can "bump" against a wall (causing you not to move).
         """
-
-        possible_actions = self.get_possible_actions(state)
-        if (action not in possible_actions):
-            raise ValueError(f"Got an illegal action '{action}'. Available actions are: {possible_actions}.")
 
         # True terminal states are done.
         if (self.is_terminal_state(state)):
@@ -107,8 +105,15 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
 
         # Positions with values will always transition to the true terminal state.
         if (self.board.is_terminal_position(state.position)):
-            value = self.board.get_terminal_value(state.position)
-            return [pacai.core.mdp.Transition(GridWorldMDPState(TERMINAL_POSITION), ACTION_EXIT, 1.0, value)]
+            return [pacai.core.mdp.Transition(GridWorldMDPState(TERMINAL_POSITION), ACTION_EXIT, 1.0, 0.0)]
+
+        possible_actions = self.get_possible_actions(state)
+        if (action not in possible_actions):
+            raise ValueError(f"Got an illegal action '{action}'. Available actions are: {possible_actions}.")
+
+        # Stopped agents always just sit there.
+        if (action == pacai.core.action.STOP):
+            return [pacai.core.mdp.Transition(state, action, 1.0, 0.0)]
 
         (north_state, east_state, south_state, west_state) = self._get_move_states(state)
 

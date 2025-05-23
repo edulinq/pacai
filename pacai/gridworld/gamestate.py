@@ -18,26 +18,18 @@ AGENT_MARKER: pacai.core.board.Marker = pacai.core.board.MARKER_AGENT_0
 class GameState(pacai.core.gamestate.GameState):
     """ A game state specific to a standard GridWorld game. """
 
-    # TEST - Necessary?
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
+        self._win: bool = False
+        """ Keep track if the agent exited the game on a winning state. """
+
     def game_complete(self) -> list[int]:
-        # If we are on a positive terminal position, we win.
+        # If the agent exited on a positive terminal position, they win.
+        if (self._win):
+            return [AGENT_INDEX]
 
-        position = self.get_agent_position()
-        if (position is None):
-            raise ValueError("GridWorld agent was removed from board.")
-
-        board = typing.cast(pacai.gridworld.board.Board, self.board)
-
-        if (not board.is_terminal_position(position)):
-            return []
-
-        if (board.get_terminal_value(position) <= 0):
-            return []
-
-        return [self.agent_index]
+        return []
 
     def process_turn(self,
             action: pacai.core.action.Action,
@@ -51,6 +43,11 @@ class GameState(pacai.core.gamestate.GameState):
         # Get the possible transitions from the MDP.
         transitions = mdp.get_transitions(mdp.get_starting_state(), action)
 
+        # If there are no transitions, the game is over.
+        if (len(transitions) == 0):
+            self.game_over = True
+            return
+
         # Choose a transition.
         transition = self._choose_transition(transitions, rng)
 
@@ -58,7 +55,7 @@ class GameState(pacai.core.gamestate.GameState):
 
         self.score += transition.reward
 
-        old_position = self.get_agent_position()
+        old_position = self.get_agent_position(AGENT_INDEX)
         if (old_position is None):
             raise ValueError("GridWorld agent was removed from board.")
 
@@ -68,10 +65,10 @@ class GameState(pacai.core.gamestate.GameState):
             self.board.remove_marker(AGENT_MARKER, old_position)
             self.board.place_marker(AGENT_MARKER, new_position)
 
-        self.game_over = mdp.is_terminal_state(transition.state)
+        if (transition.state.is_terminal and (transition.reward > 0)):
+            self._win = True
 
-        logging.debug("Requested Action: '%s', Actual Action: '%s', Reward: %0.2f, Terminal: %s.",
-                action, transition.action, transition.reward, self.game_over)
+        logging.debug("Requested Action: '%s', Actual Action: '%s', Reward: %0.2f.", action, transition.action, transition.reward)
 
     def _choose_transition(self,
             transitions: list[pacai.core.mdp.Transition],
@@ -88,3 +85,14 @@ class GameState(pacai.core.gamestate.GameState):
                 return transition
 
         raise ValueError(f"Transition probabilities is less than 1.0, found {probability_sum}.")
+
+    def to_dict(self) -> dict[str, typing.Any]:
+        data = super().to_dict()
+        data['_win'] = self._win
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        game_state = super().from_dict(data)
+        game_state._win = data['_win']
+        return game_state
