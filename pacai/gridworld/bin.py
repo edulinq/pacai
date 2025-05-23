@@ -82,7 +82,7 @@ def init_from_args(args: argparse.Namespace) -> dict[int, pacai.core.agentinfo.A
     """
 
     base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {
-        pacai.gridworld.gamestate.AGENT_INDEX: pacai.core.agentinfo.AgentInfo(name = args.agent),
+        pacai.gridworld.gamestate.AGENT_INDEX: pacai.core.agentinfo.AgentInfo(name = args.agent, remember_last_action = False),
     }
 
     return base_agent_infos

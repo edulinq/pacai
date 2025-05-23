@@ -8,6 +8,16 @@ class UserInputAgent(pacai.core.agent.Agent):
     An agent that makes moves based on input from a user.
     """
 
+    def __init__(self,
+            remember_last_action: bool = True,
+            **kwargs) -> None:
+        super().__init__(**kwargs)
+
+        self._remember_last_action: bool = remember_last_action
+        """
+        If no valid user action was provided, keep using the most recent valid action instead of just stopping.
+        """
+
     def get_action_full(self,
             state: pacai.core.gamestate.GameState,
             user_inputs: list[pacai.core.action.Action],
@@ -32,7 +42,7 @@ class UserInputAgent(pacai.core.agent.Agent):
                 used_user_input = False
 
         # If we got no legal input from the user, then assume the last action.
-        if (intended_action is None):
+        if (self._remember_last_action and (intended_action is None)):
             intended_action = state.get_agent_last_action()
             used_user_input = False
 
