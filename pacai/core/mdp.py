@@ -10,8 +10,6 @@ import pacai.core.action
 import pacai.util.comparable
 import pacai.util.json
 
-DEFAULT_NOISE: float = 0.2
-
 class MDPState(abc.ABC, pacai.util.comparable.SimpleComparable):
     """
     A state or "node" in an MDP.
@@ -62,12 +60,6 @@ class MarkovDecisionProcess(typing.Generic[StateType], pacai.util.json.DictConve
 
     See: https://en.wikipedia.org/wiki/Markov_decision_process .
     """
-
-    def __init__(self,
-            noise: float = DEFAULT_NOISE,
-            **kwargs) -> None:
-        self.noise = noise
-        """ How often actions result in unintended consequences. """
 
     @abc.abstractmethod
     def get_starting_state(self) -> StateType:

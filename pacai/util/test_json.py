@@ -102,6 +102,7 @@ class JSONTest(pacai.test.base.BaseTest):
                             "extra_arguments": {}
                         }
                     },
+                    "extra_info": {},
                     "isolation_level": "none",
                     "max_turns": -1
                 },
@@ -134,6 +135,7 @@ class JSONTest(pacai.test.base.BaseTest):
                             "extra_arguments": {}
                         }
                     },
+                    "extra_info": {},
                     "isolation_level": "process",
                     "max_turns": 4
                 },
@@ -343,6 +345,7 @@ class JSONTest(pacai.test.base.BaseTest):
                                 "extra_arguments": {}
                             }
                         },
+                        "extra_info": {},
                         "isolation_level": "none",
                         "max_turns": -1,
                     },
@@ -404,6 +407,7 @@ class JSONTest(pacai.test.base.BaseTest):
                                 "extra_arguments": {}
                             }
                         },
+                        "extra_info": {},
                         "isolation_level": "process",
                         "max_turns": 4,
                     },
@@ -680,7 +684,7 @@ class JSONTest(pacai.test.base.BaseTest):
                         {"row": 4, "col": 4},
                         {"row": 4, "col": 5},
                     ],
-                    "height": 6,
+                    "height": 5,
                     "markers": {
                         " ": " ",
                         "%": "%",

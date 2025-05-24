@@ -181,14 +181,15 @@ class GameState(pacai.util.json.DictConverter):
 
     def generate_successor(self,
             action: pacai.core.action.Action,
-            rng: random.Random | None = None) -> 'GameState':
+            rng: random.Random | None = None,
+            **kwargs) -> 'GameState':
         """
         Create a new deep copy of this state that represents the current agent taking the given action.
         To just apply an action to the current state, use process_turn().
         """
 
         successor = self.copy()
-        successor.process_turn_full(action, rng)
+        successor.process_turn_full(action, rng, **kwargs)
 
         return successor
 
@@ -208,14 +209,20 @@ class GameState(pacai.util.json.DictConverter):
 
         self.game_over = True
 
-    def process_turn(self, action: pacai.core.action.Action, rng: random.Random | None = None) -> None:
+    def process_turn(self,
+            action: pacai.core.action.Action,
+            rng: random.Random | None = None,
+            **kwargs) -> None:
         """
         Process the current agent's turn with the given action.
         This may modify the current state.
         To get a copy of a potential successor state, use generate_successor().
         """
 
-    def process_turn_full(self, action: pacai.core.action.Action, rng: random.Random | None = None) -> None:
+    def process_turn_full(self,
+            action: pacai.core.action.Action,
+            rng: random.Random | None = None,
+            **kwargs) -> None:
         """
         Process the current agent's turn with the given action.
         This will modify the current state.
@@ -226,7 +233,7 @@ class GameState(pacai.util.json.DictConverter):
         To get a copy of a potential successor state, use generate_successor().
         """
 
-        self.process_turn(action, rng)
+        self.process_turn(action, rng, **kwargs)
 
         # Track this last action.
         self.last_actions[self.agent_index] = action

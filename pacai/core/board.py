@@ -736,7 +736,6 @@ class Board(pacai.util.json.DictConverter):
 
         lines = board_text.split("\n")
 
-        height: int = len(lines)
         width: int = -1
         all_objects: dict[Marker, set[Position]] = {}
         agents: dict[Marker, Position] = {}
@@ -785,6 +784,8 @@ class Board(pacai.util.json.DictConverter):
         if (width <= 0):
             raise ValueError("A board must have at least one column.")
 
+        height: int = len(lines) - row_skip_count
+
         return height, width, all_objects, agents
 
     def _split_line(self, line: str) -> list[str]:
@@ -803,7 +804,7 @@ class Board(pacai.util.json.DictConverter):
 
         return self._markers.get(text, None)
 
-def load_path(path: str) -> Board:
+def load_path(path: str, **kwargs) -> Board:
     """
     Load a board from a file.
     If the given path does not exist,
@@ -824,9 +825,9 @@ def load_path(path: str) -> Board:
         raise ValueError(f"Could not find board, path does not exist: '{raw_path}'.")
 
     text = pacai.util.file.read(path, strip = False)
-    return load_string(raw_path, text)
+    return load_string(raw_path, text, **kwargs)
 
-def load_string(source: str, text: str) -> Board:
+def load_string(source: str, text: str, **kwargs) -> Board:
     """ Load a board from a string. """
 
     separator_index = -1
@@ -850,6 +851,8 @@ def load_string(source: str, text: str) -> Board:
         options = {}
     else:
         options = pacai.util.json.loads(options_text)
+
+    options.update(kwargs)
 
     board_class = options.get('class', DEFAULT_BOARD_CLASS)
     return pacai.util.reflection.new_object(board_class, source, board_text, **options)

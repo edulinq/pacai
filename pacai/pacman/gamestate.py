@@ -133,7 +133,7 @@ class GameState(pacai.core.gamestate.GameState):
     def process_turn(self,
             action: pacai.core.action.Action,
             rng: random.Random | None = None,
-            ) -> None:
+            **kwargs) -> None:
         # Do actions specific to Pac-Man or ghosts.
         if (self.agent_index == PACMAN_AGENT_INDEX):
             self._process_pacman_turn(action)

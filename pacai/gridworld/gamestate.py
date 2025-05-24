@@ -13,8 +13,6 @@ AGENT_INDEX: int = 0
 AGENT_MARKER: pacai.core.board.Marker = pacai.core.board.MARKER_AGENT_0
 """ The fixed marker of the only agent. """
 
-# TODO(eriq) - Arguments (e.g. living reward, noise, etc)
-
 class GameState(pacai.core.gamestate.GameState):
     """ A game state specific to a standard GridWorld game. """
 
@@ -33,12 +31,15 @@ class GameState(pacai.core.gamestate.GameState):
 
     def process_turn(self,
             action: pacai.core.action.Action,
-            rng: random.Random | None = None) -> None:
+            rng: random.Random | None = None,
+            mdp: pacai.gridworld.mdp.GridWorldMDP | None = None,
+            **kwargs) -> None:
         if (rng is None):
             logging.warning("No RNG passed to pacai.gridworld.gamestate.GameState.process_turn().")
             rng = random.Random()
 
-        mdp = pacai.gridworld.mdp.GridWorldMDP(self)
+        if (mdp is None):
+            raise ValueError("No MDP passed to pacai.gridworld.gamestate.GameState.process_turn().")
 
         # Get the possible transitions from the MDP.
         transitions = mdp.get_transitions(mdp.get_starting_state(), action)

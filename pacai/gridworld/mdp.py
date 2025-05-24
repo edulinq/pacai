@@ -5,6 +5,7 @@ import pacai.core.board
 import pacai.core.mdp
 import pacai.gridworld.board
 
+DEFAULT_NOISE: float = 0.2
 DEFAULT_LIVING_REWARD: float = 0.0
 
 TERMINAL_POSITION: pacai.core.board.Position = pacai.core.board.Position(-1, -1)
@@ -29,6 +30,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
     def __init__(self,
             game_state: pacai.core.gamestate.GameState,
             start_position: pacai.core.board.Position | None = None,
+            noise: float = DEFAULT_NOISE,
             living_reward: float = DEFAULT_LIVING_REWARD,
             **kwargs) -> None:
         super().__init__(**kwargs)
@@ -44,6 +46,9 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
 
         self.start_position: pacai.core.board.Position = start_position
         """ The position to start from. """
+
+        self.noise = noise
+        """ How often actions result in unintended consequences. """
 
         self.living_reward: float = living_reward
         """ The reward for living for a time step (action). """

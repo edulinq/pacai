@@ -10,6 +10,7 @@ import pacai.core.log
 import pacai.core.ui
 import pacai.gridworld.game
 import pacai.gridworld.gamestate
+import pacai.gridworld.mdp
 import pacai.util.bin
 import pacai.util.alias
 
@@ -20,7 +21,6 @@ DEFAULT_EPSILON: float = 0.3
 DEFAULT_ITERATIONS: int = 10
 DEFAULT_EPISODES: int = 1
 DEFAULT_LEARNING_RATE: float = 0.5
-DEFAULT_NOISE: float = 0.2
 DEFAULT_LIVING_REWARD: float = 0.0
 DEFAULT_DISCOUNT: float = 0.9
 
@@ -59,7 +59,7 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
             help = 'The Learning rate (default %(default)s).')
 
     parser.add_argument('--noise', dest = 'noise',
-            action = 'store', type = float, default = DEFAULT_NOISE,
+            action = 'store', type = float, default = pacai.gridworld.mdp.DEFAULT_NOISE,
             help = 'How often actions result in unintended directions (default %(default)s).')
 
     parser.add_argument('--living-reward', dest = 'living_reward',
@@ -67,13 +67,17 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
             help = 'The Reward for living for a time step (default %(default)s).')
 
     # TEST - Replace with logging/debug?
-    parser.add_argument('-v', '--value-steps', dest = 'value_steps',
+    parser.add_argument('--value-steps', dest = 'value_steps',
             action = 'store_true', default = False,
             help = 'Display each step of value iteration (default %(default)s).')
 
-    parser.add_argument('-y', '--discount', dest = 'discount',
+    parser.add_argument('--discount', dest = 'discount',
             action = 'store', type = float, default = DEFAULT_DISCOUNT,
             help = 'The discount on future (default %(default)s).')
+
+    parser.add_argument('--qvalue-display', dest = 'qvalue_display',
+            action = 'store_true', default = False,
+            help = 'Display values, poilcies, and q-values (default %(default)s).')
 
 def init_from_args(args: argparse.Namespace) -> dict[int, pacai.core.agentinfo.AgentInfo]:
     """
@@ -104,8 +108,14 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     # Parse GridWorld-specific options.
     base_agent_infos = init_from_args(args)
 
+    board_options = {
+        'qvalue_display': args.qvalue_display,
+    }
+
     # Parse game arguments.
-    args = pacai.core.game.init_from_args(args, pacai.gridworld.game.Game, base_agent_infos = base_agent_infos)
+    args = pacai.core.game.init_from_args(args, pacai.gridworld.game.Game,
+            base_agent_infos = base_agent_infos,
+            board_options = board_options)
 
     return args
 

@@ -3,6 +3,8 @@ import typing
 import pacai.core.board
 
 MARKER_TERMINAL: pacai.core.board.Marker = pacai.core.board.Marker('T')
+MARKER_DISPLAY_VALUE: pacai.core.board.Marker = pacai.core.board.Marker('V')
+MARKER_DISPLAY_QVALUE: pacai.core.board.Marker = pacai.core.board.Marker('Q')
 
 BOARD_COL_DELIM: str = ','
 
@@ -17,7 +19,13 @@ class Board(pacai.core.board.Board):
 
     def __init__(self, *args,
             additional_markers: list[str] | None = None,
+            qvalue_display: bool = False,
             **kwargs) -> None:
+        """
+        Construct a GridWorld board.
+        If qvalue_display is true, then the existing board will be extended to display Q-Values and policies.
+        """
+
         if (additional_markers is None):
             additional_markers = []
 
@@ -30,7 +38,11 @@ class Board(pacai.core.board.Board):
         self._terminal_values: dict[pacai.core.board.Position, int] = {}
         """ Values for each terminal position. """
 
+        # Ensure that super's init() is called after self._terminal_values exists.
         super().__init__(*args, additional_markers = additional_markers, **kwargs)  # type: ignore
+
+        if (qvalue_display):
+            self._add_qvalue_display()
 
     def _split_line(self, line: str) -> list[str]:
         # Skip empty lines.
@@ -66,7 +78,78 @@ class Board(pacai.core.board.Board):
         return self._terminal_values[position]
 
     def get_static_text(self) -> dict[pacai.core.board.Position, str]:
-        return {position: str(value) for (position, value) in self._terminal_values.items()}
+        texts = {position: str(value) for (position, value) in self._terminal_values.items()}
+
+        # If we are displaying Q-Values, add in labels for each section.
+        if (self.display_qvalues()):
+            row = (self.height - 1) // 2
+
+            texts[pacai.core.board.Position(row, 1)] = '↑ - Game'
+            texts[pacai.core.board.Position(row, self.width - 2)] = '↑ - Values'
+            texts[pacai.core.board.Position(row, ((self.width - 1) // 2) - 1)] = '↓ - Q-Values'
+
+        return texts
+
+    def display_qvalues(self) -> bool:
+        """ Check if this board is displaying Q-Values. """
+
+        return len(self.get_marker_positions(MARKER_DISPLAY_QVALUE)) > 0
+
+    def _add_qvalue_display(self) -> None:
+        """
+        Add a Q-Value display, which includes a section for values and q-values.
+        The board will be doubled in size (along each dimension).
+        The top-left will have the original board (with agent),
+        the top-right will have the values and policies,
+        and the bottom-left will have the q-values.
+        """
+
+        if (len(self.get_marker_positions(MARKER_DISPLAY_QVALUE)) > 0):
+            raise ValueError("Already added Q-Value display.")
+
+        base_height = self.height
+        base_width = self.width
+        base_walls = self._walls.copy()
+
+        # Grow the board.
+        self.height = (base_height * 2) + 1
+        self.width = (base_width * 2) + 1
+
+        offset_values = pacai.core.board.Position(0, base_width + 1)  # Values (Top-Right)
+        offset_qvalues = pacai.core.board.Position(base_height + 1, 0)  # Q-Values (Bottom-Left)
+
+        # Add walls to quarter off sections of the new board.
+
+        for row in range(self.height):
+            self._walls.add(pacai.core.board.Position(row, base_width))
+
+        for col in range(self.width):
+            self._walls.add(pacai.core.board.Position(base_height, col))
+
+        # Duplicate the walls on the new sections.
+
+        for offset in [offset_values, offset_qvalues]:
+            for base_wall in base_walls:
+                self._walls.add(base_wall.add(offset))
+
+        # Place the markers to display values/q-values.
+
+        for base_row in range(base_height):
+            for base_col in range(base_width):
+                base_position = pacai.core.board.Position(base_row, base_col)
+                if (self.is_wall(base_position) or self.is_marker(MARKER_TERMINAL, base_position)):
+                    continue
+
+                self.place_marker(MARKER_DISPLAY_VALUE, base_position.add(offset_values))
+                self.place_marker(MARKER_DISPLAY_QVALUE, base_position.add(offset_qvalues))
+
+        # Copy terminal markers.
+
+        for (base_position, value) in list(self._terminal_values.items()):
+            for offset in [offset_values, offset_qvalues]:
+                position = base_position.add(offset)
+                self._terminal_values[position] = value
+                self.place_marker(MARKER_TERMINAL, position)
 
     def to_dict(self) -> dict[str, typing.Any]:
         data = super().to_dict()

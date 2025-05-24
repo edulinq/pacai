@@ -28,6 +28,7 @@ class GameInfo(pacai.util.json.DictConverter):
             isolation_level: pacai.core.isolation.level.Level = pacai.core.isolation.level.Level.NONE,
             max_turns: int = DEFAULT_MAX_TURNS,
             seed: int | None = None,
+            extra_info: dict[str, typing.Any] | None = None,
             ) -> None:
         if (seed is None):
             seed = random.randint(0, 2**64)
@@ -53,6 +54,12 @@ class GameInfo(pacai.util.json.DictConverter):
         If -1, unlimited moves are allowed.
         """
 
+        if (extra_info is None):
+            extra_info = {}
+
+        self.extra_info: dict[str, typing.Any] = extra_info
+        """ Any additional arguments passed to the game. """
+
     def to_dict(self) -> dict[str, typing.Any]:
         return {
             'seed': self.seed,
@@ -60,6 +67,7 @@ class GameInfo(pacai.util.json.DictConverter):
             'agent_infos': {id: info.to_dict() for (id, info) in self.agent_infos.items()},
             'isolation_level': self.isolation_level.value,
             'max_turns': self.max_turns,
+            'extra_info': self.extra_info,
         }
 
     @classmethod
@@ -69,7 +77,8 @@ class GameInfo(pacai.util.json.DictConverter):
             board_source = data['board_source'],
             agent_infos = {int(id): pacai.core.agentinfo.AgentInfo.from_dict(raw_info) for (id, raw_info) in data['agent_infos'].items()},
             isolation_level = pacai.core.isolation.level.Level(data.get('isolation_level', pacai.core.isolation.level.Level.NONE.value)),
-            max_turns = data.get('max_turns', DEFAULT_MAX_TURNS))
+            max_turns = data.get('max_turns', DEFAULT_MAX_TURNS),
+            extra_info = data.get('extra_info', None))
 
 class GameResult(pacai.util.json.DictConverter):
     """ The result of running a game. """
@@ -175,7 +184,7 @@ class Game(abc.ABC):
             save_path: str | None = None,
             is_replay: bool = False,
             ) -> None:
-        self._game_info: GameInfo = game_info
+        self.game_info: GameInfo = game_info
         """ The core information about this game. """
 
         self._board: pacai.core.board.Board = board
@@ -189,6 +198,9 @@ class Game(abc.ABC):
         Indicates that this game is being loaded from a replay.
         Some behavior, like saving the result, will be modified.
         """
+
+    def process_args(self, args: argparse.Namespace) -> None:
+        """ Process any special arguments from the command-line. """
 
     @abc.abstractmethod
     def get_initial_state(self,
@@ -219,8 +231,17 @@ class Game(abc.ABC):
         if (action not in state.get_legal_actions()):
             raise ValueError(f"Illegal action for agent {action_record.agent_index}: '{action}'.")
 
-        state.process_turn_full(action, rng)
+        self._call_state_process_turn_full(state, action, rng)
+
         return state
+
+    def _call_state_process_turn_full(self,
+            state: pacai.core.gamestate.GameState,
+            action: pacai.core.action.Action,
+            rng: random.Random) -> None:
+        """ Call on the game state to process a full turn. """
+
+        state.process_turn_full(action, rng)
 
     def check_end(self, state: pacai.core.gamestate.GameState) -> bool:
         """
@@ -243,28 +264,28 @@ class Game(abc.ABC):
         The main "game loop" for all games.
         """
 
-        logging.debug("Starting a game with seed: %d.", self._game_info.seed)
+        logging.debug("Starting a game with seed: %d.", self.game_info.seed)
 
         # Create a new random number generator just for this game.
-        rng = random.Random(self._game_info.seed)
+        rng = random.Random(self.game_info.seed)
 
         # Initialize the agent isolator.
-        isolator = self._game_info.isolation_level.get_isolator()
-        isolator.init_agents(self._game_info.agent_infos)
+        isolator = self.game_info.isolation_level.get_isolator()
+        isolator.init_agents(self.game_info.agent_infos)
 
         # Keep track of what happens during this game.
         game_id = rng.randint(0, 2**64)
-        result = GameResult(game_id, self._game_info)
+        result = GameResult(game_id, self.game_info)
 
         # Keep track of all the user inputs since the last time an agent moved.
         # Note that we need to keep track for all agents,
         # since the UI will only tell us the inputs since the last call.
         agent_user_inputs: dict[int, list[pacai.core.action.Action]] = {}
-        for agent_index in self._game_info.agent_infos:
+        for agent_index in self.game_info.agent_infos:
             agent_user_inputs[agent_index] = []
 
         # Create the initial game state (and force it's seed).
-        state = self.get_initial_state(rng, self._board, self._game_info.agent_infos)
+        state = self.get_initial_state(rng, self._board, self.game_info.agent_infos)
         state.seed = game_id
         state.game_start()
 
@@ -309,7 +330,7 @@ class Game(abc.ABC):
                 break
 
             # Check if this game has ran for the maximum number of turns.
-            if ((self._game_info.max_turns > 0) and (state.turn_count >= self._game_info.max_turns)):
+            if ((self.game_info.max_turns > 0) and (state.turn_count >= self.game_info.max_turns)):
                 state.process_game_timeout()
                 result.game_timeout = True
                 break
@@ -411,7 +432,9 @@ def init_from_args(
         args: argparse.Namespace,
         game_class: typing.Type[Game],
         base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] | None = None,
-        remove_agent_indexes: list[int] | None = None) -> argparse.Namespace:
+        remove_agent_indexes: list[int] | None = None,
+        board_options: dict[str, typing.Any] | None = None,
+        ) -> argparse.Namespace:
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
@@ -446,7 +469,10 @@ def init_from_args(
 
     rng = random.Random(seed)
 
-    board = pacai.core.board.load_path(args.board)
+    if (board_options is None):
+        board_options = {}
+
+    board = pacai.core.board.load_path(args.board, **board_options)
 
     # Remove specified agents from the board.
     remove_agent_indexes += args.remove_agent_indexes
@@ -487,7 +513,10 @@ def init_from_args(
             'save_path': save_path,
         }
 
-        all_games.append(game_class(**game_args))
+        game = game_class(**game_args)
+        game.process_args(args)
+
+        all_games.append(game)
 
     setattr(args, '_boards', all_boards)
     setattr(args, '_agent_infos', all_agent_infos)
