@@ -12,6 +12,7 @@ import pacai.core.action
 import pacai.core.gamestate
 import pacai.core.spritesheet
 import pacai.util.alias
+import pacai.util.math
 import pacai.util.time
 import pacai.util.reflection
 
@@ -26,7 +27,7 @@ FONT_SIZE_RATIO: float = 0.75
 SMALL_FONT_SIZE_RATIO: float = 0.25
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-DEFAULT_FONT_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'fonts', 'roboto', 'RobotoMono-Regular.ttf')
+DEFAULT_FONT_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'fonts', 'fragment', 'FragmentMono-Regular.ttf')
 DEFAULT_SPRITE_SHEET: str = 'generic'
 
 ANIMATION_KEY: str = 'UI.draw_image'
@@ -394,7 +395,7 @@ class UI(abc.ABC):
 
         # Draw the score.
         score_image_coordinates = (0, state.board.height * self._sprite_sheet.height)
-        score_text = f"Score: {state.score}"
+        score_text = f"Score: {pacai.util.math.display_number(state.score, places = 2)}"
         if (state.game_over):
             score_text += " - Final"
 
