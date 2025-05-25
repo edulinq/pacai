@@ -5,6 +5,7 @@ import pacai.core.board
 MARKER_TERMINAL: pacai.core.board.Marker = pacai.core.board.Marker('T')
 MARKER_DISPLAY_VALUE: pacai.core.board.Marker = pacai.core.board.Marker('V')
 MARKER_DISPLAY_QVALUE: pacai.core.board.Marker = pacai.core.board.Marker('Q')
+MARKER_SEPARATOR: pacai.core.board.Marker = pacai.core.board.Marker('X')
 
 BOARD_COL_DELIM: str = ','
 
@@ -77,16 +78,17 @@ class Board(pacai.core.board.Board):
 
         return self._terminal_values[position]
 
-    def get_static_text(self) -> dict[pacai.core.board.Position, str]:
-        texts = {position: str(value) for (position, value) in self._terminal_values.items()}
+    def get_static_text(self) -> dict[pacai.core.board.Position, pacai.core.board.BoardText]:
+        texts = {position: pacai.core.board.BoardText(str(value), pacai.core.board.FontSize.SMALL)
+                for (position, value) in self._terminal_values.items()}
 
         # If we are displaying Q-Values, add in labels for each section.
         if (self.display_qvalues()):
             row = (self.height - 1) // 2
 
-            texts[pacai.core.board.Position(row, 1)] = '↑ - Game'
-            texts[pacai.core.board.Position(row, self.width - 2)] = '↑ - Values'
-            texts[pacai.core.board.Position(row, ((self.width - 1) // 2) - 1)] = '↓ - Q-Values'
+            texts[pacai.core.board.Position(row, 1)] = pacai.core.board.BoardText('↑ Game')
+            texts[pacai.core.board.Position(row, self.width - 2)] = pacai.core.board.BoardText('↑ Values')
+            texts[pacai.core.board.Position(row, ((self.width - 1) // 2) - 1)] = pacai.core.board.BoardText('↓ Q-Values')
 
         return texts
 
@@ -118,13 +120,13 @@ class Board(pacai.core.board.Board):
         offset_values = pacai.core.board.Position(0, base_width + 1)  # Values (Top-Right)
         offset_qvalues = pacai.core.board.Position(base_height + 1, 0)  # Q-Values (Bottom-Left)
 
-        # Add walls to quarter off sections of the new board.
+        # Add separators to quarter off sections of the new board.
 
         for row in range(self.height):
-            self._walls.add(pacai.core.board.Position(row, base_width))
+            self.place_marker(MARKER_SEPARATOR, pacai.core.board.Position(row, base_width))
 
         for col in range(self.width):
-            self._walls.add(pacai.core.board.Position(base_height, col))
+            self.place_marker(MARKER_SEPARATOR, pacai.core.board.Position(base_height, col))
 
         # Duplicate the walls on the new sections.
 

@@ -23,9 +23,6 @@ DEFAULT_ANIMATION_SKIP_FRAMES: int = 1
 MIN_ANIMATION_FPS: int = 1
 DEFAULT_ANIMATION_OPTIMIZE: bool = False
 
-FONT_SIZE_RATIO: float = 0.75
-SMALL_FONT_SIZE_RATIO: float = 0.25
-
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 DEFAULT_FONT_PATH: str = os.path.join(THIS_DIR, '..', 'resources', 'fonts', 'fragment', 'FragmentMono-Regular.ttf')
 DEFAULT_SPRITE_SHEET: str = 'generic'
@@ -184,21 +181,27 @@ class UI(abc.ABC):
 
         # Only load sprites (and fonts) if we need them.
         sprite_sheet = None
-        font = None
+        large_font = None
+        medium_font = None
         small_font = None
         if (self.requires_sprites() or (self._animation_path is not None)):
             sprite_sheet = pacai.core.spritesheet.load(sprite_sheet_path)
-            font = PIL.ImageFont.truetype(font_path, int(sprite_sheet.height * FONT_SIZE_RATIO))
-            small_font = PIL.ImageFont.truetype(font_path, int(sprite_sheet.height * SMALL_FONT_SIZE_RATIO))
+
+            small_font = PIL.ImageFont.truetype(font_path, int(sprite_sheet.height * (pacai.core.board.FontSize.SMALL.value / 100.0)))
+            medium_font = PIL.ImageFont.truetype(font_path, int(sprite_sheet.height * (pacai.core.board.FontSize.MEDIUM.value / 100.0)))
+            large_font = PIL.ImageFont.truetype(font_path, int(sprite_sheet.height * (pacai.core.board.FontSize.LARGE.value / 100.0)))
 
         self._sprite_sheet: pacai.core.spritesheet.SpriteSheet | None = sprite_sheet
         """ The sprite sheet to use for this UI. """
 
-        self._font: PIL.ImageFont.FreeTypeFont | None = font
-        """ The font to use for this UI. """
-
         self._small_font: PIL.ImageFont.FreeTypeFont | None = small_font
         """ The small font to use for this UI. """
+
+        self._medium_font: PIL.ImageFont.FreeTypeFont | None = medium_font
+        """ The medium font to use for this UI. """
+
+        self._large_font: PIL.ImageFont.FreeTypeFont | None = large_font
+        """ The large font to use for this UI. """
 
         self._image_cache: dict[int, PIL.Image.Image] = {}
         """ Cache images (by game state turn count) to avoid redrawing images. """
@@ -344,9 +347,6 @@ class UI(abc.ABC):
         if (self._sprite_sheet is None):
             raise ValueError("Cannot draw images without a sprite sheet.")
 
-        if (self._font is None):
-            raise ValueError("Cannot draw images without a font.")
-
         # First, check the cache for the image.
         if (state.turn_count in self._image_cache):
             return self._image_cache[state.turn_count]
@@ -399,12 +399,27 @@ class UI(abc.ABC):
         if (state.game_over):
             score_text += " - Final"
 
-        canvas.text(score_image_coordinates, score_text, self._sprite_sheet.text, self._font)
+        canvas.text(score_image_coordinates, score_text, self._sprite_sheet.text, self._get_font(pacai.core.board.FontSize.LARGE))
 
         # Store this image in the cache.
         self._image_cache[state.turn_count] = image
 
         return image
+
+    def _get_font(self, size: pacai.core.board.FontSize) -> PIL.ImageFont.FreeTypeFont:
+        if (size == pacai.core.board.FontSize.LARGE):
+            font = self._large_font
+        elif (size == pacai.core.board.FontSize.MEDIUM):
+            font = self._medium_font
+        elif (size == pacai.core.board.FontSize.SMALL):
+            font = self._small_font
+        else:
+            raise ValueError(f"Unknown font size: '{size}'.")
+
+        if (font is None):
+            raise ValueError("Font has not been loaded.")
+
+        return font
 
     def _get_static_image(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
         """
@@ -445,26 +460,24 @@ class UI(abc.ABC):
 
         return image
 
-    def _draw_position_text(self, texts: dict[pacai.core.board.Position, str], image: PIL.Image.Image) -> None:
+    def _draw_position_text(self, board_texts: dict[pacai.core.board.Position, pacai.core.board.BoardText], image: PIL.Image.Image) -> None:
         """ Draw text on a board position. """
 
-        if (len(texts) == 0):
+        if (len(board_texts) == 0):
             return
 
         if (self._sprite_sheet is None):
             raise ValueError("Cannot draw images without a sprite sheet.")
 
-        if (self._small_font is None):
-            raise ValueError("Cannot draw position text without a font.")
-
         canvas = PIL.ImageDraw.Draw(image)
-        for (position, text) in texts.items():
+        for (position, board_text) in board_texts.items():
             # Get the center of the position (since we will center the text).
             (base_x, base_y) = self._position_to_image_coords(position)
             x = base_x + (self._sprite_sheet.width / 2)
             y = base_y + (self._sprite_sheet.height / 2)
 
-            canvas.text((x, y), text, self._sprite_sheet.text, self._small_font,
+            canvas.text((x, y), board_text.text, self._sprite_sheet.text,
+                    self._get_font(board_text.size),
                     anchor = 'mm', align = 'center')
 
     def _get_sprite(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
