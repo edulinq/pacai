@@ -2,7 +2,6 @@ import abc
 import argparse
 import os
 import time
-import typing
 
 import PIL.Image
 import PIL.ImageDraw
@@ -96,20 +95,6 @@ class UserInputDevice(abc.ABC):
     def close(self) -> None:
         """ Close the user input channel and release all owned resources. """
 
-class SpriteLookup(typing.Protocol):
-    """
-    A protocol for custom sprite lookups.
-    """
-
-    def __call__(self,
-            state: pacai.core.gamestate.GameState,
-            sprite_sheet: pacai.core.spritesheet.SpriteSheet,
-            **kwargs) -> PIL.Image.Image:
-        """
-        A custom function for looking up sprites from a sprite sheet.
-        Games with special/non-standard situations may need special ways of looking up sprites.
-        """
-
 class UI(abc.ABC):
     """
     UIs represent the basic way that a game interacts with the user,
@@ -124,7 +109,6 @@ class UI(abc.ABC):
             animation_fps: int = DEFAULT_ANIMATION_FPS,
             animation_skip_frames: int = DEFAULT_ANIMATION_SKIP_FRAMES,
             sprite_sheet_path: str = DEFAULT_SPRITE_SHEET,
-            sprite_lookup_func: SpriteLookup | None = None,
             font_path: str = DEFAULT_FONT_PATH,
             **kwargs) -> None:
         self._user_input_device: UserInputDevice | None = user_input_device
@@ -175,9 +159,6 @@ class UI(abc.ABC):
         Cache an image that has all of the static (non-changing) elements (like walls) drawn.
         This can be reused as the base image every time we draw an image.
         """
-
-        self._sprite_lookup_func: SpriteLookup | None = sprite_lookup_func
-        """ An optional custom lookup for sprites. """
 
         # Only load sprites (and fonts) if we need them.
         sprite_sheet = None
@@ -372,7 +353,7 @@ class UI(abc.ABC):
             canvas.rectangle([start_coord, end_coord], fill = tuple(highlight_color))
 
         # Draw non-static text.
-        self._draw_position_text(state.board.get_nonstatic_text(), image)
+        self._draw_position_text(state.get_nonstatic_text(), image)
 
         # Draw non-agent (non-wall) markers.
         for (marker, positions) in state.board._nonwall_objects.items():
@@ -380,6 +361,9 @@ class UI(abc.ABC):
                 continue
 
             for position in positions:
+                if (state.skip_draw(marker, position, static = False)):
+                    continue
+
                 sprite = self._get_sprite(state, marker = marker, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
 
@@ -389,6 +373,9 @@ class UI(abc.ABC):
                 continue
 
             for position in positions:
+                if (state.skip_draw(marker, position, static = False)):
+                    continue
+
                 last_action = state.last_actions.get(marker.get_agent_index(), None)
                 sprite = self._get_sprite(state, marker = marker, action = last_action, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
@@ -448,12 +435,24 @@ class UI(abc.ABC):
 
         # Draw wall markers.
         for position in state.board.get_walls():
+            if (state.skip_draw(pacai.core.board.MARKER_WALL, position, static = False)):
+                continue
+
             adjacency = state.board.get_adjacent_walls(position)
             sprite = self._get_sprite(state, marker = pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
             self._place_sprite(position, sprite, image)
 
+        # Draw an additional static markers.
+        for position in state.get_static_positions():
+            for marker in state.board.get(position):
+                if (state.skip_draw(marker, position, static = True)):
+                    continue
+
+                sprite = self._get_sprite(state, marker = marker, animation_key = ANIMATION_KEY)
+                self._place_sprite(position, sprite, image)
+
         # Draw static text.
-        self._draw_position_text(state.board.get_static_text(), image)
+        self._draw_position_text(state.get_static_text(), image)
 
         # Cache the image.
         self._static_base_image = image.copy()
@@ -481,18 +480,12 @@ class UI(abc.ABC):
                     anchor = 'mm', align = 'center')
 
     def _get_sprite(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
-        """
-        Get the requested sprite either through the custom sprite lookup,
-        or through the sprite sheet.
-        """
+        """ Get the requested sprite. """
 
         if (self._sprite_sheet is None):
             raise ValueError("Sprites are not loaded in this UI.")
 
-        if (self._sprite_lookup_func is not None):
-            return self._sprite_lookup_func(state, self._sprite_sheet, **kwargs)
-
-        return self._sprite_sheet.get_sprite(**kwargs)
+        return state.sprite_lookup(self._sprite_sheet, **kwargs)
 
     def _place_sprite(self, position: pacai.core.board.Position, sprite: PIL.Image.Image, image: PIL.Image.Image):
         image_coordinates = self._position_to_image_coords(position)

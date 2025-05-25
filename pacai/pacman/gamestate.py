@@ -1,12 +1,18 @@
 import random
 import typing
 
+import PIL.Image
+
 import pacai.core.action
 import pacai.core.gamestate
+import pacai.core.spritesheet
 import pacai.pacman.board
 
 PACMAN_MARKER: pacai.core.board.Marker = pacai.core.board.MARKER_AGENT_0
-""" The board marker that pacman always uses. """
+""" The board marker that Pac-Man always uses. """
+
+SCARED_GHOST_MARKER: pacai.core.board.Marker = pacai.core.board.Marker('!')
+""" A special marker for scared ghosts. """
 
 SCARED_TIME: int = 40
 """ When a Pacman eats a capsule, ghosts get scared for this number of moves. """
@@ -15,7 +21,7 @@ SCARED_MOVE_PENALTY: int = 50
 """ Ghost speed gets modified by this constant when scared. """
 
 PACMAN_AGENT_INDEX: int = 0
-""" Every pacman game should have exactly one pacman agent at this index. """
+""" Every Pac-Man game should have exactly one Pac-Man agent at this index. """
 
 FIRST_GHOST_AGENT_INDEX: int = 1
 """
@@ -30,13 +36,13 @@ FOOD_POINTS: int = 10
 """ Points for eating food. """
 
 BOARD_CLEAR_POINTS: int = 500
-""" Points for clearning all the food from the board. """
+""" Points for cleaning all the food from the board. """
 
 GHOST_POINTS: int = 200
 """ Points for eating a ghost. """
 
 LOSE_POINTS: int = -500
-""" Points for getting eatten. """
+""" Points for getting eaten. """
 
 CRASH_POINTS: int = -1000000
 """ Points for crashing the game. """
@@ -58,7 +64,7 @@ class GameState(pacai.core.gamestate.GameState):
 
         self.scared_timers: dict[int, int] = scared_timers
         """
-        When pacman consumes a power pellet, each ghost get's scared for a specific amount of time.
+        When Pac-Man consumes a power pellet, each ghost get's scared for a specific amount of time.
         When a ghost dies their scared timer resets,
         so all ghosts need an independent timer.
         """
@@ -130,6 +136,22 @@ class GameState(pacai.core.gamestate.GameState):
 
         return ghost_indexes
 
+    def sprite_lookup(self,
+            sprite_sheet: pacai.core.spritesheet.SpriteSheet,
+            marker: pacai.core.board.Marker | None = None,
+            action: pacai.core.action.Action | None = None,
+            adjacency: pacai.core.board.AdjacencyString | None = None,
+            animation_key: str | None = None,
+            ) -> PIL.Image.Image:
+        # If the ghost is scared, swap the marker.
+        if ((marker is not None)
+                and (marker.is_agent())
+                and (marker != PACMAN_MARKER)
+                and (self.is_scared(marker.get_agent_index()))):
+            marker = SCARED_GHOST_MARKER
+
+        return super().sprite_lookup(sprite_sheet, marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
+
     def process_turn(self,
             action: pacai.core.action.Action,
             rng: random.Random | None = None,
@@ -191,11 +213,11 @@ class GameState(pacai.core.gamestate.GameState):
                 # Interact with a ghost.
 
                 if (self.is_scared(interaction_marker.get_agent_index())):
-                    # The ghost is scared, pacman eats the ghost.
+                    # The ghost is scared, Pac-Man eats the ghost.
                     self._kill_ghost(interaction_marker.get_agent_index())
                     self.board.remove_marker(interaction_marker, new_position)
                 else:
-                    # The ghost is not scared, the ghost eats pacman.
+                    # The ghost is not scared, the ghost eats Pac-Man.
                     self.score += LOSE_POINTS
                     died = True
 
@@ -240,14 +262,14 @@ class GameState(pacai.core.gamestate.GameState):
         # Process actions for all the markers we are moving onto.
         for interaction_marker in interaction_markers:
             if (interaction_marker == PACMAN_MARKER):
-                # Interact with pacman.
+                # Interact with Pac-Man.
 
                 if (self.is_scared()):
-                    # The ghost is scared, pacman eats the ghost.
+                    # The ghost is scared, Pac-Man eats the ghost.
                     self._kill_ghost(self.agent_index)
                     died = True
                 else:
-                    # The ghost is not scared, the ghost eats pacman.
+                    # The ghost is not scared, the ghost eats Pac-Man.
                     self.score += LOSE_POINTS
                     self.board.remove_marker(interaction_marker, new_position)
 

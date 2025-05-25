@@ -78,20 +78,6 @@ class Board(pacai.core.board.Board):
 
         return self._terminal_values[position]
 
-    def get_static_text(self) -> dict[pacai.core.board.Position, pacai.core.board.BoardText]:
-        texts = {position: pacai.core.board.BoardText(str(value), pacai.core.board.FontSize.SMALL)
-                for (position, value) in self._terminal_values.items()}
-
-        # If we are displaying Q-Values, add in labels for each section.
-        if (self.display_qvalues()):
-            row = (self.height - 1) // 2
-
-            texts[pacai.core.board.Position(row, 1)] = pacai.core.board.BoardText('↑ Game')
-            texts[pacai.core.board.Position(row, self.width - 2)] = pacai.core.board.BoardText('↑ Values')
-            texts[pacai.core.board.Position(row, ((self.width - 1) // 2) - 1)] = pacai.core.board.BoardText('↓ Q-Values')
-
-        return texts
-
     def display_qvalues(self) -> bool:
         """ Check if this board is displaying Q-Values. """
 

@@ -4,15 +4,10 @@ The main executable for running a game of Pac-Man.
 
 import argparse
 import sys
-import typing
-
-import PIL.Image
 
 import pacai.core.agentinfo
 import pacai.core.board
-import pacai.core.gamestate
 import pacai.core.log
-import pacai.core.spritesheet
 import pacai.core.ui
 import pacai.pacman.game
 import pacai.pacman.gamestate
@@ -21,8 +16,6 @@ import pacai.util.alias
 
 DEFAULT_BOARD: str = 'classic-medium'
 DEFAULT_SPRITE_SHEET: str = 'pacman'
-
-SCARED_GHOST_MARKER: pacai.core.board.Marker = pacai.core.board.Marker('!')
 
 def run(args: argparse.Namespace) -> int:
     """ Run one or more gaames of Pac-Man using pre-parsed arguments. """
@@ -74,22 +67,6 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
 
     return base_agent_infos, remove_agent_indexes
 
-def _sprite_lookup(
-        state: pacai.core.gamestate.GameState,
-        sprite_sheet: pacai.core.spritesheet.SpriteSheet,
-        marker: pacai.core.board.Marker | None = None,
-        **kwargs) -> PIL.Image.Image:
-    """ Pac-Man requires a special lookup function since ghosts need a special sprite when scared. """
-
-    state = typing.cast(pacai.pacman.gamestate.GameState, state)
-    if ((marker is not None)
-            and (marker.is_agent())
-            and (marker != pacai.pacman.gamestate.PACMAN_MARKER)
-            and (state.is_scared(marker.get_agent_index()))):
-        return sprite_sheet.get_sprite(marker = SCARED_GHOST_MARKER, **kwargs)
-
-    return sprite_sheet.get_sprite(marker = marker, **kwargs)
-
 def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     """ Parse the args from the parser returned by _get_parser(). """
 
@@ -101,7 +78,6 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     # Parse ui arguments.
     additional_ui_args = {
         'sprite_sheet_path': DEFAULT_SPRITE_SHEET,
-        'sprite_lookup_func': _sprite_lookup,
     }
     args = pacai.core.ui.init_from_args(args, additional_args = additional_ui_args)
 

@@ -2,9 +2,12 @@ import copy
 import random
 import typing
 
+import PIL.Image
+
 import pacai.core.action
 import pacai.core.agentinfo
 import pacai.core.board
+import pacai.core.spritesheet
 import pacai.core.ticket
 import pacai.util.json
 
@@ -262,6 +265,45 @@ class GameState(pacai.util.json.DictConverter):
                 next_index = agent_index
 
         return next_index
+
+    def sprite_lookup(self,
+            sprite_sheet: pacai.core.spritesheet.SpriteSheet,
+            marker: pacai.core.board.Marker | None = None,
+            action: pacai.core.action.Action | None = None,
+            adjacency: pacai.core.board.AdjacencyString | None = None,
+            animation_key: str | None = None,
+            ) -> PIL.Image.Image:
+        """
+        Lookup the proper sprite for a situation.
+        By default this just calls into the sprite sheet,
+        but children may override for more expressive functionality.
+        """
+
+        return sprite_sheet.get_sprite(marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
+
+    def skip_draw(self,
+            marker: pacai.core.board.Marker,
+            position: pacai.core.board.Position,
+            static: bool = False,
+            ) -> bool:
+        """ Return true if this marker/position combination should not be drawn on the board. """
+
+        return False
+
+    def get_static_positions(self) -> list[pacai.core.board.Position]:
+        """ Get a list of positions to draw on the board statically. """
+
+        return []
+
+    def get_static_text(self) -> dict[pacai.core.board.Position, pacai.core.board.BoardText]:
+        """ Get any static text to display on board positions. """
+
+        return {}
+
+    def get_nonstatic_text(self) -> dict[pacai.core.board.Position, pacai.core.board.BoardText]:
+        """ Get any non-static text to display on board positions. """
+
+        return {}
 
     def to_dict(self) -> dict[str, typing.Any]:
         data = vars(self).copy()

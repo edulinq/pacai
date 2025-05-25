@@ -4,6 +4,7 @@ import typing
 
 import pacai.core.action
 import pacai.core.gamestate
+import pacai.core.board
 import pacai.gridworld.board
 import pacai.gridworld.mdp
 
@@ -86,6 +87,22 @@ class GameState(pacai.core.gamestate.GameState):
                 return transition
 
         raise ValueError(f"Transition probabilities is less than 1.0, found {probability_sum}.")
+
+    def get_static_text(self) -> dict[pacai.core.board.Position, pacai.core.board.BoardText]:
+        board = typing.cast(pacai.gridworld.board.Board, self.board)
+
+        texts = {position: pacai.core.board.BoardText(str(value), pacai.core.board.FontSize.SMALL)
+                for (position, value) in board._terminal_values.items()}
+
+        # If we are displaying Q-Values, add in labels for each section.
+        if (board.display_qvalues()):
+            row = (board.height - 1) // 2
+
+            texts[pacai.core.board.Position(row, 1)] = pacai.core.board.BoardText('↑ Game')
+            texts[pacai.core.board.Position(row, board.width - 2)] = pacai.core.board.BoardText('↑ Values')
+            texts[pacai.core.board.Position(row, ((board.width - 1) // 2) - 1)] = pacai.core.board.BoardText('↓ Q-Values')
+
+        return texts
 
     def to_dict(self) -> dict[str, typing.Any]:
         data = super().to_dict()

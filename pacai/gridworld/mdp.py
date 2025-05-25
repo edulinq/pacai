@@ -2,6 +2,7 @@ import typing
 
 import pacai.core.action
 import pacai.core.board
+import pacai.core.gamestate
 import pacai.core.mdp
 import pacai.gridworld.board
 
