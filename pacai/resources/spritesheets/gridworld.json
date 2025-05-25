@@ -62,14 +62,17 @@
                 ]
             }
         },
+        "X": {
+            "default": [2, 18]
+        },
         "T": {
             "default": [0, 19]
         },
         "V": {
-            "default": [2, 17]
+            "default": [2, 18]
         },
         "Q": {
-            "default": [2, 16]
+            "default": [2, 18]
         }
     }
 }
