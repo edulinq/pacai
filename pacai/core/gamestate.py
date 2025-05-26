@@ -269,6 +269,7 @@ class GameState(pacai.util.json.DictConverter):
 
     def sprite_lookup(self,
             sprite_sheet: pacai.core.spritesheet.SpriteSheet,
+            position: pacai.core.board.Position,
             marker: pacai.core.board.Marker | None = None,
             action: pacai.core.action.Action | None = None,
             adjacency: pacai.core.board.AdjacencyString | None = None,

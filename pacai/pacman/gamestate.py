@@ -138,6 +138,7 @@ class GameState(pacai.core.gamestate.GameState):
 
     def sprite_lookup(self,
             sprite_sheet: pacai.core.spritesheet.SpriteSheet,
+            position: pacai.core.board.Position,
             marker: pacai.core.board.Marker | None = None,
             action: pacai.core.action.Action | None = None,
             adjacency: pacai.core.board.AdjacencyString | None = None,
@@ -150,7 +151,7 @@ class GameState(pacai.core.gamestate.GameState):
                 and (self.is_scared(marker.get_agent_index()))):
             marker = SCARED_GHOST_MARKER
 
-        return super().sprite_lookup(sprite_sheet, marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
+        return super().sprite_lookup(sprite_sheet, position, marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
 
     def process_turn(self,
             action: pacai.core.action.Action,

@@ -218,6 +218,11 @@ class SpriteSheet:
         else:
             self._animation_counts[animation_key] = {}
 
+    def position_to_pixels(self, position: pacai.core.board.Position) -> tuple[int, int]:
+        """ Get the pixels (x, y) for this position. """
+
+        return (position.col * self.width, position.row * self.height)
+
 def load(path: str) -> SpriteSheet:
     """
     Load a sprite sheet from a file.

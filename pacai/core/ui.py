@@ -343,9 +343,6 @@ class UI(abc.ABC):
 
             canvas.rectangle([start_coord, end_coord], fill = tuple(highlight_color))
 
-        # Draw non-static text.
-        self._draw_position_text(state.get_nonstatic_text(), image)
-
         # Draw non-agent (non-wall) markers.
         for (marker, positions) in state.board._nonwall_objects.items():
             if (marker.is_agent()):
@@ -355,8 +352,11 @@ class UI(abc.ABC):
                 if (state.skip_draw(marker, position, static = False)):
                     continue
 
-                sprite = self._get_sprite(state, marker = marker, animation_key = ANIMATION_KEY)
+                sprite = self._get_sprite(state, position, marker = marker, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
+
+        # Draw non-static text.
+        self._draw_position_text(state.get_nonstatic_text(), image)
 
         # Draw agent markers.
         for (marker, positions) in state.board._nonwall_objects.items():
@@ -368,7 +368,7 @@ class UI(abc.ABC):
                     continue
 
                 last_action = state.last_actions.get(marker.get_agent_index(), None)
-                sprite = self._get_sprite(state, marker = marker, action = last_action, animation_key = ANIMATION_KEY)
+                sprite = self._get_sprite(state, position, marker = marker, action = last_action, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
 
         # Draw the score.
@@ -422,7 +422,7 @@ class UI(abc.ABC):
                 continue
 
             adjacency = state.board.get_adjacent_walls(position)
-            sprite = self._get_sprite(state, marker = pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
+            sprite = self._get_sprite(state, position, marker = pacai.core.board.MARKER_WALL, adjacency = adjacency, animation_key = ANIMATION_KEY)
             self._place_sprite(position, sprite, image)
 
         # Draw an additional static markers.
@@ -431,7 +431,7 @@ class UI(abc.ABC):
                 if (state.skip_draw(marker, position, static = True)):
                     continue
 
-                sprite = self._get_sprite(state, marker = marker, animation_key = ANIMATION_KEY)
+                sprite = self._get_sprite(state, position, marker = marker, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
 
         # Draw static text.
@@ -467,13 +467,13 @@ class UI(abc.ABC):
                     self._get_font(board_text.size),
                     anchor = board_text.anchor)
 
-    def _get_sprite(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
+    def _get_sprite(self, state: pacai.core.gamestate.GameState, position: pacai.core.board.Position, **kwargs) -> PIL.Image.Image:
         """ Get the requested sprite. """
 
         if (self._sprite_sheet is None):
             raise ValueError("Sprites are not loaded in this UI.")
 
-        return state.sprite_lookup(self._sprite_sheet, **kwargs)
+        return state.sprite_lookup(self._sprite_sheet, position, **kwargs)
 
     def _place_sprite(self, position: pacai.core.board.Position, sprite: PIL.Image.Image, image: PIL.Image.Image):
         image_coordinates = self._position_to_image_coords(position)
@@ -484,10 +484,15 @@ class UI(abc.ABC):
         image.paste(sprite, image_coordinates, sprite)
 
     def _position_to_image_coords(self, position: pacai.core.board.Position) -> tuple[int, int]:
-        if (self._sprite_sheet is None):
-            raise ValueError("Sprites are not loaded in this UI.")
+        """
+        Get the image coordinates (in pixels) for this position.
+        Returns: (x, y).
+        """
 
-        return (position.col * self._sprite_sheet.width, position.row * self._sprite_sheet.height)
+        if (self._sprite_sheet is None):
+            raise ValueError("Sprites are not loaded.")
+
+        return self._sprite_sheet.position_to_pixels(position)
 
     @abc.abstractmethod
     def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:

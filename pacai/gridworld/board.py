@@ -81,7 +81,7 @@ class Board(pacai.core.board.Board):
     def display_qvalues(self) -> bool:
         """ Check if this board is displaying Q-Values. """
 
-        return len(self.get_marker_positions(MARKER_DISPLAY_QVALUE)) > 0
+        return len(self.get_marker_positions(MARKER_SEPARATOR)) > 0
 
     def _add_qvalue_display(self) -> None:
         """
@@ -92,7 +92,7 @@ class Board(pacai.core.board.Board):
         and the bottom-left will have the q-values.
         """
 
-        if (len(self.get_marker_positions(MARKER_DISPLAY_QVALUE)) > 0):
+        if (len(self.get_marker_positions(MARKER_SEPARATOR)) > 0):
             raise ValueError("Already added Q-Value display.")
 
         base_height = self.height

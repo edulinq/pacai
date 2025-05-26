@@ -1,8 +1,10 @@
 import logging
+import math
 import random
 import typing
 
 import PIL.Image
+import PIL.ImageDraw
 
 import pacai.core.action
 import pacai.core.gamestate
@@ -17,6 +19,17 @@ AGENT_INDEX: int = 0
 
 AGENT_MARKER: pacai.core.board.Marker = pacai.core.board.MARKER_AGENT_0
 """ The fixed marker of the only agent. """
+
+QVALUE_TRIANGLE_POINT_OFFSETS: list[tuple[tuple[float, float], tuple[float, float], tuple[float, float]]] = [
+    ((0.0, 0.0), (1.0, 0.0), (0.5, 0.5)),
+    ((1.0, 0.0), (1.0, 1.0), (0.5, 0.5)),
+    ((1.0, 1.0), (0.0, 1.0), (0.5, 0.5)),
+    ((0.0, 1.0), (0.0, 0.0), (0.5, 0.5)),
+]
+""" Offsets (as position dimensions) of the points for Q-Value triangles. """
+
+TRIANGLE_WIDTH: int = 1
+""" Width of the Q-Value triangle borders. """
 
 class GameState(pacai.core.gamestate.GameState):
     """ A game state specific to a standard GridWorld game. """
@@ -36,18 +49,83 @@ class GameState(pacai.core.gamestate.GameState):
 
     def sprite_lookup(self,
             sprite_sheet: pacai.core.spritesheet.SpriteSheet,
+            position: pacai.core.board.Position,
             marker: pacai.core.board.Marker | None = None,
             action: pacai.core.action.Action | None = None,
             adjacency: pacai.core.board.AdjacencyString | None = None,
             animation_key: str | None = None,
             ) -> PIL.Image.Image:
-        sprite = super().sprite_lookup(sprite_sheet, marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
+        sprite = super().sprite_lookup(sprite_sheet, position, marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
 
-        # TEST
         if (marker == pacai.gridworld.board.MARKER_DISPLAY_QVALUE):
-            pass
+            sprite = self._add_qvalue_info(sprite_sheet, sprite)
 
         return sprite
+
+    def skip_draw(self,
+            marker: pacai.core.board.Marker,
+            position: pacai.core.board.Position,
+            static: bool = False,
+            ) -> bool:
+        """ Return true if this marker/position combination should not be drawn on the board. """
+
+        if (static):
+            return False
+
+        return position in self.board.get_marker_positions(pacai.gridworld.board.MARKER_DISPLAY_QVALUE)
+
+    def get_static_positions(self) -> list[pacai.core.board.Position]:
+        """ Get a list of positions to draw on the board statically. """
+
+        return list(self.board.get_marker_positions(pacai.gridworld.board.MARKER_DISPLAY_QVALUE))
+
+    def _add_qvalue_info(self, sprite_sheet: pacai.core.spritesheet.SpriteSheet, sprite: PIL.Image.Image) -> PIL.Image.Image:
+        """ Add the colored q-value triangles to the sprite. """
+
+        sprite = sprite.copy()
+
+        canvas = PIL.ImageDraw.Draw(sprite)
+
+        # TEST: Get Q-Values
+        count = -1.0
+
+        for point_offsets in QVALUE_TRIANGLE_POINT_OFFSETS:
+            points = []
+
+            for point_offset in point_offsets:
+                # Offset the outer points of the triangle towards the inside of the triangle to avoid border overlaps.
+                origin = [0, 0]
+                for (i, offset) in enumerate(point_offset):
+                    if (math.isclose(offset, 0.0)):
+                        origin[i] = TRIANGLE_WIDTH
+                    elif (math.isclose(offset, 1.0)):
+                        origin[i] = -TRIANGLE_WIDTH
+
+                point = (
+                    (origin[0] + (sprite_sheet.width * point_offset[0])),
+                    (origin[1] + (sprite_sheet.height * point_offset[1])),
+                )
+                points.append(tuple(point))
+
+            # TEST: Get Q-Values
+            qvalue = count
+            count += 0.5
+
+            color = self._red_green_gradient(qvalue, -1, 1)
+            canvas.polygon(points, fill = color, outline = sprite_sheet.text, width = 1)
+
+        return sprite
+
+    def _red_green_gradient(self, value: float, min_value: float, max_value: float, blue: int = 75) -> tuple[int, int, int]:
+        """ Get a color (RGB) between red (min) and green (max) based on the given value. """
+
+        if (min_value >= max_value):
+            raise ValueError(f"Gradient values are not in the correct order. Found: min = {min_value}, max = {max_value}.")
+
+        value = min(max_value, max(min_value, value))
+        ratio = (value - min_value) / (max_value - min_value)
+
+        return (int(255 * (1.0 - ratio)), int(255 * ratio), blue)
 
     def process_turn(self,
             action: pacai.core.action.Action,
@@ -127,9 +205,8 @@ class GameState(pacai.core.gamestate.GameState):
 
         # Add labels on the separator.
         row = (self.board.height - 1) // 2
-        texts.append(pacai.core.font.BoardText(pacai.core.board.Position(row, 1), '↑ Game'))
+        texts.append(pacai.core.font.BoardText(pacai.core.board.Position(row, 1), ' ↓ Q-Values'))
         texts.append(pacai.core.font.BoardText(pacai.core.board.Position(row, self.board.width - 2), '↑ Values'))
-        texts.append(pacai.core.font.BoardText(pacai.core.board.Position(row, ((self.board.width - 1) // 2) - 1), '↓ Q-Values'))
 
         for position in self.board.get_marker_positions(pacai.gridworld.board.MARKER_DISPLAY_QVALUE):
             # [(vertical alignment, horizontal alignment), ...]
@@ -140,11 +217,13 @@ class GameState(pacai.core.gamestate.GameState):
                 (pacai.core.font.TextVerticalAlign.MIDDLE, pacai.core.font.TextHorizontalAlign.LEFT),
             ]
 
-            # TEST
-            for i in range(4):
-                vertical_align, horizontal_align = alignments[i]
+            for (i, alignment) in enumerate(alignments):
+                # TEST: Get Q-Values
+                value = (i - 2) / 2.0
+
+                vertical_align, horizontal_align = alignment
                 texts.append(pacai.core.font.BoardText(
-                        position, f"{i:0.2f}",
+                        position, f"{value:0.2f}",
                         size = pacai.core.font.FontSize.TINY,
                         vertical_align = vertical_align,
                         horizontal_align = horizontal_align))
