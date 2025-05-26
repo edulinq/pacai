@@ -266,9 +266,9 @@ class GameState(pacai.core.gamestate.GameState):
         texts = []
 
         # Add labels on the separator.
-        row = (self.board.height - 1) // 2
+        row = board._original_height + 1
         texts.append(pacai.core.font.BoardText(pacai.core.board.Position(row, 1), ' ↓ Q-Values'))
-        texts.append(pacai.core.font.BoardText(pacai.core.board.Position(row, self.board.width - 2), '↑ Values'))
+        texts.append(pacai.core.font.BoardText(pacai.core.board.Position(row, board._original_width + 2), '↑ State Values / Policies'))
 
         for position in self.board.get_marker_positions(pacai.gridworld.board.MARKER_DISPLAY_QVALUE):
             # [(vertical alignment, horizontal alignment), ...]
