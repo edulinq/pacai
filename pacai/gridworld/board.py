@@ -7,6 +7,9 @@ MARKER_DISPLAY_VALUE: pacai.core.board.Marker = pacai.core.board.Marker('V')
 MARKER_DISPLAY_QVALUE: pacai.core.board.Marker = pacai.core.board.Marker('Q')
 MARKER_SEPARATOR: pacai.core.board.Marker = pacai.core.board.Marker('X')
 
+AGENT_MARKER: pacai.core.board.Marker = pacai.core.board.MARKER_AGENT_0
+""" The fixed marker of the only agent. """
+
 BOARD_COL_DELIM: str = ','
 
 class Board(pacai.core.board.Board):
@@ -41,6 +44,12 @@ class Board(pacai.core.board.Board):
 
         # Ensure that super's init() is called after self._terminal_values exists.
         super().__init__(*args, additional_markers = additional_markers, **kwargs)  # type: ignore
+
+        self._original_height: int = self.height
+        """ The original height for this board. """
+
+        self._original_width: int = self.width
+        """ The original width for this board. """
 
         if (qvalue_display):
             self._add_qvalue_display()
@@ -95,24 +104,30 @@ class Board(pacai.core.board.Board):
         if (len(self.get_marker_positions(MARKER_SEPARATOR)) > 0):
             raise ValueError("Already added Q-Value display.")
 
-        base_height = self.height
-        base_width = self.width
+        self._original_height = self.height
+        self._original_width = self.width
         base_walls = self._walls.copy()
 
         # Grow the board.
-        self.height = (base_height * 2) + 1
-        self.width = (base_width * 2) + 1
+        self.height = (self._original_height * 2) + 1
+        self.width = (self._original_width * 2) + 1
 
-        offset_values = pacai.core.board.Position(0, base_width + 1)  # Values (Top-Right)
-        offset_qvalues = pacai.core.board.Position(base_height + 1, 0)  # Q-Values (Bottom-Left)
+        offset_values = pacai.core.board.Position(0, self._original_width + 1)  # Values (Top-Right)
+        offset_qvalues = pacai.core.board.Position(self._original_height + 1, 0)  # Q-Values (Bottom-Left)
 
         # Add separators to quarter off sections of the new board.
 
         for row in range(self.height):
-            self.place_marker(MARKER_SEPARATOR, pacai.core.board.Position(row, base_width))
+            self.place_marker(MARKER_SEPARATOR, pacai.core.board.Position(row, self._original_width))
 
         for col in range(self.width):
-            self.place_marker(MARKER_SEPARATOR, pacai.core.board.Position(base_height, col))
+            self.place_marker(MARKER_SEPARATOR, pacai.core.board.Position(self._original_height, col))
+
+        # Empty out the blank section.
+        for row in range(self._original_height):
+            for col in range(self._original_width):
+                position = pacai.core.board.Position(self._original_height + 1 + row, self._original_width + 1 + col)
+                self.place_marker(MARKER_SEPARATOR, position)
 
         # Duplicate the walls on the new sections.
 
@@ -122,8 +137,8 @@ class Board(pacai.core.board.Board):
 
         # Place the markers to display values/q-values.
 
-        for base_row in range(base_height):
-            for base_col in range(base_width):
+        for base_row in range(self._original_height):
+            for base_col in range(self._original_width):
                 base_position = pacai.core.board.Position(base_row, base_col)
                 if (self.is_wall(base_position) or self.is_marker(MARKER_TERMINAL, base_position)):
                     continue

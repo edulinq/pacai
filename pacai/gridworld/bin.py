@@ -22,7 +22,7 @@ DEFAULT_ITERATIONS: int = 10
 DEFAULT_EPISODES: int = 1
 DEFAULT_LEARNING_RATE: float = 0.5
 DEFAULT_LIVING_REWARD: float = 0.0
-DEFAULT_DISCOUNT: float = 0.9
+DEFAULT_DISCOUNT_RATE: float = 0.9
 
 def run(args: argparse.Namespace) -> int:
     """ Run one or more gaames of GridWorld using pre-parsed arguments. """
@@ -66,18 +66,18 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
             action = 'store', type = float, default = DEFAULT_LIVING_REWARD,
             help = 'The Reward for living for a time step (default %(default)s).')
 
-    # TEST - Replace with logging/debug?
-    parser.add_argument('--value-steps', dest = 'value_steps',
-            action = 'store_true', default = False,
-            help = 'Display each step of value iteration (default %(default)s).')
-
-    parser.add_argument('--discount', dest = 'discount',
-            action = 'store', type = float, default = DEFAULT_DISCOUNT,
-            help = 'The discount on future (default %(default)s).')
+    parser.add_argument('--discount_rate', dest = 'discount_rate',
+            action = 'store', type = float, default = DEFAULT_DISCOUNT_RATE,
+            help = 'The discount rate on future (default %(default)s).')
 
     parser.add_argument('--qvalue-display', dest = 'qvalue_display',
             action = 'store_true', default = False,
             help = 'Display values, poilcies, and q-values (default %(default)s).')
+
+    # TEST - Replace with logging/debug?
+    parser.add_argument('--value-steps', dest = 'value_steps',
+            action = 'store_true', default = False,
+            help = 'Display each step of value iteration (default %(default)s).')
 
 def init_from_args(args: argparse.Namespace) -> dict[int, pacai.core.agentinfo.AgentInfo]:
     """
@@ -93,6 +93,8 @@ def init_from_args(args: argparse.Namespace) -> dict[int, pacai.core.agentinfo.A
         'name': args.agent,
         'remember_last_action': False,
         'mdp': mdp,
+        'discount_rate': args.discount_rate,
+        'iterations': args.iterations,
     }
 
     base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {

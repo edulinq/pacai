@@ -463,7 +463,11 @@ class UI(abc.ABC):
             y = base_y + vertical_offset
             x = base_x + horizontal_offset
 
-            canvas.text((x, y), board_text.text, self._sprite_sheet.text,
+            color = board_text.color
+            if (color is None):
+                color = self._sprite_sheet.text
+
+            canvas.text((x, y), board_text.text, color,
                     self._get_font(board_text.size),
                     anchor = board_text.anchor)
 

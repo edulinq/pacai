@@ -5,6 +5,7 @@ import typing
 import PIL.Image
 
 import pacai.core.action
+import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.board
 import pacai.core.font
@@ -121,6 +122,9 @@ class GameState(pacai.util.json.DictConverter):
         # Choose the first agent to move.
         self.last_agent_index = self.agent_index
         self.agent_index = self.get_next_agent_index()
+
+    def agents_game_start(self, agent_responses: dict[int, pacai.core.agentaction.AgentActionRecord]) -> None:
+        """ Indicate that agents have been started. """
 
     def game_complete(self) -> list[int]:
         """

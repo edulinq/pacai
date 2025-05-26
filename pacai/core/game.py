@@ -300,6 +300,8 @@ class Game(abc.ABC):
             else:
                 board_highlights += record.get_board_highlights()
 
+        state.agents_game_start(records)
+
         # Start the UI.
         ui.game_start(state, board_highlights = board_highlights)
 

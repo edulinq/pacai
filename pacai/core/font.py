@@ -52,6 +52,7 @@ class BoardText:
             vertical_align: TextVerticalAlign = TextVerticalAlign.MIDDLE,
             horizontal_align: TextHorizontalAlign = TextHorizontalAlign.CENTER,
             anchor: str | None = None,
+            color: tuple[int, int, int] | None = None,
             ) -> None:
         self.position: pacai.core.board.Position = position
         """ The position to display the text. """
@@ -76,3 +77,6 @@ class BoardText:
         The alignment anchor of the text.
         See: https://pillow.readthedocs.io/en/stable/handbook/text-anchors.html#text-anchors .
         """
+
+        self.color: tuple[int, int, int] | None = color
+        """ The color of the text. """

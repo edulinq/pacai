@@ -7,6 +7,7 @@ import PIL.Image
 import PIL.ImageDraw
 
 import pacai.core.action
+import pacai.core.agentaction
 import pacai.core.gamestate
 import pacai.core.board
 import pacai.core.font
@@ -17,16 +18,16 @@ import pacai.gridworld.mdp
 AGENT_INDEX: int = 0
 """ The fixed index of the only agent. """
 
-AGENT_MARKER: pacai.core.board.Marker = pacai.core.board.MARKER_AGENT_0
-""" The fixed marker of the only agent. """
-
 QVALUE_TRIANGLE_POINT_OFFSETS: list[tuple[tuple[float, float], tuple[float, float], tuple[float, float]]] = [
     ((0.0, 0.0), (1.0, 0.0), (0.5, 0.5)),
     ((1.0, 0.0), (1.0, 1.0), (0.5, 0.5)),
     ((1.0, 1.0), (0.0, 1.0), (0.5, 0.5)),
     ((0.0, 1.0), (0.0, 0.0), (0.5, 0.5)),
 ]
-""" Offsets (as position dimensions) of the points for Q-Value triangles. """
+"""
+Offsets (as position dimensions) of the points for Q-Value triangles.
+Indexes line up with pacai.core.action.CARDINAL_DIRECTIONS.
+"""
 
 TRIANGLE_WIDTH: int = 1
 """ Width of the Q-Value triangle borders. """
@@ -39,6 +40,42 @@ class GameState(pacai.core.gamestate.GameState):
 
         self._win: bool = False
         """ Keep track if the agent exited the game on a winning state. """
+
+        self._mdp_state_values: dict[pacai.gridworld.mdp.GridWorldMDPState, float] = {}
+        """
+        The MDP state values computed by the agent.
+        This member will not be serialized.
+        """
+
+        self._qvalues: dict[pacai.gridworld.mdp.GridWorldMDPState, dict[pacai.core.action.Action, float]] = {}
+        """
+        The Q-values computed by the agent.
+        This member will not be serialized.
+        """
+
+    def agents_game_start(self, agent_responses: dict[int, pacai.core.agentaction.AgentActionRecord]) -> None:
+        if (AGENT_INDEX not in agent_responses):
+            return
+
+        agent_action = agent_responses[AGENT_INDEX].agent_action
+        if (agent_action is None):
+            return
+
+        if ('mdp_state_values' in agent_action.other_info):
+            for (raw_position, value) in agent_action.other_info['mdp_state_values']:
+                position = pacai.core.board.Position.from_dict(raw_position)
+                self._mdp_state_values[pacai.gridworld.mdp.GridWorldMDPState(position)] = value
+
+        if ('qvalues' in agent_action.other_info):
+            for (raw_position, raw_action, qvalue) in agent_action.other_info['qvalues']:
+                position = pacai.core.board.Position.from_dict(raw_position)
+                action = pacai.core.action.Action(raw_action)
+                mdp_state = pacai.gridworld.mdp.GridWorldMDPState(position)
+
+                if (mdp_state not in self._qvalues):
+                    self._qvalues[mdp_state] = {}
+
+                self._qvalues[mdp_state][action] = qvalue
 
     def game_complete(self) -> list[int]:
         # If the agent exited on a positive terminal position, they win.
@@ -68,7 +105,7 @@ class GameState(pacai.core.gamestate.GameState):
         sprite = super().sprite_lookup(sprite_sheet, position, marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
 
         if (marker == pacai.gridworld.board.MARKER_DISPLAY_QVALUE):
-            sprite = self._add_qvalue_info(sprite_sheet, sprite)
+            sprite = self._add_qvalue_info(sprite_sheet, sprite, position)
 
         return sprite
 
@@ -89,17 +126,25 @@ class GameState(pacai.core.gamestate.GameState):
 
         return list(self.board.get_marker_positions(pacai.gridworld.board.MARKER_DISPLAY_QVALUE))
 
-    def _add_qvalue_info(self, sprite_sheet: pacai.core.spritesheet.SpriteSheet, sprite: PIL.Image.Image) -> PIL.Image.Image:
+    def _add_qvalue_info(self,
+            sprite_sheet: pacai.core.spritesheet.SpriteSheet,
+            sprite: PIL.Image.Image,
+            position: pacai.core.board.Position) -> PIL.Image.Image:
         """ Add the colored q-value triangles to the sprite. """
+
+        board = typing.cast(pacai.gridworld.board.Board, self.board)
 
         sprite = sprite.copy()
 
         canvas = PIL.ImageDraw.Draw(sprite)
 
-        # TEST: Get Q-Values
-        count = -1.0
+        # The offset from the visualization position to the true board position.
+        # The Q-values are below the true board.
+        base_offset = pacai.core.board.Position(-(board._original_height + 1), 0)
+        base_position = position.add(base_offset)
+        mdp_state = pacai.gridworld.mdp.GridWorldMDPState(base_position)
 
-        for point_offsets in QVALUE_TRIANGLE_POINT_OFFSETS:
+        for (i, point_offsets) in enumerate(QVALUE_TRIANGLE_POINT_OFFSETS):
             points = []
 
             for point_offset in point_offsets:
@@ -117,10 +162,7 @@ class GameState(pacai.core.gamestate.GameState):
                 )
                 points.append(tuple(point))
 
-            # TEST: Get Q-Values
-            qvalue = count
-            count += 0.5
-
+            qvalue = self._qvalues.get(mdp_state, {}).get(pacai.core.action.CARDINAL_DIRECTIONS[i], 0.0)
             color = self._red_green_gradient(qvalue, -1, 1)
             canvas.polygon(points, fill = color, outline = sprite_sheet.text, width = 1)
 
@@ -173,8 +215,8 @@ class GameState(pacai.core.gamestate.GameState):
         new_position = transition.state.position
 
         if (old_position != new_position):
-            board.remove_marker(AGENT_MARKER, old_position)
-            board.place_marker(AGENT_MARKER, new_position)
+            board.remove_marker(pacai.gridworld.board.AGENT_MARKER, old_position)
+            board.place_marker(pacai.gridworld.board.AGENT_MARKER, new_position)
 
         # Check if we are going to "win".
         # The reward for a terminal state is awarded on the action before EXIT.
@@ -215,6 +257,12 @@ class GameState(pacai.core.gamestate.GameState):
         return texts
 
     def _get_qdisplay_static_text(self) -> list[pacai.core.font.BoardText]:
+        board = typing.cast(pacai.gridworld.board.Board, self.board)
+
+        # The offset from the visualization position to the true board position.
+        # The Q-values are below the true board.
+        base_offset = pacai.core.board.Position(-(board._original_height + 1), 0)
+
         texts = []
 
         # Add labels on the separator.
@@ -231,16 +279,20 @@ class GameState(pacai.core.gamestate.GameState):
                 (pacai.core.font.TextVerticalAlign.MIDDLE, pacai.core.font.TextHorizontalAlign.LEFT),
             ]
 
+            base_position = position.add(base_offset)
+            mdp_state = pacai.gridworld.mdp.GridWorldMDPState(base_position)
+
             for (i, alignment) in enumerate(alignments):
-                # TEST: Get Q-Values
-                value = (i - 2) / 2.0
+                action = pacai.core.action.CARDINAL_DIRECTIONS[i]
+                qvalue = self._qvalues.get(mdp_state, {}).get(action, 0.0)
 
                 vertical_align, horizontal_align = alignment
                 texts.append(pacai.core.font.BoardText(
-                        position, f"{value:0.2f}",
+                        position, f"{qvalue:0.2f}",
                         size = pacai.core.font.FontSize.TINY,
                         vertical_align = vertical_align,
-                        horizontal_align = horizontal_align))
+                        horizontal_align = horizontal_align,
+                        color = (0, 0, 0)))
 
         return texts
 

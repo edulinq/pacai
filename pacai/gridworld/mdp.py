@@ -15,6 +15,12 @@ TERMINAL_POSITION: pacai.core.board.Position = pacai.core.board.Position(-1, -1)
 ACTION_EXIT: pacai.core.action.Action = pacai.core.action.Action('exit')
 """ A new action for exiting the MDP (used to reach the true terminal state). """
 
+POSSIBLE_STATE_MARKERS: set[pacai.core.board.Marker] = {
+    pacai.gridworld.board.AGENT_MARKER,
+    pacai.gridworld.board.MARKER_TERMINAL,
+}
+""" The possible markers that can be in MDP states. """
+
 class GridWorldMDPState(pacai.core.mdp.MDPState):
     """ An MDP state for GridWorld. """
 
@@ -76,12 +82,18 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         # Start with the terminal state.
         states = [GridWorldMDPState(TERMINAL_POSITION)]
 
-        # Every non-wall is a possible state.
-        for row in range(self.board.height):
-            for col in range(self.board.width):
+        # Possible positions can only have at certain set of markers.
+        for row in range(self.board._original_height):
+            for col in range(self.board._original_width):
                 position = pacai.core.board.Position(row, col)
-                if (not self.board.is_wall(position)):
-                    states.append(GridWorldMDPState(position))
+                if (self.board.is_wall(position)):
+                    continue
+
+                markers = self.board.get(position)
+                if (not markers.issubset(POSSIBLE_STATE_MARKERS)):
+                    continue
+
+                states.append(GridWorldMDPState(position))
 
         return states
 
