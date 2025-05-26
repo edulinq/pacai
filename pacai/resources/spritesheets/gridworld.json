@@ -1,7 +1,7 @@
 {
     "filename": "gridworld.png",
-    "width": 50,
-    "height": 50,
+    "width": 120,
+    "height": 120,
     "background": [0, 0, 0],
     "text": [255, 255, 255],
     "default": [0, 1],

@@ -7,6 +7,7 @@ import PIL.Image
 import pacai.core.action
 import pacai.core.agentinfo
 import pacai.core.board
+import pacai.core.font
 import pacai.core.spritesheet
 import pacai.core.ticket
 import pacai.util.json
@@ -295,15 +296,15 @@ class GameState(pacai.util.json.DictConverter):
 
         return []
 
-    def get_static_text(self) -> dict[pacai.core.board.Position, pacai.core.board.BoardText]:
+    def get_static_text(self) -> list[pacai.core.font.BoardText]:
         """ Get any static text to display on board positions. """
 
-        return {}
+        return []
 
-    def get_nonstatic_text(self) -> dict[pacai.core.board.Position, pacai.core.board.BoardText]:
+    def get_nonstatic_text(self) -> list[pacai.core.font.BoardText]:
         """ Get any non-static text to display on board positions. """
 
-        return {}
+        return []
 
     def to_dict(self) -> dict[str, typing.Any]:
         data = vars(self).copy()

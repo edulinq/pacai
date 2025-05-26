@@ -2,9 +2,13 @@ import logging
 import random
 import typing
 
+import PIL.Image
+
 import pacai.core.action
 import pacai.core.gamestate
 import pacai.core.board
+import pacai.core.font
+import pacai.core.spritesheet
 import pacai.gridworld.board
 import pacai.gridworld.mdp
 
@@ -29,6 +33,21 @@ class GameState(pacai.core.gamestate.GameState):
             return [AGENT_INDEX]
 
         return []
+
+    def sprite_lookup(self,
+            sprite_sheet: pacai.core.spritesheet.SpriteSheet,
+            marker: pacai.core.board.Marker | None = None,
+            action: pacai.core.action.Action | None = None,
+            adjacency: pacai.core.board.AdjacencyString | None = None,
+            animation_key: str | None = None,
+            ) -> PIL.Image.Image:
+        sprite = super().sprite_lookup(sprite_sheet, marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
+
+        # TEST
+        if (marker == pacai.gridworld.board.MARKER_DISPLAY_QVALUE):
+            pass
+
+        return sprite
 
     def process_turn(self,
             action: pacai.core.action.Action,
@@ -88,19 +107,47 @@ class GameState(pacai.core.gamestate.GameState):
 
         raise ValueError(f"Transition probabilities is less than 1.0, found {probability_sum}.")
 
-    def get_static_text(self) -> dict[pacai.core.board.Position, pacai.core.board.BoardText]:
+    def get_static_text(self) -> list[pacai.core.font.BoardText]:
         board = typing.cast(pacai.gridworld.board.Board, self.board)
 
-        texts = {position: pacai.core.board.BoardText(str(value), pacai.core.board.FontSize.SMALL)
-                for (position, value) in board._terminal_values.items()}
+        texts = []
 
-        # If we are displaying Q-Values, add in labels for each section.
+        # Add on terminal values.
+        for (position, value) in board._terminal_values.items():
+            texts.append(pacai.core.font.BoardText(position, str(value), pacai.core.font.FontSize.SMALL))
+
+        # If we are using the extended display, fill in all the information.
         if (board.display_qvalues()):
-            row = (board.height - 1) // 2
+            texts += self._get_qdisplay_static_text()
 
-            texts[pacai.core.board.Position(row, 1)] = pacai.core.board.BoardText('↑ Game')
-            texts[pacai.core.board.Position(row, board.width - 2)] = pacai.core.board.BoardText('↑ Values')
-            texts[pacai.core.board.Position(row, ((board.width - 1) // 2) - 1)] = pacai.core.board.BoardText('↓ Q-Values')
+        return texts
+
+    def _get_qdisplay_static_text(self) -> list[pacai.core.font.BoardText]:
+        texts = []
+
+        # Add labels on the separator.
+        row = (self.board.height - 1) // 2
+        texts.append(pacai.core.font.BoardText(pacai.core.board.Position(row, 1), '↑ Game'))
+        texts.append(pacai.core.font.BoardText(pacai.core.board.Position(row, self.board.width - 2), '↑ Values'))
+        texts.append(pacai.core.font.BoardText(pacai.core.board.Position(row, ((self.board.width - 1) // 2) - 1), '↓ Q-Values'))
+
+        for position in self.board.get_marker_positions(pacai.gridworld.board.MARKER_DISPLAY_QVALUE):
+            # [(vertical alignment, horizontal alignment), ...]
+            alignments = [
+                (pacai.core.font.TextVerticalAlign.TOP, pacai.core.font.TextHorizontalAlign.CENTER),
+                (pacai.core.font.TextVerticalAlign.MIDDLE, pacai.core.font.TextHorizontalAlign.RIGHT),
+                (pacai.core.font.TextVerticalAlign.BOTTOM, pacai.core.font.TextHorizontalAlign.CENTER),
+                (pacai.core.font.TextVerticalAlign.MIDDLE, pacai.core.font.TextHorizontalAlign.LEFT),
+            ]
+
+            # TEST
+            for i in range(4):
+                vertical_align, horizontal_align = alignments[i]
+                texts.append(pacai.core.font.BoardText(
+                        position, f"{i:0.2f}",
+                        size = pacai.core.font.FontSize.TINY,
+                        vertical_align = vertical_align,
+                        horizontal_align = horizontal_align))
 
         return texts
 

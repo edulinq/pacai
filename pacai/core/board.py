@@ -1,5 +1,4 @@
 import copy
-import enum
 import os
 import re
 import typing
@@ -23,28 +22,6 @@ MAX_AGENTS: int = 10
 
 MIN_HL_INTENSITY: int = 0
 MAX_HL_INTENSITY: int = 1000
-
-class FontSize(enum.Enum):
-    """ The allowed size categories for fonts. """
-
-    SMALL = 25
-    MEDIUM = 50
-    LARGE = 75
-
-class BoardText:
-    """
-    A representation of text that will appear on the board.
-    """
-
-    def __init__(self,
-            text: str,
-            size: FontSize = FontSize.MEDIUM,
-            ) -> None:
-        self.text: str = text
-        """ The text to display. """
-
-        self.size: FontSize = size
-        """ The size to display the text. """
 
 class Marker(str):
     """
