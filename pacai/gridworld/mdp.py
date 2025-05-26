@@ -29,23 +29,16 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
     """ An MDP that represents the GridWorld game. """
 
     def __init__(self,
-            game_state: pacai.core.gamestate.GameState,
             start_position: pacai.core.board.Position | None = None,
             noise: float = DEFAULT_NOISE,
             living_reward: float = DEFAULT_LIVING_REWARD,
             **kwargs) -> None:
         super().__init__(**kwargs)
 
-        self.board: pacai.gridworld.board.Board = typing.cast(pacai.gridworld.board.Board, game_state.board)
+        self.board: pacai.gridworld.board.Board | None = None
         """ The board this MDP is operating on. """
 
-        if (start_position is None):
-            start_position = game_state.get_agent_position()
-
-        if (start_position is None):
-            raise ValueError("Could not find starting position.")
-
-        self.start_position: pacai.core.board.Position = start_position
+        self.start_position: pacai.core.board.Position | None = start_position
         """ The position to start from. """
 
         self.noise = noise
@@ -54,10 +47,32 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         self.living_reward: float = living_reward
         """ The reward for living for a time step (action). """
 
+    def game_start(self, initial_game_state: pacai.core.gamestate.GameState) -> None:
+        self.board = typing.cast(pacai.gridworld.board.Board, initial_game_state.board)
+
+        if (self.start_position is None):
+            self.start_position = initial_game_state.get_agent_position()
+
+        if (self.start_position is None):
+            raise ValueError("Could not find starting position.")
+
+    def make_mdp_state(self, game_state: pacai.core.gamestate.GameState) -> GridWorldMDPState:
+        position = game_state.get_agent_position()
+        if (position is None):
+            raise ValueError("Cannot create GridWorld MDP state when agent has no position.")
+
+        return GridWorldMDPState(position)
+
     def get_starting_state(self) -> GridWorldMDPState:
+        if (self.start_position is None):
+            raise ValueError("GridWorld MDP as not been initialized via game_start().")
+
         return GridWorldMDPState(self.start_position)
 
     def get_states(self) -> list[GridWorldMDPState]:
+        if (self.board is None):
+            raise ValueError("GridWorld MDP as not been initialized via game_start().")
+
         # Start with the terminal state.
         states = [GridWorldMDPState(TERMINAL_POSITION)]
 
@@ -83,6 +98,9 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         or just stop (stay still).
         """
 
+        if (self.board is None):
+            raise ValueError("GridWorld MDP as not been initialized via game_start().")
+
         # True terminal states can only stop.
         if (self.is_terminal_state(state)):
             return [pacai.core.action.STOP]
@@ -104,6 +122,9 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         and a (noise / 2) chance of moving to the left or right of your intended direction.
         You cannot move into a wall, but you can "bump" against a wall (causing you not to move).
         """
+
+        if (self.board is None):
+            raise ValueError("GridWorld MDP as not been initialized via game_start().")
 
         # True terminal states are done.
         if (self.is_terminal_state(state)):
@@ -161,6 +182,9 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         return list(merged.values())
 
     def _get_reward(self, state: GridWorldMDPState) -> float:
+        if (self.board is None):
+            raise ValueError("GridWorld MDP as not been initialized via game_start().")
+
         if (self.board.is_terminal_position(state.position)):
             return self.board.get_terminal_value(state.position)
 
@@ -175,6 +199,9 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
 
         Positions are returned in NESW order.
         """
+
+        if (self.board is None):
+            raise ValueError("GridWorld MDP as not been initialized via game_start().")
 
         states = []
 
@@ -191,11 +218,17 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
 
     def to_dict(self) -> dict[str, typing.Any]:
         data = super().to_dict()
-        data['board'] = self.board.to_dict()
+
+        if (self.board is not None):
+            data['board'] = self.board.to_dict()
+
         return data
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
         mdp = super().from_dict(data)
-        mdp.board = pacai.gridworld.board.Board.from_dict(data['board'])
+
+        if ('board' in data):
+            mdp.board = pacai.gridworld.board.Board.from_dict(data['board'])
+
         return mdp

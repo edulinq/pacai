@@ -27,7 +27,9 @@ class Game(pacai.core.game.Game):
             state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action,
             rng: random.Random) -> None:
-        mdp = pacai.gridworld.mdp.GridWorldMDP(state,
+        mdp = pacai.gridworld.mdp.GridWorldMDP(
                 noise = self.game_info.extra_info['noise'],
                 living_reward = self.game_info.extra_info['living_reward'])
+        mdp.game_start(state)
+
         state.process_turn_full(action, rng, mdp = mdp)

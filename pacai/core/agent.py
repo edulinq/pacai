@@ -93,9 +93,7 @@ class Agent(abc.ABC):
         action = self.get_action(state)
         return pacai.core.agentaction.AgentAction(action)
 
-    def get_action(self,
-            state: pacai.core.gamestate.GameState,
-            ) -> pacai.core.action.Action:
+    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         """
         Get an action for this agent given the current state of the game.
         This is simplified version of get_action_full(),

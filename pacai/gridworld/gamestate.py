@@ -47,6 +47,16 @@ class GameState(pacai.core.gamestate.GameState):
 
         return []
 
+    def get_legal_actions(self) -> list[pacai.core.action.Action]:
+        board = typing.cast(pacai.gridworld.board.Board, self.board)
+
+        # If we are on a terminal position, we can only exit.
+        position = self.get_agent_position()
+        if ((position is not None) and board.is_terminal_position(position)):
+            return [pacai.gridworld.mdp.ACTION_EXIT]
+
+        return super().get_legal_actions()
+
     def sprite_lookup(self,
             sprite_sheet: pacai.core.spritesheet.SpriteSheet,
             position: pacai.core.board.Position,
@@ -139,6 +149,8 @@ class GameState(pacai.core.gamestate.GameState):
         if (mdp is None):
             raise ValueError("No MDP passed to pacai.gridworld.gamestate.GameState.process_turn().")
 
+        board = typing.cast(pacai.gridworld.board.Board, self.board)
+
         # Get the possible transitions from the MDP.
         transitions = mdp.get_transitions(mdp.get_starting_state(), action)
 
@@ -161,10 +173,12 @@ class GameState(pacai.core.gamestate.GameState):
         new_position = transition.state.position
 
         if (old_position != new_position):
-            self.board.remove_marker(AGENT_MARKER, old_position)
-            self.board.place_marker(AGENT_MARKER, new_position)
+            board.remove_marker(AGENT_MARKER, old_position)
+            board.place_marker(AGENT_MARKER, new_position)
 
-        if (transition.state.is_terminal and (transition.reward > 0)):
+        # Check if we are going to "win".
+        # The reward for a terminal state is awarded on the action before EXIT.
+        if (board.is_terminal_position(new_position) and (board.get_terminal_value(new_position) > 0)):
             self._win = True
 
         logging.debug("Requested Action: '%s', Actual Action: '%s', Reward: %0.2f.", action, transition.action, transition.reward)

@@ -85,8 +85,18 @@ def init_from_args(args: argparse.Namespace) -> dict[int, pacai.core.agentinfo.A
     and initialize the proper components.
     """
 
+    mdp = pacai.gridworld.mdp.GridWorldMDP(
+            noise = args.noise,
+            living_reward = args.living_reward)
+
+    data = {
+        'name': args.agent,
+        'remember_last_action': False,
+        'mdp': mdp,
+    }
+
     base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {
-        pacai.gridworld.gamestate.AGENT_INDEX: pacai.core.agentinfo.AgentInfo(name = args.agent, remember_last_action = False),
+        pacai.gridworld.gamestate.AGENT_INDEX: pacai.core.agentinfo.AgentInfo(**data),
     }
 
     return base_agent_infos

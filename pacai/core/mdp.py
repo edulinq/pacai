@@ -7,6 +7,7 @@ import math
 import typing
 
 import pacai.core.action
+import pacai.core.gamestate
 import pacai.util.comparable
 import pacai.util.json
 
@@ -60,6 +61,16 @@ class MarkovDecisionProcess(typing.Generic[StateType], pacai.util.json.DictConve
 
     See: https://en.wikipedia.org/wiki/Markov_decision_process .
     """
+
+    def game_start(self, initial_game_state: pacai.core.gamestate.GameState) -> None:
+        """
+        Inform the MDP about the game's start.
+        This is the MDP's first chance to see the game/board and initialize the appropriate data.
+        """
+
+    @abc.abstractmethod
+    def make_mdp_state(self, game_state: pacai.core.gamestate.GameState) -> StateType:
+        """ Create an MDP satte from a game state. """
 
     @abc.abstractmethod
     def get_starting_state(self) -> StateType:
