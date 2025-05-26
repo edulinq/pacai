@@ -469,7 +469,8 @@ class UI(abc.ABC):
 
             canvas.text((x, y), board_text.text, color,
                     self._get_font(board_text.size),
-                    anchor = board_text.anchor)
+                    anchor = board_text.anchor,
+                    align = 'center')
 
     def _get_sprite(self, state: pacai.core.gamestate.GameState, position: pacai.core.board.Position, **kwargs) -> PIL.Image.Image:
         """ Get the requested sprite. """

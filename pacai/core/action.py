@@ -42,7 +42,6 @@ The action for moving stopping and not doing anything.
 This action is often used as a catchall and should always be valid in most games.
 """
 
-
 CARDINAL_DIRECTIONS: list[Action] = [
     NORTH,
     EAST,
@@ -58,3 +57,11 @@ REVERSE_CARDINAL_DIRECTIONS: dict[Action, Action] = {
     WEST: EAST,
 }
 """ The reverse of the four main directions. """
+
+CARDINAL_DIRECTION_ARROWS: dict[Action, str] = {
+    NORTH: '↑',
+    EAST: '→',
+    SOUTH: '↓',
+    WEST: '←',
+}
+""" Unicode arrows for the cardinal directions. """
