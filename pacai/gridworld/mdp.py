@@ -122,7 +122,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
             return [ACTION_EXIT]
 
         # All other states can try moving in any cardinal direction.
-        return [pacai.core.action.STOP] + list(pacai.core.board.CARDINAL_OFFSETS.keys())
+        return list(pacai.core.board.CARDINAL_OFFSETS.keys())
 
     def get_transitions(self, state: GridWorldMDPState, action: pacai.core.action.Action) -> list[pacai.core.mdp.Transition]:
         """
