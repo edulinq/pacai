@@ -32,6 +32,14 @@ Indexes line up with pacai.core.action.CARDINAL_DIRECTIONS.
 TRIANGLE_WIDTH: int = 1
 """ Width of the Q-Value triangle borders. """
 
+NON_SERIALIZED_FIELDS: list[str] = [
+    '_mdp_state_values',
+    '_minmax_mdp_state_values',
+    '_policy',
+    '_qvalues',
+    '_minmax_qvalues',
+]
+
 class GameState(pacai.core.gamestate.GameState):
     """ A game state specific to a standard GridWorld game. """
 
@@ -465,6 +473,11 @@ class GameState(pacai.core.gamestate.GameState):
     def to_dict(self) -> dict[str, typing.Any]:
         data = super().to_dict()
         data['_win'] = self._win
+
+        for key in NON_SERIALIZED_FIELDS:
+            if (key in data):
+                del data[key]
+
         return data
 
     @classmethod
