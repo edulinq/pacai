@@ -146,13 +146,13 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         if (self.board.is_terminal_position(state.position)):
             return [pacai.core.mdp.Transition(GridWorldMDPState(TERMINAL_POSITION), ACTION_EXIT, 1.0, 0.0)]
 
-        possible_actions = self.get_possible_actions(state)
-        if (action not in possible_actions):
-            raise ValueError(f"Got an illegal action '{action}'. Available actions are: {possible_actions}.")
-
         # Stopped agents always just sit there.
         if (action == pacai.core.action.STOP):
             return [pacai.core.mdp.Transition(state, action, 1.0, 0.0)]
+
+        possible_actions = self.get_possible_actions(state)
+        if (action not in possible_actions):
+            raise ValueError(f"Got an illegal action '{action}'. Available actions are: {possible_actions}.")
 
         (north_state, east_state, south_state, west_state) = self._get_move_states(state)
 

@@ -418,7 +418,7 @@ class UI(abc.ABC):
 
         # Draw wall markers.
         for position in state.board.get_walls():
-            if (state.skip_draw(pacai.core.board.MARKER_WALL, position, static = False)):
+            if (state.skip_draw(pacai.core.board.MARKER_WALL, position, static = True)):
                 continue
 
             adjacency = state.board.get_adjacent_walls(position)

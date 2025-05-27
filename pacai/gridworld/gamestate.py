@@ -47,6 +47,12 @@ class GameState(pacai.core.gamestate.GameState):
         This member will not be serialized.
         """
 
+        self._minmax_mdp_state_values: tuple[float, float] = (-1.0, 1.0)
+        """
+        The min and max MDP state values computed by the agent.
+        This member will not be serialized.
+        """
+
         self._policy: dict[pacai.gridworld.mdp.GridWorldMDPState, pacai.core.action.Action] = {}
         """
         The policy computed by the agent.
@@ -56,6 +62,12 @@ class GameState(pacai.core.gamestate.GameState):
         self._qvalues: dict[pacai.gridworld.mdp.GridWorldMDPState, dict[pacai.core.action.Action, float]] = {}
         """
         The Q-values computed by the agent.
+        This member will not be serialized.
+        """
+
+        self._minmax_qvalues: tuple[float, float] = (-1.0, 1.0)
+        """
+        The min and max Q-values computed by the agent.
         This member will not be serialized.
         """
 
@@ -72,6 +84,10 @@ class GameState(pacai.core.gamestate.GameState):
                 position = pacai.core.board.Position.from_dict(raw_position)
                 self._mdp_state_values[pacai.gridworld.mdp.GridWorldMDPState(position)] = value
 
+                min_value = min(self._mdp_state_values.values())
+                max_value = max(self._mdp_state_values.values())
+                self._minmax_mdp_state_values = (min_value, max_value)
+
         if ('policy' in agent_action.other_info):
             for (raw_position, raw_action) in agent_action.other_info['policy']:
                 position = pacai.core.board.Position.from_dict(raw_position)
@@ -79,6 +95,8 @@ class GameState(pacai.core.gamestate.GameState):
                 self._policy[pacai.gridworld.mdp.GridWorldMDPState(position)] = action
 
         if ('qvalues' in agent_action.other_info):
+            values = []
+
             for (raw_position, raw_action, qvalue) in agent_action.other_info['qvalues']:
                 position = pacai.core.board.Position.from_dict(raw_position)
                 action = pacai.core.action.Action(raw_action)
@@ -88,6 +106,9 @@ class GameState(pacai.core.gamestate.GameState):
                     self._qvalues[mdp_state] = {}
 
                 self._qvalues[mdp_state][action] = qvalue
+                values.append(qvalue)
+
+            self._minmax_qvalues = (min(values), max(values))
 
     def game_complete(self) -> list[int]:
         # If the agent exited on a positive terminal position, they win.
@@ -114,12 +135,20 @@ class GameState(pacai.core.gamestate.GameState):
             adjacency: pacai.core.board.AdjacencyString | None = None,
             animation_key: str | None = None,
             ) -> PIL.Image.Image:
+        board = typing.cast(pacai.gridworld.board.Board, self.board)
+
         sprite = super().sprite_lookup(sprite_sheet, position, marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
 
         if (marker == pacai.gridworld.board.MARKER_DISPLAY_VALUE):
+            # Draw MDP state values and policies.
             sprite = self._add_mdp_state_value_sprite_info(sprite_sheet, sprite, position)
         elif (marker == pacai.gridworld.board.MARKER_DISPLAY_QVALUE):
+            # Draw Q-values.
             sprite = self._add_qvalue_sprite_info(sprite_sheet, sprite, position)
+        elif ((marker == pacai.gridworld.board.MARKER_TERMINAL)
+                and ((position.row > board._original_height) or (position.col > board._original_width))):
+            # Draw terminal values on the extended q-display.
+            sprite = self._add_terminal_sprite_info(sprite_sheet, sprite, position)
 
         return sprite
 
@@ -128,18 +157,47 @@ class GameState(pacai.core.gamestate.GameState):
             position: pacai.core.board.Position,
             static: bool = False,
             ) -> bool:
-        """ Return true if this marker/position combination should not be drawn on the board. """
-
         if (static):
             return False
 
-        return position in self.get_static_positions()
+        board = typing.cast(pacai.gridworld.board.Board, self.board)
+        return (position.row >= board._original_height) or (position.col >= board._original_width)
 
     def get_static_positions(self) -> list[pacai.core.board.Position]:
-        """ Get a list of positions to draw on the board statically. """
+        board = typing.cast(pacai.gridworld.board.Board, self.board)
 
-        return (list(self.board.get_marker_positions(pacai.gridworld.board.MARKER_DISPLAY_VALUE))
-                + list(self.board.get_marker_positions(pacai.gridworld.board.MARKER_DISPLAY_QVALUE)))
+        positions = []
+        for row in range(board.height):
+            for col in range(board.width):
+                if (row >= board._original_height) or (col >= board._original_width):
+                    positions.append(pacai.core.board.Position(row, col))
+
+        return positions
+
+    def _add_terminal_sprite_info(self,
+            sprite_sheet: pacai.core.spritesheet.SpriteSheet,
+            sprite: PIL.Image.Image,
+            position: pacai.core.board.Position) -> PIL.Image.Image:
+        """ Add coloring to the terminal positions. """
+
+        board = typing.cast(pacai.gridworld.board.Board, self.board)
+
+        if (not board.is_terminal_position(position)):
+            return sprite
+
+        sprite = sprite.copy()
+        canvas = PIL.ImageDraw.Draw(sprite)
+
+        min_value = min(board._terminal_values.values())
+        max_value = max(board._terminal_values.values())
+
+        value = board.get_terminal_value(position)
+        color = self._red_green_gradient(value, min_value, max_value)
+
+        points = [(1, 1), (sprite_sheet.width - 1, sprite_sheet.height - 1)]
+        canvas.rectangle(points, fill = color, outline = sprite_sheet.text, width = 1)
+
+        return sprite
 
     def _add_mdp_state_value_sprite_info(self,
             sprite_sheet: pacai.core.spritesheet.SpriteSheet,
@@ -150,7 +208,6 @@ class GameState(pacai.core.gamestate.GameState):
         board = typing.cast(pacai.gridworld.board.Board, self.board)
 
         sprite = sprite.copy()
-
         canvas = PIL.ImageDraw.Draw(sprite)
 
         # The offset from the visualization position to the true board position.
@@ -160,7 +217,7 @@ class GameState(pacai.core.gamestate.GameState):
         mdp_state = pacai.gridworld.mdp.GridWorldMDPState(base_position)
 
         value = self._mdp_state_values.get(mdp_state, 0.0)
-        color = self._red_green_gradient(value, -1, 1)
+        color = self._red_green_gradient(value, self._minmax_mdp_state_values[0], self._minmax_mdp_state_values[1])
 
         points = [(1, 1), (sprite_sheet.width - 1, sprite_sheet.height - 1)]
         canvas.rectangle(points, fill = color, outline = sprite_sheet.text, width = 1)
@@ -176,7 +233,6 @@ class GameState(pacai.core.gamestate.GameState):
         board = typing.cast(pacai.gridworld.board.Board, self.board)
 
         sprite = sprite.copy()
-
         canvas = PIL.ImageDraw.Draw(sprite)
 
         # The offset from the visualization position to the true board position.
@@ -185,7 +241,7 @@ class GameState(pacai.core.gamestate.GameState):
         base_position = position.add(base_offset)
         mdp_state = pacai.gridworld.mdp.GridWorldMDPState(base_position)
 
-        for (i, point_offsets) in enumerate(QVALUE_TRIANGLE_POINT_OFFSETS):
+        for (direction_index, point_offsets) in enumerate(QVALUE_TRIANGLE_POINT_OFFSETS):
             points = []
 
             for point_offset in point_offsets:
@@ -203,22 +259,40 @@ class GameState(pacai.core.gamestate.GameState):
                 )
                 points.append(tuple(point))
 
-            qvalue = self._qvalues.get(mdp_state, {}).get(pacai.core.action.CARDINAL_DIRECTIONS[i], 0.0)
-            color = self._red_green_gradient(qvalue, -1, 1)
+            qvalue = self._qvalues.get(mdp_state, {}).get(pacai.core.action.CARDINAL_DIRECTIONS[direction_index], 0.0)
+            color = self._red_green_gradient(qvalue, self._minmax_qvalues[0], self._minmax_qvalues[1])
             canvas.polygon(points, fill = color, outline = sprite_sheet.text, width = 1)
 
         return sprite
 
-    def _red_green_gradient(self, value: float, min_value: float, max_value: float, blue: int = 75) -> tuple[int, int, int]:
-        """ Get a color (RGB) between red (min) and green (max) based on the given value. """
+    def _red_green_gradient(self, value: float,
+            min_value: float, max_value: float, divider: float = 0.0,
+            blue_intensity: float = 0.00) -> tuple[int, int, int]:
+        """
+        Get a color (RGB) between red (min) and green (max) based on the given value.
+        Values under the divider will always be red, and values over will always be green.
+        """
 
-        if (min_value >= max_value):
-            raise ValueError(f"Gradient values are not in the correct order. Found: min = {min_value}, max = {max_value}.")
+        if ((min_value > divider) or (divider > max_value)):
+            raise ValueError(("Gradient values are not in the correct order."
+                    + f"Found: min = {min_value}, divider = {divider}, max = {max_value}."))
+
+        red_intensity = 0.0
+        green_intensity = 0.0
+
+        red_mass = max(0.01, divider - min_value)
+        green_mass = max(0.01, max_value - divider)
 
         value = min(max_value, max(min_value, value))
-        ratio = (value - min_value) / (max_value - min_value)
 
-        return (int(255 * (1.0 - ratio)), int(255 * ratio), blue)
+        if (math.isclose(value, divider)):
+            blue_intensity = 1.0
+        elif (value < divider):
+            red_intensity = 0.25 + (0.75 * (divider - value) / red_mass)
+        else:
+            green_intensity = 0.25 + (0.75 * (value - divider) / green_mass)
+
+        return (int(255 * red_intensity), int(255 * green_intensity), int(255 * blue_intensity))
 
     def process_turn(self,
             action: pacai.core.action.Action,
@@ -289,7 +363,11 @@ class GameState(pacai.core.gamestate.GameState):
 
         # Add on terminal values.
         for (position, value) in board._terminal_values.items():
-            texts.append(pacai.core.font.BoardText(position, str(value), pacai.core.font.FontSize.SMALL))
+            text_color = None
+            if ((position.row > board._original_height) or (position.col > board._original_width)):
+                text_color = (0, 0, 0)
+
+            texts.append(pacai.core.font.BoardText(position, str(value), pacai.core.font.FontSize.SMALL, color = text_color))
 
         # If we are using the extended display, fill in all the information.
         if (board.display_qvalues()):
