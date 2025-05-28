@@ -16,6 +16,14 @@ class MDPState(abc.ABC, pacai.util.comparable.SimpleComparable):
     A state or "node" in an MDP.
     """
 
+@typing.runtime_checkable
+class MDPStateCreationFunction(typing.Protocol):
+    """ Create an MDP state from a game state. """
+
+    @abc.abstractmethod
+    def __call__(self, game_state: pacai.core.gamestate.GameState) -> MDPState:
+        ...
+
 StateType = typing.TypeVar('StateType', bound = MDPState)  # pylint: disable=invalid-name
 
 class Transition(typing.Generic[StateType]):
@@ -67,10 +75,6 @@ class MarkovDecisionProcess(typing.Generic[StateType], pacai.util.json.DictConve
         Inform the MDP about the game's start.
         This is the MDP's first chance to see the game/board and initialize the appropriate data.
         """
-
-    @abc.abstractmethod
-    def make_mdp_state(self, game_state: pacai.core.gamestate.GameState) -> StateType:
-        """ Create an MDP satte from a game state. """
 
     @abc.abstractmethod
     def get_starting_state(self) -> StateType:

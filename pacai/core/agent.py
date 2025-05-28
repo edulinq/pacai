@@ -31,6 +31,8 @@ class Agent(abc.ABC):
             move_delay: int = pacai.core.agentinfo.DEFAULT_MOVE_DELAY,
             state_eval_func: pacai.core.gamestate.AgentStateEvaluationFunction | pacai.util.reflection.Reference | str =
                     pacai.core.agentinfo.DEFAULT_STATE_EVAL,
+            training: bool = False,
+            training_epoch: int = 0,
             **kwargs) -> None:
         self.name: pacai.util.reflection.Reference = pacai.util.reflection.Reference(name)
         """ The name of this agent. """
@@ -68,6 +70,12 @@ class Agent(abc.ABC):
         This is updated in the beginning of get_action_full().
         This will include times when the agent was not on the board (a None position).
         """
+
+        self.training: bool = training
+        """ This instance of this agent has been created for training. """
+
+        self.training_epoch: int = training_epoch
+        """ The training epoch (number of training games) the agent has completed. """
 
         logging.debug("Created agent '%s' with move delay %d and state evaluation function '%s'.",
                 pacai.util.reflection.get_qualified_name(self.name),

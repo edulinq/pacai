@@ -31,6 +31,15 @@ class GridWorldMDPState(pacai.core.mdp.MDPState):
         self.is_terminal: bool = (position == TERMINAL_POSITION)
         """ Whether or not this state is the terminal state. """
 
+def make_mdp_state(game_state: pacai.core.gamestate.GameState) -> GridWorldMDPState:
+    """ Create a GridWorld MDP state from a game state. """
+
+    position = game_state.get_agent_position()
+    if (position is None):
+        raise ValueError("Cannot create GridWorld MDP state when agent has no position.")
+
+    return GridWorldMDPState(position)
+
 class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
     """ An MDP that represents the GridWorld game. """
 
@@ -61,13 +70,6 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
 
         if (self.start_position is None):
             raise ValueError("Could not find starting position.")
-
-    def make_mdp_state(self, game_state: pacai.core.gamestate.GameState) -> GridWorldMDPState:
-        position = game_state.get_agent_position()
-        if (position is None):
-            raise ValueError("Cannot create GridWorld MDP state when agent has no position.")
-
-        return GridWorldMDPState(position)
 
     def get_starting_state(self) -> GridWorldMDPState:
         if (self.start_position is None):

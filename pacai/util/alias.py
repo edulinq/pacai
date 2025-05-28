@@ -166,3 +166,7 @@ UI_SHORT_NAMES: list[str] = [
     UI_TK.short,
     UI_WEB.short,
 ]
+
+# Misc
+
+MDP_STATE_CREATION_GRIDWORLD: Alias = Alias('mdp-state-creation-gridworld', 'pacai.gridworld.mdp.make_mdp_state')

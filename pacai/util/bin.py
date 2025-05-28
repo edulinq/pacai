@@ -21,12 +21,14 @@ def run_games(
     training_results = []
     results = []
 
-    for game in args._games:
+    for (game_index, game) in enumerate(args._games):
         # Set the information gained from training for the next game run.
         for (agent_info, record) in training_info.items():
             if ((record.agent_action is None) or (agent_info not in game.game_info.agent_infos)):
                 continue
 
+            game.game_info.agent_infos[agent_info].training = True
+            game.game_info.agent_infos[agent_info].training_epoch = game_index
             game.game_info.agent_infos[agent_info].extra_arguments.update(record.agent_action.other_info)
 
         result = game.run(args._ui)
