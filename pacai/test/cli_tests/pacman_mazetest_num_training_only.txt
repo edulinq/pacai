@@ -1,0 +1,18 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--board", "maze-test",
+        "--pacman", "agent-random",
+        "--ui", "null",
+        "--num-games", "0",
+        "--num-training", "5"
+    ]
+}
+---
+<LOG_PREFIX> -- Training Average Score: 439.4
+<LOG_PREFIX> -- Training Scores:        502, 430, 453, 376, 436
+<LOG_PREFIX> -- Training Win Rate:      5 / 5 (1.00)
+<LOG_PREFIX> -- Training Record:        Win, Win, Win, Win, Win
+<LOG_PREFIX> -- Training Average Turns: 70.6
+<LOG_PREFIX> -- Training Turn Counts:   8, 80, 57, 134, 74

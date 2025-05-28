@@ -104,7 +104,8 @@ class JSONTest(pacai.test.base.BaseTest):
                     },
                     "extra_info": {},
                     "isolation_level": "none",
-                    "max_turns": -1
+                    "max_turns": -1,
+                    "training": False,
                 },
                 None,
             ),
@@ -114,7 +115,8 @@ class JSONTest(pacai.test.base.BaseTest):
                     {0: pacai.core.agentinfo.AgentInfo(name = 'a.b')},
                     seed = 4,
                     max_turns = 4,
-                    isolation_level = pacai.core.isolation.level.Level.PROCESS
+                    isolation_level = pacai.core.isolation.level.Level.PROCESS,
+                    training = True,
                 ),
                 {
                     "seed": 4,
@@ -137,7 +139,8 @@ class JSONTest(pacai.test.base.BaseTest):
                     },
                     "extra_info": {},
                     "isolation_level": "process",
-                    "max_turns": 4
+                    "max_turns": 4,
+                    "training": True,
                 },
                 None,
             ),
@@ -323,6 +326,17 @@ class JSONTest(pacai.test.base.BaseTest):
                         seed = 4,
                     ),
                     start_time = pacai.util.time.Timestamp(12345),
+                    agent_complete_records = {
+                        0: pacai.core.agentaction.AgentActionRecord(
+                            agent_index = 0,
+                            agent_action = pacai.core.agentaction.AgentAction(
+                                action = pacai.core.action.STOP,
+                                other_info = {'value': 1},
+                            ),
+                            duration = pacai.util.time.Duration(0),
+                            crashed = False,
+                        ),
+                    },
                 ),
                 {
                     "game_id": 1234,
@@ -348,6 +362,7 @@ class JSONTest(pacai.test.base.BaseTest):
                         "extra_info": {},
                         "isolation_level": "none",
                         "max_turns": -1,
+                        "training": False,
                     },
                     "start_time": 12345,
                     "end_time": None,
@@ -355,6 +370,19 @@ class JSONTest(pacai.test.base.BaseTest):
                     "score": 0,
                     "game_timeout": False,
                     "timeout_agent_indexes": [],
+                    "agent_complete_records": {
+                        0: {
+                            "agent_index": 0,
+                            "agent_action": {
+                                "action": "STOP",
+                                "board_highlights": [],
+                                "other_info": {'value': 1},
+                                "clear_inputs": False,
+                            },
+                            "duration": 0,
+                            "crashed": False,
+                        },
+                    },
                     "crash_agent_indexes": [],
                     "winning_agent_indexes": [],
                 },
@@ -410,6 +438,7 @@ class JSONTest(pacai.test.base.BaseTest):
                         "extra_info": {},
                         "isolation_level": "process",
                         "max_turns": 4,
+                        "training": False,
                     },
                     "start_time": 12345,
                     "end_time": None,
@@ -435,6 +464,7 @@ class JSONTest(pacai.test.base.BaseTest):
                     "score": 0,
                     "game_timeout": False,
                     "timeout_agent_indexes": [],
+                    "agent_complete_records": {},
                     "crash_agent_indexes": [],
                     "winning_agent_indexes": [],
                 },

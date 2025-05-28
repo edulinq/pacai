@@ -28,6 +28,7 @@ class GameInfo(pacai.util.json.DictConverter):
             isolation_level: pacai.core.isolation.level.Level = pacai.core.isolation.level.Level.NONE,
             max_turns: int = DEFAULT_MAX_TURNS,
             seed: int | None = None,
+            training: bool = False,
             extra_info: dict[str, typing.Any] | None = None,
             ) -> None:
         if (seed is None):
@@ -54,6 +55,9 @@ class GameInfo(pacai.util.json.DictConverter):
         If -1, unlimited moves are allowed.
         """
 
+        self.training: bool = training
+        """ Whether this game is meant for training agents. """
+
         if (extra_info is None):
             extra_info = {}
 
@@ -67,6 +71,7 @@ class GameInfo(pacai.util.json.DictConverter):
             'agent_infos': {id: info.to_dict() for (id, info) in self.agent_infos.items()},
             'isolation_level': self.isolation_level.value,
             'max_turns': self.max_turns,
+            'training': self.training,
             'extra_info': self.extra_info,
         }
 
@@ -78,6 +83,7 @@ class GameInfo(pacai.util.json.DictConverter):
             agent_infos = {int(id): pacai.core.agentinfo.AgentInfo.from_dict(raw_info) for (id, raw_info) in data['agent_infos'].items()},
             isolation_level = pacai.core.isolation.level.Level(data.get('isolation_level', pacai.core.isolation.level.Level.NONE.value)),
             max_turns = data.get('max_turns', DEFAULT_MAX_TURNS),
+            training = data.get('training', False),
             extra_info = data.get('extra_info', None))
 
 class GameResult(pacai.util.json.DictConverter):
@@ -94,6 +100,7 @@ class GameResult(pacai.util.json.DictConverter):
             start_time: pacai.util.time.Timestamp | None = None,
             end_time: pacai.util.time.Timestamp | None = None,
             history: list[pacai.core.agentaction.AgentActionRecord] | None = None,
+            agent_complete_records: dict[int, pacai.core.agentaction.AgentActionRecord] | None = None,
             **kwargs) -> None:
         self.game_id: int = game_id
         """ The ID of the game result. """
@@ -115,6 +122,15 @@ class GameResult(pacai.util.json.DictConverter):
 
         self.history: list[pacai.core.agentaction.AgentActionRecord] = history
         """ The history of actions taken by each agent in this game. """
+
+        if (agent_complete_records is None):
+            agent_complete_records = {}
+
+        self.agent_complete_records: dict[int, pacai.core.agentaction.AgentActionRecord] = agent_complete_records
+        """
+        The record recieved from an agent when the game finishes.
+        For agents that learn, this may include information that the agent learned this game.
+        """
 
         self.score: float = score
         """ The score of the game. """
@@ -150,6 +166,7 @@ class GameResult(pacai.util.json.DictConverter):
             'start_time': self.start_time,
             'end_time': self.end_time,
             'history': [item.to_dict() for item in self.history],
+            'agent_complete_records': {agent_index: record.to_dict() for (agent_index, record) in self.agent_complete_records.items()},
             'score': self.score,
             'game_timeout': self.game_timeout,
             'timeout_agent_indexes': self.timeout_agent_indexes,
@@ -159,12 +176,17 @@ class GameResult(pacai.util.json.DictConverter):
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        agent_complete_records = {}
+        for (agent_index, raw_record) in data.get('agent_complete_records', {}).items():
+            agent_complete_records[agent_index] = pacai.core.agentaction.AgentActionRecord.from_dict(raw_record)
+
         return cls(
             data['game_id'],
             GameInfo.from_dict(data['game_info']),
             start_time = data.get('start_time', None),
             end_time = data.get('end_time', None),
             history = [pacai.core.agentaction.AgentActionRecord.from_dict(item) for item in data.get('history', [])],
+            agent_complete_records = agent_complete_records,
             score = data.get('score', 0),
             game_timeout = data.get('game_timeout', False),
             timeout_agent_indexes = data.get('timeout_agent_indexes', None),
@@ -347,7 +369,7 @@ class Game(abc.ABC):
         result.score = state.score
 
         # Notify agents about the end of this game.
-        isolator.game_complete(state)
+        result.agent_complete_records = isolator.game_complete(state)
 
         # All the game to make final updates to the result.
         self.game_complete(state, result)
@@ -391,6 +413,10 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
     parser.add_argument('--num-games', dest = 'num_games',
             action = 'store', type = int, default = 1,
             help = 'The number of games to play (default: %(default)s).')
+
+    parser.add_argument('--num-training', dest = 'num_training',
+            action = 'store', type = int, default = 0,
+            help = 'The number of games to play in training mode before playing `--num-games` real games (default: %(default)s).')
 
     parser.add_argument('--seed', dest = 'seed',
             action = 'store', type = int, default = None,
@@ -461,8 +487,10 @@ def init_from_args(
     if (args.board is None):
         raise ValueError("No board was specified.")
 
-    if (args.num_games <= 0):
-        raise ValueError(f"At least one game must be played, {args.num_games} was specified.")
+    total_games = args.num_games + args.num_training
+
+    if (total_games <= 0):
+        raise ValueError(f"At least one game must be played (--num-games + --num-training), {total_games} was specified.")
 
     # Establish an RNG to generate seeds for each game using the given seed.
     seed = args.seed
@@ -489,7 +517,7 @@ def init_from_args(
     all_agent_infos = []
     all_games = []
 
-    for i in range(args.num_games):
+    for i in range(total_games):
         game_seed = rng.randint(0, 2**64)
 
         all_boards.append(board.copy())
@@ -500,12 +528,13 @@ def init_from_args(
                 all_agent_infos[-1],
                 isolation_level = pacai.core.isolation.level.Level(args.isolation_level),
                 max_turns = args.max_turns,
+                training = (i < args.num_training),
                 seed = game_seed
         )
 
         # Suffix the save path if there is more than one game.
         save_path = base_save_path
-        if ((save_path is not None) and (args.num_games > 1)):
+        if ((save_path is not None) and (total_games > 1)):
             parts = os.path.splitext(save_path)
             save_path = f"{parts[0]}_{i:03d}{parts[1]}"
 
@@ -540,6 +569,7 @@ def _override_args_with_replay(args: argparse.Namespace, base_agent_infos: dict[
 
     # Special settings for replays.
     args.num_games = 1
+    args.num_training = 0
     args.max_turns = len(replay_info.history)
 
     # Script the moves for each agent based on the replay's history.
