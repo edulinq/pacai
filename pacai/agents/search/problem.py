@@ -102,7 +102,7 @@ class SearchProblemAgent(pacai.core.agent.Agent):
         """
 
         search_problem = self._problem_class(game_state = state, cost_function = self._problem_cost_function)
-        solution = self._solver_function(search_problem, self._heuristic_function, self._rng)
+        solution = self._solver_function(search_problem, self._heuristic_function, self.rng)
 
         if (solution.goal_node is not None):
             search_problem.complete(solution.goal_node)

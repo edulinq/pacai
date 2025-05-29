@@ -24,21 +24,30 @@ POSSIBLE_STATE_MARKERS: set[pacai.core.board.Marker] = {
 class GridWorldMDPState(pacai.core.mdp.MDPState):
     """ An MDP state for GridWorld. """
 
-    def __init__(self, position: pacai.core.board.Position) -> None:
+    def __init__(self, position: pacai.core.board.Position, **kwargs) -> None:
         self.position: pacai.core.board.Position = position
         """ The current position of the GridWorld agent. """
 
         self.is_terminal: bool = (position == TERMINAL_POSITION)
         """ Whether or not this state is the terminal state. """
 
-def make_mdp_state(game_state: pacai.core.gamestate.GameState) -> GridWorldMDPState:
-    """ Create a GridWorld MDP state from a game state. """
+    def to_dict(self) -> dict[str, typing.Any]:
+        return {
+            'position': self.position.to_dict(),
+        }
 
-    position = game_state.get_agent_position()
-    if (position is None):
-        raise ValueError("Cannot create GridWorld MDP state when agent has no position.")
+    @classmethod
+    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        data['position'] = pacai.core.board.Position.from_dict(data['position'])
+        return cls(**data)
 
-    return GridWorldMDPState(position)
+    @classmethod
+    def from_game_state(cls, game_state: pacai.core.gamestate.GameState, **kwargs) -> 'GridWorldMDPState':
+        position = game_state.get_agent_position()
+        if (position is None):
+            raise ValueError("Cannot create GridWorld MDP state when agent has no position.")
+
+        return GridWorldMDPState(position)
 
 class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
     """ An MDP that represents the GridWorld game. """

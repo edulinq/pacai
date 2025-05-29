@@ -48,10 +48,10 @@ class Agent(abc.ABC):
         """
 
         clean_state_eval_func = pacai.util.reflection.resolve_and_fetch(pacai.core.gamestate.AgentStateEvaluationFunction, state_eval_func)
-        self._evaluation_function: pacai.core.gamestate.AgentStateEvaluationFunction = clean_state_eval_func
+        self.evaluation_function: pacai.core.gamestate.AgentStateEvaluationFunction = clean_state_eval_func
         """ The evaluation function that agent will use to assess game states. """
 
-        self._rng: random.Random = random.Random()
+        self.rng: random.Random = random.Random()
         """
         The RNG this agent should use whenever it wants randomness.
         This object will be constructed right away,
@@ -69,6 +69,12 @@ class Agent(abc.ABC):
         Keep track of the last positions this agent was in.
         This is updated in the beginning of get_action_full().
         This will include times when the agent was not on the board (a None position).
+        """
+
+        self.last_actions: list[pacai.core.action.Action] = []
+        """
+        Keep track of the last actions this agent has taken.
+        This is updated in the beginning of get_action_full().
         """
 
         self.training: bool = training
@@ -96,9 +102,11 @@ class Agent(abc.ABC):
         and only implement this if they need additional functionality.
         """
 
-        self.last_positions.append(state.get_agent_position(self.agent_index))
-
         action = self.get_action(state)
+
+        self.last_positions.append(state.get_agent_position(self.agent_index))
+        self.last_actions.append(action)
+
         return pacai.core.agentaction.AgentAction(action)
 
     def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
@@ -124,7 +132,7 @@ class Agent(abc.ABC):
         """
 
         self.agent_index = agent_index
-        self._rng = random.Random(suggested_seed)
+        self.rng = random.Random(suggested_seed)
 
         self.game_start(initial_state)
 
@@ -168,11 +176,11 @@ class Agent(abc.ABC):
             **kwargs) -> float:
         """
         Evaluate the state to get a decide how good an action was.
-        The base implementation for this function just calls `self._evaluation_function`,
+        The base implementation for this function just calls `self.evaluation_function`,
         but child classes may override this method to easily implement their own evaluations.
         """
 
-        return self._evaluation_function(state, agent = self, action = action, old_state = old_state, **kwargs)
+        return self.evaluation_function(state, agent = self, action = action, old_state = old_state, **kwargs)
 
 def load(agent_info: pacai.core.agentinfo.AgentInfo) -> Agent:
     """

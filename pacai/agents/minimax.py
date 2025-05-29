@@ -74,7 +74,7 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
         self._stats_nodes_visited.append(0)
 
         actions, score = self.minimax_step(state, self.ply_count + 1, math.inf, -math.inf)
-        action = self._rng.choice(actions)
+        action = self.rng.choice(actions)
 
         logging.debug("Turn: %d, Game State Score: %d, Minimax Score: %d, Chosen Action: %s, States Evaluated: %d, Nodes Visited: %d.",
                 state.turn_count, state.score, score, action,
@@ -156,10 +156,10 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
         """
 
         # Randomly choose an action.
-        action = self._rng.choice(legal_actions)
+        action = self.rng.choice(legal_actions)
 
         # Score the action.
-        successor = state.generate_successor(action, self._rng)
+        successor = state.generate_successor(action, self.rng)
         _, score = self.minimax_step(successor, ply_count, alpha, beta)
 
         return [action], score
@@ -185,10 +185,10 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
         """
 
         # Randomly choose an action.
-        action = self._rng.choice(legal_actions)
+        action = self.rng.choice(legal_actions)
 
         # Score the action.
-        successor = state.generate_successor(action, self._rng)
+        successor = state.generate_successor(action, self.rng)
         _, score = self.minimax_step(successor, ply_count, alpha, beta)
 
         return [action], score
@@ -215,10 +215,10 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
         """
 
         # Randomly choose an action.
-        action = self._rng.choice(legal_actions)
+        action = self.rng.choice(legal_actions)
 
         # Score the action.
-        successor = state.generate_successor(action, self._rng)
+        successor = state.generate_successor(action, self.rng)
         _, score = self.minimax_step(successor, ply_count, alpha, beta)
 
         return score

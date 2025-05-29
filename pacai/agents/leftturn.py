@@ -61,4 +61,4 @@ class LeftTurnAgent(pacai.core.agent.Agent):
         if (next_action in legal_actions):
             return next_action
 
-        return self._rng.choice(legal_actions)
+        return self.rng.choice(legal_actions)

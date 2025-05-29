@@ -9,4 +9,4 @@ class RandomAgent(pacai.core.agent.Agent):
         """ Choose a random action. """
 
         legal_actions = state.get_legal_actions()
-        return self._rng.choice(legal_actions)
+        return self.rng.choice(legal_actions)

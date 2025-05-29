@@ -93,7 +93,7 @@ def init_from_args(args: argparse.Namespace) -> dict[int, pacai.core.agentinfo.A
         'name': args.agent,
         'remember_last_action': False,
         'mdp': mdp,
-        'mdp_state_creation_func': pacai.util.alias.MDP_STATE_CREATION_GRIDWORLD.long,
+        'mdp_state_class': pacai.util.alias.MDP_STATE_CLASS_GRIDWORLD.long,
         'discount_rate': args.discount_rate,
         'iterations': args.iterations,
     }

@@ -169,4 +169,4 @@ UI_SHORT_NAMES: list[str] = [
 
 # Misc
 
-MDP_STATE_CREATION_GRIDWORLD: Alias = Alias('mdp-state-creation-gridworld', 'pacai.gridworld.mdp.make_mdp_state')
+MDP_STATE_CLASS_GRIDWORLD: Alias = Alias('mdp-state-class-gridworld', 'pacai.gridworld.mdp.GridWorldMDPState')

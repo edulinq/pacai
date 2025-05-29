@@ -19,10 +19,10 @@ class GreedyAgent(pacai.core.agent.Agent):
         if (pacai.core.action.STOP in legal_actions):
             legal_actions.remove(pacai.core.action.STOP)
 
-        successors = [(state.generate_successor(action, self._rng), action) for action in legal_actions]
+        successors = [(state.generate_successor(action, self.rng), action) for action in legal_actions]
         scores = [(self.evaluate_state(successor, action, state), action) for (successor, action) in successors]
 
         best_score = max(scores)[0]
         best_actions = [pair[1] for pair in scores if pair[0] == best_score]
 
-        return self._rng.choice(best_actions)
+        return self.rng.choice(best_actions)

@@ -11,18 +11,16 @@ import pacai.core.gamestate
 import pacai.util.comparable
 import pacai.util.json
 
-class MDPState(abc.ABC, pacai.util.comparable.SimpleComparable):
+class MDPState(pacai.util.comparable.SimpleComparable, pacai.util.json.DictConverter):
     """
     A state or "node" in an MDP.
     """
 
-@typing.runtime_checkable
-class MDPStateCreationFunction(typing.Protocol):
-    """ Create an MDP state from a game state. """
-
+    @classmethod
     @abc.abstractmethod
-    def __call__(self, game_state: pacai.core.gamestate.GameState) -> MDPState:
-        ...
+    # Note that `typing.Self` is returned, but that is introduced in Python 3.12.
+    def from_game_state(cls, game_state: pacai.core.gamestate.GameState, **kwargs) -> typing.Any:
+        """ Create an instance of this MDP state from a game state. """
 
 StateType = typing.TypeVar('StateType', bound = MDPState)  # pylint: disable=invalid-name
 
