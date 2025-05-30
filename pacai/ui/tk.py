@@ -16,6 +16,10 @@ DEATH_SLEEP_TIME_SECS: float = 0.5
 MIN_WINDOW_HEIGHT: int = 100
 MIN_WINDOW_WIDTH: int = 100
 
+_tk_root: tkinter.Tk | None = None
+
+_tk_window_count: int = 0
+
 class TkUserInputDevice(pacai.core.ui.UserInputDevice):
     """
     Use Tk to capture keyboard inputs on the window.
@@ -39,13 +43,13 @@ class TkUserInputDevice(pacai.core.ui.UserInputDevice):
 
         return actions
 
-    def register_root(self, tk_root: tkinter.Tk) -> None:
+    def register_root(self, tk_window: tkinter.Tk | tkinter.Toplevel) -> None:
         """ Register/Bind this handler to a root Tk element. """
 
-        tk_root.bind("<KeyPress>", self._key_press)
-        tk_root.bind("<KeyRelease>", self._key_release)
-        tk_root.bind("<FocusIn>", self._clear)
-        tk_root.bind("<FocusOut>", self._clear)
+        tk_window.bind("<KeyPress>", self._key_press)
+        tk_window.bind("<KeyRelease>", self._key_release)
+        tk_window.bind("<FocusIn>", self._clear)
+        tk_window.bind("<FocusOut>", self._clear)
 
     def _clear(self, *args, **kwargs) -> None:
         """ Handle a call to clear the current keys. """
@@ -81,7 +85,7 @@ class TkUI(pacai.core.ui.UI):
         self._title: str = title
         """ The title of the Tk window. """
 
-        self._root: tkinter.Tk = tkinter.Tk(baseName = TK_BASE_NAME)
+        self._window: tkinter.Tk | tkinter.Toplevel | None = None
         """ The root/base Tk element. """
 
         self._canvas: tkinter.Canvas | None = None
@@ -123,28 +127,30 @@ class TkUI(pacai.core.ui.UI):
         if (self._sprite_sheet is None):
             raise ValueError("Sprites are not loaded in this UI.")
 
-        self._root.protocol('WM_DELETE_WINDOW', self._handle_window_closed)
-        self._root.minsize(width = MIN_WINDOW_WIDTH, height = MIN_WINDOW_HEIGHT)
-        self._root.resizable(True, True)
-        self._root.title(self._title)
-        self._root.bind("<Configure>", self._handle_resize)
+        self._window = _get_tk_window()
+
+        self._window.protocol('WM_DELETE_WINDOW', self._handle_window_closed)
+        self._window.minsize(width = MIN_WINDOW_WIDTH, height = MIN_WINDOW_HEIGHT)
+        self._window.resizable(True, True)
+        self._window.title(self._title)
+        self._window.bind("<Configure>", self._handle_resize)
 
         # Don't start the window too large.
-        max_initial_height = self._root.winfo_screenheight() - 100
-        max_initial_width = self._root.winfo_screenwidth() - 100
+        max_initial_height = self._window.winfo_screenheight() - 100
+        max_initial_width = self._window.winfo_screenwidth() - 100
 
         # Height is +1 for the score.
         self._height = min(max_initial_height, max(MIN_WINDOW_HEIGHT, (state.board.height + 1) * self._sprite_sheet.height))
         self._width = min(max_initial_width, max(MIN_WINDOW_WIDTH, state.board.width * self._sprite_sheet.width))
 
-        self._canvas = tkinter.Canvas(self._root, height = self._height, width = self._width, highlightthickness = 0)
+        self._canvas = tkinter.Canvas(self._window, height = self._height, width = self._width, highlightthickness = 0)
 
         self._image_area = self._canvas.create_image(0, 0, image = None, anchor = tkinter.NW)
         self._canvas.pack(fill = 'both', expand = True)
 
         # Initialize the user input (keyboard).
         if (isinstance(self._user_input_device, TkUserInputDevice)):
-            self._user_input_device.register_root(self._root)
+            self._user_input_device.register_root(self._window)
 
     def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
         if (self._window_closed):
@@ -152,7 +158,7 @@ class TkUI(pacai.core.ui.UI):
             return
 
         # Ensure no pre-mature draws.
-        if (self._canvas is None):
+        if ((self._window is None) or (self._canvas is None)):
             raise ValueError("Cannot draw before game has started.")
 
         # Leverage the existing draw_image() method to produce an image.
@@ -166,11 +172,12 @@ class TkUI(pacai.core.ui.UI):
         tk_image = PIL.ImageTk.PhotoImage(image)
         self._canvas.itemconfig(self._image_area, image = tk_image)
 
-        self._root.update_idletasks()
-        self._root.update()
+        self._window.update_idletasks()
+        self._window.update()
 
     def sleep(self, sleep_time_ms: int) -> None:
-        self._root.after(sleep_time_ms, None)  # type: ignore
+        if (self._window is not None):
+            self._window.after(sleep_time_ms, None)  # type: ignore
 
     def _handle_resize(self, event: tkinter.Event) -> None:
         """ Handle Tk configure (resize) events. """
@@ -206,8 +213,30 @@ class TkUI(pacai.core.ui.UI):
         # Sleep for a short period, so the last state of the game can be seen.
         time.sleep(DEATH_SLEEP_TIME_SECS)
 
-        if (self._root is not None):
-            self._root.destroy()
+        if (self._window is not None):
+            _cleanup_tk_window(self._window)
 
         if (call_exit):
             sys.exit(0)
+
+def _get_tk_window() -> tkinter.Tk | tkinter.Toplevel:
+    global _tk_root  # pylint: disable=global-statement
+    global _tk_window_count  # pylint: disable=global-statement
+
+    _tk_window_count += 1
+
+    if (_tk_root is None):
+        _tk_root = tkinter.Tk(baseName = TK_BASE_NAME)
+        return _tk_root
+
+    return tkinter.Toplevel()
+
+def _cleanup_tk_window(window: tkinter.Tk | tkinter.Toplevel) -> None:
+    global _tk_root  # pylint: disable=global-statement
+    global _tk_window_count  # pylint: disable=global-statement
+
+    window.destroy()
+
+    _tk_window_count -= 1
+    if (_tk_window_count == 0):
+        _tk_root = None

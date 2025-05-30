@@ -466,7 +466,8 @@ def init_from_args(
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
-    This will create a number of games (and related resources) depending on `--num-games`.
+    This will create a number of games (and related resources)
+    based on `--num-games` + `--num-training`.
     Each of these resources will be placed in their respective list at
     `args._boards`, `args._agent_infos`, or `args._games`.
     """

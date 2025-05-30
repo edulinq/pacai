@@ -11,7 +11,7 @@ def run_games(
         ) -> int:
     """
     Run one or more standard games using pre-parsed arguments.
-    The arguments are expected to have `_games` and `_ui`,
+    The arguments are expected to have `_games` and `_uis`,
     as if `pacai.core.ui.init_from_args()` and `pacai.core.game.init_from_args()` have been called.
     """
 
@@ -24,6 +24,7 @@ def run_games(
     # Run training games/epochs.
     for i in range(args.num_training):
         game = args._games[i]
+        ui = args._uis[i]
 
         for (agent_index, agent_info) in game.game_info.agent_infos.items():
             # Set information gained from the previous training epochs.
@@ -35,7 +36,7 @@ def run_games(
 
             agent_info.extra_arguments.update(data)
 
-        result = game.run(args._ui)
+        result = game.run(ui)
         training_results.append(result)
 
         for (agent_index, agent_record) in result.agent_complete_records.items():
@@ -46,12 +47,13 @@ def run_games(
 
     for i in range(args.num_games):
         game = args._games[i + args.num_training]
+        ui = args._uis[i + args.num_training]
 
         # Set any information gained from training.
         for (agent_index, training_info) in training_infos.items():
             game.game_info.agent_infos[agent_index].extra_arguments.update(training_info)
 
-        result = game.run(args._ui)
+        result = game.run(ui)
         results.append(result)
 
     if (len(training_results) > 0):

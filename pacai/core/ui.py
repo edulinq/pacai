@@ -556,11 +556,15 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
             action = 'store_true', default = DEFAULT_ANIMATION_OPTIMIZE,
             help = 'Optimize the animation to reduce file size (will take longer) (default: %(default)s).')
 
-def init_from_args(args: argparse.Namespace, additional_args: dict | None = None) -> argparse.Namespace:
+def init_from_args(args: argparse.Namespace,
+        additional_args: dict | None = None,
+        num_uis: int = 0) -> argparse.Namespace:
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
-    A constructed UI will be placed in the `args._ui`.
+    Constructed UIs will be placed `args._uis`.
+    If `num_uis` is not provided (or <= 0),
+    then `args.num_games` + `args.num_training` will be used.
     """
 
     ui_args = {
@@ -574,7 +578,10 @@ def init_from_args(args: argparse.Namespace, additional_args: dict | None = None
     if (additional_args is not None):
         ui_args.update(additional_args)
 
-    ui = pacai.util.reflection.new_object(args.ui, **ui_args)
-    setattr(args, '_ui', ui)
+    if (num_uis <= 0):
+        num_uis = args.num_games + args.num_training
+
+    uis = [pacai.util.reflection.new_object(args.ui, **ui_args) for _ in range(num_uis)]
+    setattr(args, '_uis', uis)
 
     return args
