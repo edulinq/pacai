@@ -19,6 +19,7 @@ class AgentAction(pacai.util.json.DictConverter):
             action: pacai.core.action.Action = pacai.core.action.STOP,
             board_highlights: list[pacai.core.board.Highlight] | None = None,
             clear_inputs: bool = False,
+            training_info: dict[str, typing.Any] | None = None,
             other_info: dict[str, typing.Any] | None = None,
             ) -> None:
         self.action: pacai.core.action.Action = action
@@ -33,6 +34,17 @@ class AgentAction(pacai.util.json.DictConverter):
         self.clear_inputs = clear_inputs
         """ Instruct the game that the agent has consumed the user inputs and any buffered inputs should be cleared. """
 
+        if (training_info is None):
+            training_info = {}
+
+        self.training_info: dict[str, typing.Any] = training_info
+        """
+        Information about training that the agent wishes to pass to the game.
+        Games may store this information and send it new subsequent agents on construction.
+
+        All information put here must be trivially JSON serializable.
+        """
+
         if (other_info is None):
             other_info = {}
 
@@ -40,6 +52,8 @@ class AgentAction(pacai.util.json.DictConverter):
         """
         Additional information that the agent wishes to pass to the game.
         Specific games may use or ignore this information.
+
+        All information put here must be trivially JSON serializable.
         """
 
     def to_dict(self) -> dict[str, typing.Any]:

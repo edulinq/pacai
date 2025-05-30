@@ -208,6 +208,7 @@ class JSONTest(pacai.test.base.BaseTest):
                     "action": "STOP",
                     "board_highlights": [],
                     "other_info": {},
+                    "training_info": {},
                     "clear_inputs": False,
                 },
                 None,
@@ -220,6 +221,7 @@ class JSONTest(pacai.test.base.BaseTest):
                              pacai.core.board.Highlight(pacai.core.board.Position(row = 3, col = 4), 1),
                         ],
                         other_info = {'foo': 'bar'},
+                        training_info = {'weights': [0, 1, 2]},
                         clear_inputs = False,
                 ),
                 {
@@ -237,6 +239,7 @@ class JSONTest(pacai.test.base.BaseTest):
                     "other_info": {
                         "foo": "bar",
                     },
+                    "training_info": {'weights': [0, 1, 2]},
                     "clear_inputs": False,
                 },
                 None,
@@ -255,6 +258,7 @@ class JSONTest(pacai.test.base.BaseTest):
                         "action": "STOP",
                         "board_highlights": [],
                         "other_info": {},
+                        "training_info": {},
                         "clear_inputs": False,
                     },
                     "duration": 10,
@@ -309,6 +313,7 @@ class JSONTest(pacai.test.base.BaseTest):
                         "other_info": {
                             "foo": "bar",
                         },
+                        "training_info": {},
                         "clear_inputs": True,
                     },
                     "duration": 10,
@@ -332,6 +337,7 @@ class JSONTest(pacai.test.base.BaseTest):
                             agent_action = pacai.core.agentaction.AgentAction(
                                 action = pacai.core.action.STOP,
                                 other_info = {'value': 1},
+                                training_info = {'value': 2},
                             ),
                             duration = pacai.util.time.Duration(0),
                             crashed = False,
@@ -377,6 +383,7 @@ class JSONTest(pacai.test.base.BaseTest):
                                 "action": "STOP",
                                 "board_highlights": [],
                                 "other_info": {'value': 1},
+                                "training_info": {'value': 2},
                                 "clear_inputs": False,
                             },
                             "duration": 0,
@@ -449,6 +456,7 @@ class JSONTest(pacai.test.base.BaseTest):
                                 "action": "STOP",
                                 "board_highlights": [],
                                 "other_info": {},
+                                "training_info": {},
                                 "clear_inputs": False,
                             },
                             "duration": 10,

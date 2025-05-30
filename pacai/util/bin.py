@@ -1,5 +1,6 @@
 import argparse
 import logging
+import typing
 
 import pacai.core.agentaction
 import pacai.core.game
@@ -17,28 +18,41 @@ def run_games(
     if (winning_agent_indexes is None):
         winning_agent_indexes = set()
 
-    training_info: dict[int, pacai.core.agentaction.AgentActionRecord] = {}
+    training_infos: dict[int, dict[str, typing.Any]] = {}
     training_results = []
-    results = []
 
-    for (game_index, game) in enumerate(args._games):
-        # Set the information gained from training for the next game run.
-        for (agent_info, record) in training_info.items():
-            if ((record.agent_action is None) or (agent_info not in game.game_info.agent_infos)):
-                continue
+    # Run training games/epochs.
+    for i in range(args.num_training):
+        game = args._games[i]
 
-            game.game_info.agent_infos[agent_info].training = True
-            game.game_info.agent_infos[agent_info].training_epoch = game_index
-            game.game_info.agent_infos[agent_info].extra_arguments.update(record.agent_action.other_info)
+        for (agent_index, agent_info) in game.game_info.agent_infos.items():
+            # Set information gained from the previous training epochs.
+            data = training_infos.get(agent_index, {}).copy()
+
+            # Tell agents we are training.
+            data['training'] = True
+            data['training_epoch'] = i
+
+            agent_info.extra_arguments.update(data)
 
         result = game.run(args._ui)
+        training_results.append(result)
 
-        # If this was a training run, store the information for later use.
-        if (result.game_info.training):
-            training_info = result.agent_complete_records
-            training_results.append(result)
-        else:
-            results.append(result)
+        for (agent_index, agent_record) in result.agent_complete_records.items():
+            if (agent_record.agent_action is not None):
+                training_infos[agent_index] = agent_record.agent_action.training_info
+
+    results = []
+
+    for i in range(args.num_games):
+        game = args._games[i + args.num_training]
+
+        # Set any information gained from training.
+        for (agent_index, training_info) in training_infos.items():
+            game.game_info.agent_infos[agent_index].extra_arguments.update(training_info)
+
+        result = game.run(args._ui)
+        results.append(result)
 
     if (len(training_results) > 0):
         log_scores(training_results, winning_agent_indexes, prefix = 'Training ')
