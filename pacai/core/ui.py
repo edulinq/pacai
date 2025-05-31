@@ -531,6 +531,10 @@ def set_cli_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
                     + f' `{pacai.util.alias.UI_WEB.short}` (`{pacai.util.alias.UI_WEB.long}`)'
                     +       ' -- Launch a browser window (default).'))
 
+    parser.add_argument('--show-training-ui', dest = 'show_training_ui',
+            action = 'store_true', default = False,
+            help = 'Show the specified UI (--ui) for training epochs/games. Otherwise, a null UI will be used (default: %(default)s).')
+
     parser.add_argument('--fps', dest = 'fps',
             action = 'store', type = int, default = DEFAULT_FPS,
             help = ('Set the visual speed (frames per second) for UIs (default: %(default)s).'
@@ -558,15 +562,21 @@ def set_cli_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 
     return parser
 
-def init_from_args(args: argparse.Namespace,
+def init_from_args(
+        args: argparse.Namespace,
+        num_uis: int = 0,
+        null_out_uis: int = 0,
         additional_args: dict | None = None,
-        num_uis: int = 0) -> argparse.Namespace:
+        ) -> argparse.Namespace:
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
     Constructed UIs will be placed `args._uis`.
     If `num_uis` is not provided (or <= 0),
     then `args.num_games` + `args.num_training` will be used.
+    If `null_out_uis` is > 0, then at most that number of UIs (starting at the beginning)
+    will be converted to null UIs.
+    This will not change the total number of UIs, just null out the first number of UIs.
     """
 
     ui_args = {
@@ -583,7 +593,14 @@ def init_from_args(args: argparse.Namespace,
     if (num_uis <= 0):
         num_uis = args.num_games + args.num_training
 
-    uis = [pacai.util.reflection.new_object(args.ui, **ui_args) for _ in range(num_uis)]
+    uis = []
+    for i in range(num_uis):
+        ui_name = args.ui
+        if (i < null_out_uis):
+            ui_name = pacai.util.alias.UI_NULL.long
+
+        uis.append(pacai.util.reflection.new_object(ui_name, **ui_args))
+
     setattr(args, '_uis', uis)
 
     return args

@@ -132,7 +132,11 @@ def parse_args(
     if (get_additional_ui_options is not None):
         additional_ui_args = get_additional_ui_options(args)
 
-    args = pacai.core.ui.init_from_args(args, additional_args = additional_ui_args)
+    null_out_uis = args.num_training
+    if (args.show_training_ui):
+        null_out_uis = 0
+
+    args = pacai.core.ui.init_from_args(args, null_out_uis = null_out_uis, additional_args = additional_ui_args)
 
     # Parse game arguments.
 
