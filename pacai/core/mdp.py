@@ -11,6 +11,9 @@ import pacai.core.gamestate
 import pacai.util.comparable
 import pacai.util.json
 
+ACTION_EXIT: pacai.core.action.Action = pacai.core.action.Action('exit')
+""" A new action for exiting the MDP (used to reach the true terminal state). """
+
 class MDPState(pacai.util.comparable.SimpleComparable, pacai.util.json.DictConverter):
     """
     A state or "node" in an MDP.

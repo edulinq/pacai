@@ -12,9 +12,6 @@ DEFAULT_LIVING_REWARD: float = 0.0
 TERMINAL_POSITION: pacai.core.board.Position = pacai.core.board.Position(-1, -1)
 """ A special (impossible) position representing the terminal state. """
 
-ACTION_EXIT: pacai.core.action.Action = pacai.core.action.Action('exit')
-""" A new action for exiting the MDP (used to reach the true terminal state). """
-
 POSSIBLE_STATE_MARKERS: set[pacai.core.board.Marker] = {
     pacai.gridworld.board.AGENT_MARKER,
     pacai.gridworld.board.MARKER_TERMINAL,
@@ -130,7 +127,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
 
         # Positions with scores transition to the true terminal.
         if (self.board.is_terminal_position(state.position)):
-            return [ACTION_EXIT]
+            return [pacai.core.mdp.ACTION_EXIT]
 
         # All other states can try moving in any cardinal direction.
         return list(pacai.core.board.CARDINAL_OFFSETS.keys())
@@ -155,7 +152,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
 
         # Positions with values will always transition to the true terminal state.
         if (self.board.is_terminal_position(state.position)):
-            return [pacai.core.mdp.Transition(GridWorldMDPState(TERMINAL_POSITION), ACTION_EXIT, 1.0, 0.0)]
+            return [pacai.core.mdp.Transition(GridWorldMDPState(TERMINAL_POSITION), pacai.core.mdp.ACTION_EXIT, 1.0, 0.0)]
 
         # Stopped agents always just sit there.
         if (action == pacai.core.action.STOP):

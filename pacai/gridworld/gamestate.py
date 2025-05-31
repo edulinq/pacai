@@ -131,7 +131,7 @@ class GameState(pacai.core.gamestate.GameState):
         # If we are on a terminal position, we can only exit.
         position = self.get_agent_position()
         if ((position is not None) and board.is_terminal_position(position)):
-            return [pacai.gridworld.mdp.ACTION_EXIT]
+            return [pacai.core.mdp.ACTION_EXIT]
 
         return super().get_legal_actions()
 
@@ -319,8 +319,9 @@ class GameState(pacai.core.gamestate.GameState):
         # Get the possible transitions from the MDP.
         transitions = mdp.get_transitions(mdp.get_starting_state(), action)
 
-        # If there are no transitions, the game is over.
-        if (len(transitions) == 0):
+        # If there is only an exit transition, exit.
+        if ((len(transitions) == 1) and (transitions[0].action == pacai.core.mdp.ACTION_EXIT)):
+            logging.debug("Got the %s action, game is over.", pacai.core.mdp.ACTION_EXIT)
             self.game_over = True
             return
 
