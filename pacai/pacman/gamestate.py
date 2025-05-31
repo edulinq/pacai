@@ -91,8 +91,8 @@ class GameState(pacai.core.gamestate.GameState):
 
         return self.scared_timers.get(agent_index, 0) > 0
 
-    def get_legal_actions(self) -> list[pacai.core.action.Action]:
-        actions = super().get_legal_actions()
+    def get_legal_actions(self, position: pacai.core.board.Position | None = None) -> list[pacai.core.action.Action]:
+        actions = super().get_legal_actions(position)
 
         # Ghosts have special rules for their actions.
         if (self.agent_index > 0):

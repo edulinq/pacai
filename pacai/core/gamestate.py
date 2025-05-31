@@ -330,27 +330,30 @@ class GameState(pacai.util.json.DictConverter):
 
         return cls(**data)
 
-    def get_legal_actions(self) -> list[pacai.core.action.Action]:
+    def get_legal_actions(self, position: pacai.core.board.Position | None = None) -> list[pacai.core.action.Action]:
         """
         Get the moves that the current agent is allowed to make.
         Stopping is generally always considered a legal action (unless a game re-defines this behavior).
-        """
 
-        if (self.agent_index == -1):
-            raise ValueError("Cannot get legal actions when no agent is active.")
+        If a position is provided, it will override the current agent's position.
+        """
 
         # Stopping is generally safe.
         actions = [pacai.core.action.STOP]
 
-        position = self.get_agent_position()
-
-        # If the agent is not on the board, it can only stop.
         if (position is None):
-            return actions
+            if (self.agent_index == -1):
+                raise ValueError("Cannot get legal actions when no agent is active.")
+
+            position = self.get_agent_position()
+
+            # If the agent is not on the board, it can only stop.
+            if (position is None):
+                return actions
 
         # Get moves to adjacent positions.
         neighbor_moves = self.board.get_neighbors(position)
-        for (action, position) in neighbor_moves:
+        for (action, _) in neighbor_moves:
             actions.append(action)
 
         return actions

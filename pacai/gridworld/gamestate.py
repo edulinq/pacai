@@ -88,27 +88,26 @@ class GameState(pacai.core.gamestate.GameState):
             return
 
         if ('mdp_state_values' in agent_action.other_info):
-            for (raw_position, value) in agent_action.other_info['mdp_state_values']:
-                position = pacai.core.board.Position.from_dict(raw_position)
-                self._mdp_state_values[pacai.gridworld.mdp.GridWorldMDPState(position)] = value
+            for (raw_mdp_state, value) in agent_action.other_info['mdp_state_values']:
+                mdp_state = pacai.gridworld.mdp.GridWorldMDPState.from_dict(raw_mdp_state)
+                self._mdp_state_values[mdp_state] = value
 
                 min_value = min(self._mdp_state_values.values())
                 max_value = max(self._mdp_state_values.values())
                 self._minmax_mdp_state_values = (min_value, max_value)
 
         if ('policy' in agent_action.other_info):
-            for (raw_position, raw_action) in agent_action.other_info['policy']:
-                position = pacai.core.board.Position.from_dict(raw_position)
+            for (raw_mdp_state, raw_action) in agent_action.other_info['policy']:
+                mdp_state = pacai.gridworld.mdp.GridWorldMDPState.from_dict(raw_mdp_state)
                 action = pacai.core.action.Action(raw_action)
-                self._policy[pacai.gridworld.mdp.GridWorldMDPState(position)] = action
+                self._policy[mdp_state] = action
 
         if ('qvalues' in agent_action.other_info):
             values = []
 
-            for (raw_position, raw_action, qvalue) in agent_action.other_info['qvalues']:
-                position = pacai.core.board.Position.from_dict(raw_position)
+            for (raw_mdp_state, raw_action, qvalue) in agent_action.other_info['qvalues']:
+                mdp_state = pacai.gridworld.mdp.GridWorldMDPState.from_dict(raw_mdp_state)
                 action = pacai.core.action.Action(raw_action)
-                mdp_state = pacai.gridworld.mdp.GridWorldMDPState(position)
 
                 if (mdp_state not in self._qvalues):
                     self._qvalues[mdp_state] = {}
@@ -125,15 +124,17 @@ class GameState(pacai.core.gamestate.GameState):
 
         return []
 
-    def get_legal_actions(self) -> list[pacai.core.action.Action]:
+    def get_legal_actions(self, position: pacai.core.board.Position | None = None) -> list[pacai.core.action.Action]:
         board = typing.cast(pacai.gridworld.board.Board, self.board)
 
+        if (position is None):
+            position = self.get_agent_position()
+
         # If we are on a terminal position, we can only exit.
-        position = self.get_agent_position()
         if ((position is not None) and board.is_terminal_position(position)):
             return [pacai.core.mdp.ACTION_EXIT]
 
-        return super().get_legal_actions()
+        return super().get_legal_actions(position)
 
     def sprite_lookup(self,
             sprite_sheet: pacai.core.spritesheet.SpriteSheet,

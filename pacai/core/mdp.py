@@ -7,6 +7,7 @@ import math
 import typing
 
 import pacai.core.action
+import pacai.core.board
 import pacai.core.gamestate
 import pacai.util.comparable
 import pacai.util.json
@@ -19,11 +20,22 @@ class MDPState(pacai.util.comparable.SimpleComparable, pacai.util.json.DictConve
     A state or "node" in an MDP.
     """
 
+    def __init__(self,
+            position: pacai.core.board.Position,
+            **kwargs) -> None:
+        self.position = position
+        """ The board position of this MDP state. """
+
+    def to_dict(self) -> dict[str, typing.Any]:
+        return {
+            'position': self.position.to_dict(),
+        }
+
     @classmethod
-    @abc.abstractmethod
-    # Note that `typing.Self` is returned, but that is introduced in Python 3.12.
-    def from_game_state(cls, game_state: pacai.core.gamestate.GameState, **kwargs) -> typing.Any:
-        """ Create an instance of this MDP state from a game state. """
+    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        data = data.copy()
+        data['position'] = pacai.core.board.Position.from_dict(data['position'])
+        return cls(**data)
 
 StateType = typing.TypeVar('StateType', bound = MDPState)  # pylint: disable=invalid-name
 
