@@ -3,7 +3,145 @@ import logging
 import typing
 
 import pacai.core.agentaction
+import pacai.core.agentinfo
+import pacai.core.board
 import pacai.core.game
+import pacai.core.log
+import pacai.core.ui
+import pacai.util.alias
+
+@typing.runtime_checkable
+class SetCLIArgs(typing.Protocol):
+    """
+    A function that can be used to modify a CLI parser before use.
+    """
+
+    def __call__(self,
+            parser: argparse.ArgumentParser,
+            ) -> argparse.ArgumentParser:
+        """
+        Modify the CLI parser before use.
+        Any changes may be made, including adding arguments.
+        The modified (or new) parser should be returned.
+        """
+
+@typing.runtime_checkable
+class GetAdditionalOptions(typing.Protocol):
+    """
+    A function that can be used to get additional initialization options.
+    """
+
+    def __call__(self,
+            args: argparse.Namespace,
+            ) -> dict[str, typing.Any]:
+        """
+        Get additional/custom initialization options.
+        """
+
+@typing.runtime_checkable
+class InitFromArgs(typing.Protocol):
+    """
+    A function that can be used to initialize components from CLI args.
+    """
+
+    def __call__(self,
+            args: argparse.Namespace,
+            ) -> tuple[dict[int, pacai.core.agentinfo.AgentInfo], list[int], dict[str, typing.Any]]:
+        """
+        Initialize components from arguments and return
+        the base agent infos, a list of agents to remove from the board, as well as any board options.
+        See base_init_from_args() for the default implementation.
+        """
+
+def base_init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agentinfo.AgentInfo], list[int], dict[str, typing.Any]]:
+    """
+    Take in args from a parser that was passed to set_cli_args(),
+    and initialize the proper components.
+    """
+
+    base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {}
+
+    # Create base arguments for all possible agents.
+    for i in range(pacai.core.board.MAX_AGENTS):
+        base_agent_infos[i] = pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_RANDOM.long)
+
+    return base_agent_infos, [], {}
+
+def run_main(
+        description: str,
+        default_board: str,
+        game_class: typing.Type,
+        custom_set_cli_args: SetCLIArgs | None = None,
+        get_additional_ui_options: GetAdditionalOptions | None = None,
+        custom_init_from_args: InitFromArgs = base_init_from_args,
+        winning_agent_indexes: set[int] | None = None,
+        ) -> int:
+    """ A full main function to prep and run games. """
+
+    # Create a CLI parser.
+    parser = get_parser(description, default_board, custom_set_cli_args = custom_set_cli_args)
+
+    # Parse the CLI args.
+    args = parse_args(parser, game_class, get_additional_ui_options = get_additional_ui_options, custom_init_from_args = custom_init_from_args)
+
+    return run_games(args, winning_agent_indexes = winning_agent_indexes)
+
+def get_parser(
+        description: str,
+        default_board: str,
+        custom_set_cli_args: SetCLIArgs | None = None,
+        ) -> argparse.ArgumentParser:
+    """ Get a parser with all the options. """
+
+    parser = argparse.ArgumentParser(description = description)
+
+    # Add logging arguments.
+    parser = pacai.core.log.set_cli_args(parser)
+
+    # Add UI arguments.
+    parser = pacai.core.ui.set_cli_args(parser)
+
+    # Add game arguments.
+    parser = pacai.core.game.set_cli_args(parser, default_board = default_board)
+
+    # Add custom options.
+    if (custom_set_cli_args is not None):
+        parser = custom_set_cli_args(parser)
+
+    return parser
+
+def parse_args(
+        parser: argparse.ArgumentParser,
+        game_class: typing.Type,
+        get_additional_ui_options: GetAdditionalOptions | None = None,
+        custom_init_from_args: InitFromArgs = base_init_from_args,
+        ) -> argparse.Namespace:
+    """ Parse the args from the parser returned by get_parser(). """
+
+    args = parser.parse_args()
+
+    # Parse logging arguments.
+    args = pacai.core.log.init_from_args(args)
+
+    # Parse custom options.
+    base_agent_infos, remove_agent_indexes, board_options = custom_init_from_args(args)
+
+    # Parse UI arguments.
+
+    additional_ui_args = {}
+    if (get_additional_ui_options is not None):
+        additional_ui_args = get_additional_ui_options(args)
+
+    args = pacai.core.ui.init_from_args(args, additional_args = additional_ui_args)
+
+    # Parse game arguments.
+
+    args = pacai.core.game.init_from_args(args, game_class,
+            base_agent_infos = base_agent_infos,
+            remove_agent_indexes = remove_agent_indexes,
+            board_options = board_options)
+
+    return args
 
 def run_games(
         args: argparse.Namespace,

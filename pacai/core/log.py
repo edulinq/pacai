@@ -26,7 +26,7 @@ def init(level: str = DEFAULT_LOGGING_LEVEL, log_format: str = DEFAULT_LOGGING_F
     # Ignore logging from third-party libraries.
     logging.getLogger("PIL").setLevel(logging.WARNING)
 
-def set_cli_args(parser: argparse.ArgumentParser) -> None:
+def set_cli_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """
     Set common CLI arguments.
     This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
@@ -44,6 +44,8 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--debug', dest = 'debug',
             action = 'store_true', default = False,
             help = 'Set the logging level to debug (overrides --log-level and --quiet) (default: %(default)s).')
+
+    return parser
 
 def init_from_args(args: argparse.Namespace) -> argparse.Namespace:
     """

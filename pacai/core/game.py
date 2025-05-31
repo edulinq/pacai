@@ -398,7 +398,7 @@ class Game(abc.ABC):
         for user_inputs in agent_user_inputs.values():
             user_inputs += new_user_inputs
 
-def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = None) -> None:
+def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = None) -> argparse.ArgumentParser:
     """
     Set common CLI arguments.
     This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
@@ -455,6 +455,8 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
     parser.add_argument('--replay-path', dest = 'replay_path',
             action = 'store', type = str, default = None,
             help = 'If specified, replay the game whose result was saved at the specified path with `--save-path`.')
+
+    return parser
 
 def init_from_args(
         args: argparse.Namespace,

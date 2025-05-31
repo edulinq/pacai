@@ -4,10 +4,9 @@ The main executable for running a game of GridWorld.
 
 import argparse
 import sys
+import typing
 
 import pacai.core.agentinfo
-import pacai.core.log
-import pacai.core.ui
 import pacai.gridworld.game
 import pacai.gridworld.gamestate
 import pacai.gridworld.mdp
@@ -24,12 +23,7 @@ DEFAULT_LEARNING_RATE: float = 0.5
 DEFAULT_LIVING_REWARD: float = 0.0
 DEFAULT_DISCOUNT_RATE: float = 0.9
 
-def run(args: argparse.Namespace) -> int:
-    """ Run one or more gaames of GridWorld using pre-parsed arguments. """
-
-    return pacai.util.bin.run_games(args, {pacai.gridworld.gamestate.AGENT_INDEX})
-
-def set_cli_args(parser: argparse.ArgumentParser) -> None:
+def set_cli_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """
     Set GridWorld-specific CLI arguments.
     This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
@@ -79,7 +73,9 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
             action = 'store_true', default = False,
             help = 'Display each step of value iteration (default %(default)s).')
 
-def init_from_args(args: argparse.Namespace) -> dict[int, pacai.core.agentinfo.AgentInfo]:
+    return parser
+
+def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agentinfo.AgentInfo], list[int], dict[str, typing.Any]]:
     """
     Take in args from a parser that was passed to set_cli_args(),
     and initialize the proper components.
@@ -102,60 +98,31 @@ def init_from_args(args: argparse.Namespace) -> dict[int, pacai.core.agentinfo.A
         pacai.gridworld.gamestate.AGENT_INDEX: pacai.core.agentinfo.AgentInfo(**data),
     }
 
-    return base_agent_infos
-
-def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
-    """ Parse the args from the parser returned by _get_parser(). """
-
-    args = parser.parse_args()
-
-    # Parse logging arguments.
-    args = pacai.core.log.init_from_args(args)
-
-    # Parse ui arguments.
-    additional_ui_args = {
-        'sprite_sheet_path': DEFAULT_SPRITE_SHEET,
-    }
-    args = pacai.core.ui.init_from_args(args, additional_args = additional_ui_args)
-
-    # Parse GridWorld-specific options.
-    base_agent_infos = init_from_args(args)
-
     board_options = {
         'qvalue_display': args.qvalue_display,
     }
 
-    # Parse game arguments.
-    args = pacai.core.game.init_from_args(args, pacai.gridworld.game.Game,
-            base_agent_infos = base_agent_infos,
-            board_options = board_options)
+    return base_agent_infos, [], board_options
 
-    return args
+def get_additional_ui_options(args: argparse.Namespace) -> dict[str, typing.Any]:
+    """ Get additional options for the UI. """
 
-def _get_parser() -> argparse.ArgumentParser:
-    """ Get a parser with all the options set to handle GridWorld. """
-
-    parser = argparse.ArgumentParser(description = "Play a game of GridWorld.")
-
-    # Add logging arguments.
-    pacai.core.log.set_cli_args(parser)
-
-    # Add UI arguments.
-    pacai.core.ui.set_cli_args(parser)
-
-    # Add game arguments.
-    pacai.core.game.set_cli_args(parser, default_board = DEFAULT_BOARD)
-
-    # Add GridWorld-specific options.
-    set_cli_args(parser)
-
-    return parser
+    return {
+        'sprite_sheet_path': DEFAULT_SPRITE_SHEET,
+    }
 
 def main() -> int:
     """ Invoke a game of GridWorld. """
 
-    args = _parse_args(_get_parser())
-    return run(args)
+    return pacai.util.bin.run_main(
+        description = "Play a game of GridWorld.",
+        default_board = DEFAULT_BOARD,
+        game_class = pacai.gridworld.game.Game,
+        custom_set_cli_args = set_cli_args,
+        get_additional_ui_options = get_additional_ui_options,
+        custom_init_from_args = init_from_args,
+        winning_agent_indexes = {pacai.gridworld.gamestate.AGENT_INDEX},
+    )
 
 if (__name__ == '__main__'):
     sys.exit(main())

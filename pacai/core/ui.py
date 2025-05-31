@@ -512,7 +512,7 @@ class UI(abc.ABC):
         but there is no requirement to do that.
         """
 
-def set_cli_args(parser: argparse.ArgumentParser) -> None:
+def set_cli_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """
     Set common CLI arguments.
     This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
@@ -555,6 +555,8 @@ def set_cli_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--animation-optimize', dest = 'animation_optimize',
             action = 'store_true', default = DEFAULT_ANIMATION_OPTIMIZE,
             help = 'Optimize the animation to reduce file size (will take longer) (default: %(default)s).')
+
+    return parser
 
 def init_from_args(args: argparse.Namespace,
         additional_args: dict | None = None,
