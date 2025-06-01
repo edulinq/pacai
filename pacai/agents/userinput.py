@@ -43,7 +43,7 @@ class UserInputAgent(pacai.core.agent.Agent):
 
         # If we got no legal input from the user, then assume the last action.
         if (self._remember_last_action and (intended_action is None)):
-            intended_action = state.get_agent_last_action()
+            intended_action = state.get_last_agent_action()
             used_user_input = False
 
         # If the action is illegal, then just stop.

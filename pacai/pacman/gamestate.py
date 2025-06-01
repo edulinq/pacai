@@ -115,8 +115,8 @@ class GameState(pacai.core.gamestate.GameState):
         if (pacai.core.action.STOP in actions):
             actions.remove(pacai.core.action.STOP)
 
-        # Remove going backwards unless their are no other actions.
-        last_action = self.last_actions.get(self.agent_index, pacai.core.action.STOP)
+        # Remove going backwards unless there are no other actions.
+        last_action = self.get_last_agent_action(self.agent_index)
         reverse_direction = self.get_reverse_action(last_action)
         if ((reverse_direction in actions) and (len(actions) > 1)):
             actions.remove(reverse_direction)
@@ -295,7 +295,10 @@ class GameState(pacai.core.gamestate.GameState):
         self.score += GHOST_POINTS
 
         # Reset the last action.
-        self.last_actions[agent_index] = pacai.core.action.STOP
+        if (agent_index not in self.agent_actions):
+            self.agent_actions[agent_index] = []
+
+        self.agent_actions[agent_index].append(pacai.core.action.STOP)
 
         # The ghost is no longer scared.
         self._stop_scared(agent_index)

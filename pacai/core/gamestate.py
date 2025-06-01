@@ -27,7 +27,7 @@ class GameState(pacai.util.json.DictConverter):
             seed: int = -1,
             agent_index: int = -1,
             game_over: bool = False,
-            last_actions: dict[int, pacai.core.action.Action] | None = None,
+            agent_actions: dict[int, list[pacai.core.action.Action]] | None = None,
             score: float = 0,
             turn_count: int = 0,
             move_delays: dict[int, int] | None = None,
@@ -58,11 +58,11 @@ class GameState(pacai.util.json.DictConverter):
         self.game_over: bool = game_over
         """ Indicates that this state represents a complete game. """
 
-        if (last_actions is None):
-            last_actions = {}
+        if (agent_actions is None):
+            agent_actions = {}
 
-        self.last_actions: dict[int, pacai.core.action.Action] = last_actions
-        """ Keep track of the last action that each agent made. """
+        self.agent_actions: dict[int, list[pacai.core.action.Action]] = agent_actions
+        """ Keep track of the actions that each agent makes. """
 
         self.score: float = score
         """ The current score of the game. """
@@ -103,9 +103,9 @@ class GameState(pacai.util.json.DictConverter):
         new_state = copy.copy(self)
 
         new_state.board = self.board.copy()
-        new_state.last_actions = self.last_actions.copy()
         new_state.move_delays = self.move_delays.copy()
         new_state.tickets = self.tickets.copy()
+        new_state.agent_actions = {agent_index: actions.copy() for (agent_index, actions) in self.agent_actions.items()}
 
         return new_state
 
@@ -167,23 +167,38 @@ class GameState(pacai.util.json.DictConverter):
 
         return self.board.get_agent_position(agent_index)
 
-    def get_agent_last_action(self, agent_index: int | None = None) -> pacai.core.action.Action | None:
-        """ Get the last action of the specified agent (or current agent if no agent is specified). """
+    def get_agent_actions(self, agent_index: int | None = None) -> list[pacai.core.action.Action]:
+        """ Get the previous actions of the specified agent (or current agent if no agent is specified). """
 
         if (agent_index is None):
             agent_index = self.agent_index
 
         if (self.agent_index < 0):
-            raise ValueError("No agent is active, cannot get position.")
+            return []
 
-        return self.last_actions.get(agent_index, None)
+        if (agent_index not in self.agent_actions):
+            self.agent_actions[agent_index] = []
 
-    def get_reverse_action(self, action: pacai.core.action.Action) -> pacai.core.action.Action | None:
+        return self.agent_actions[agent_index]
+
+    def get_last_agent_action(self, agent_index: int | None = None) -> pacai.core.action.Action | None:
+        """ Get the last action of the specified agent (or current agent if no agent is specified). """
+
+        actions = self.get_agent_actions(agent_index)
+        if (len(actions) == 0):
+            return None
+
+        return actions[-1]
+
+    def get_reverse_action(self, action: pacai.core.action.Action | None) -> pacai.core.action.Action | None:
         """
         Get the reverse of an action, or None if the action has no reverse.
         By default, "reverse" is just defined in terms of cardinal directions.
         However, this method exists so that child games can override this definition of "reverse" if necessary.
         """
+
+        if (action is None):
+            return None
 
         return action.get_reverse_direction()
 
@@ -244,7 +259,10 @@ class GameState(pacai.util.json.DictConverter):
         self.process_turn(action, rng, **kwargs)
 
         # Track this last action.
-        self.last_actions[self.agent_index] = action
+        if (self.agent_index not in self.agent_actions):
+            self.agent_actions[self.agent_index] = []
+
+        self.agent_actions[self.agent_index].append(action)
 
         # Issue this agent a new ticket.
         self.tickets[self.agent_index] = self.tickets[self.agent_index].next(self.move_delays[self.agent_index])
@@ -315,8 +333,8 @@ class GameState(pacai.util.json.DictConverter):
         data = vars(self).copy()
 
         data['board'] = self.board.to_dict()
-        data['last_actions'] = {agent_index: str(action) for (agent_index, action) in sorted(self.last_actions.items())}
         data['tickets'] = {agent_index: ticket.to_dict() for (agent_index, ticket) in sorted(self.tickets.items())}
+        data['agent_actions'] = {agent_index: [str(action) for action in actions] for (agent_index, actions) in self.agent_actions.items()}
 
         return data
 
@@ -325,8 +343,9 @@ class GameState(pacai.util.json.DictConverter):
         data = data.copy()
 
         data['board'] = pacai.core.board.Board.from_dict(data['board'])
-        data['last_actions'] = {int(agent_index): pacai.core.action.Action(action) for (agent_index, action) in data['last_actions'].items()}
         data['tickets'] = {int(agent_index): pacai.core.ticket.Ticket.from_dict(ticket) for (agent_index, ticket) in data['tickets'].items()}
+        data['agent_actions'] = {int(agent_index): [pacai.core.action.Action(raw_action) for raw_action in raw_actions]
+                for (agent_index, raw_actions) in data['agent_actions'].items()}
 
         return cls(**data)
 

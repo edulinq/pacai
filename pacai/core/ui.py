@@ -367,7 +367,7 @@ class UI(abc.ABC):
                 if (state.skip_draw(marker, position, static = False)):
                     continue
 
-                last_action = state.last_actions.get(marker.get_agent_index(), None)
+                last_action = state.get_last_agent_action(marker.get_agent_index())
                 sprite = self._get_sprite(state, position, marker = marker, action = last_action, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
 

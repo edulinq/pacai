@@ -39,7 +39,7 @@ class LeftTurnAgent(pacai.core.agent.Agent):
     def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         legal_actions = state.get_legal_actions()
 
-        previous_action = state.get_agent_last_action()
+        previous_action = state.get_last_agent_action()
 
         # Default to north on a stop or for the first action.
         if ((previous_action is None) or (previous_action == pacai.core.action.STOP)):

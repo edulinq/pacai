@@ -71,12 +71,6 @@ class Agent(abc.ABC):
         This will include times when the agent was not on the board (a None position).
         """
 
-        self.last_actions: list[pacai.core.action.Action] = []
-        """
-        Keep track of the last actions this agent has taken.
-        This is updated in the beginning of get_action_full().
-        """
-
         self.training: bool = training
         """ This instance of this agent has been created for training. """
 
@@ -105,7 +99,6 @@ class Agent(abc.ABC):
         action = self.get_action(state)
 
         self.last_positions.append(state.get_agent_position(self.agent_index))
-        self.last_actions.append(action)
 
         return pacai.core.agentaction.AgentAction(action)
 

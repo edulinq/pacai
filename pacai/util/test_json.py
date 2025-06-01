@@ -592,9 +592,9 @@ class JSONTest(pacai.test.base.BaseTest):
                 pacai.pacman.gamestate.GameState(
                     seed = 4,
                     board = pacai.core.board.load_string('test', pacai.core.test_board.TEST_BOARD_AGENT),
-                    last_actions = {
-                        0: pacai.core.action.STOP,
-                        1: pacai.core.action.NORTH,
+                    agent_actions = {
+                        0: [pacai.core.action.STOP],
+                        1: [pacai.core.action.NORTH],
                     },
                     move_delays = {
                         0: 10,
@@ -645,9 +645,9 @@ class JSONTest(pacai.test.base.BaseTest):
                         },
                         "search_target": None,
                     },
-                    'last_actions': {
-                        0: "STOP",
-                        1: "NORTH",
+                    'agent_actions': {
+                        0: ["STOP"],
+                        1: ["NORTH"],
                     },
                     "last_agent_index": -1,
                     'move_delays': {
