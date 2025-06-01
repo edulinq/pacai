@@ -134,7 +134,8 @@ class GameState(pacai.core.gamestate.GameState):
         if ((position is not None) and board.is_terminal_position(position)):
             return [pacai.core.mdp.ACTION_EXIT]
 
-        return super().get_legal_actions(position)
+        # Otherwise, all cardinal directions (and STOP) are legal actions.
+        return pacai.core.action.CARDINAL_DIRECTIONS + [pacai.core.action.STOP]
 
     def sprite_lookup(self,
             sprite_sheet: pacai.core.spritesheet.SpriteSheet,
