@@ -92,6 +92,9 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
         'mdp_state_class': pacai.util.alias.MDP_STATE_CLASS_GRIDWORLD.long,
         'discount_rate': args.discount_rate,
         'iterations': args.iterations,
+        'alpha': args.learning_rate,
+        'gamma': args.discount_rate,
+        'epsilon': args.epsilon,
     }
 
     base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {
