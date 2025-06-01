@@ -404,8 +404,11 @@ class Board(pacai.util.json.DictConverter):
     def copy(self) -> 'Board':
         """ Get a copy of this board. """
 
-        # Make a shallow copy and mark it as such.
+        # Make a shallow copy.
         new_board = copy.copy(self)
+
+        # Mark both ourself and the copy as shallow.
+        self._is_shallow = True
         new_board._is_shallow = True
 
         return new_board
@@ -461,7 +464,7 @@ class Board(pacai.util.json.DictConverter):
     def get_marker_positions(self, marker: Marker) -> set[Position]:
         """ Get all the non-wall positions for a specific marker. """
 
-        return self._nonwall_objects.get(marker, set())
+        return self._nonwall_objects.get(marker, set()).copy()
 
     def get_walls(self) -> set[Position]:
         """ Get all the walls. """
