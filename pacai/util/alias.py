@@ -166,7 +166,3 @@ UI_SHORT_NAMES: list[str] = [
     UI_TK.short,
     UI_WEB.short,
 ]
-
-# Misc
-
-MDP_STATE_CLASS_GRIDWORLD: Alias = Alias('mdp-state-class-gridworld', 'pacai.gridworld.mdp.GridWorldMDPState')

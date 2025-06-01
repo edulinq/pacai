@@ -9,28 +9,13 @@ import pacai.gridworld.board
 DEFAULT_NOISE: float = 0.2
 DEFAULT_LIVING_REWARD: float = 0.0
 
-TERMINAL_POSITION: pacai.core.board.Position = pacai.core.board.Position(-1, -1)
-""" A special (impossible) position representing the terminal state. """
-
 POSSIBLE_STATE_MARKERS: set[pacai.core.board.Marker] = {
     pacai.gridworld.board.AGENT_MARKER,
     pacai.gridworld.board.MARKER_TERMINAL,
 }
 """ The possible markers that can be in MDP states. """
 
-class GridWorldMDPState(pacai.core.mdp.MDPState):
-    """ An MDP state for GridWorld. """
-
-    def __init__(self, position: pacai.core.board.Position | None, **kwargs) -> None:
-        if (position is None):
-            raise ValueError("Position is required for GridWorld MDP states.")
-
-        super().__init__(position, **kwargs)
-
-        self.is_terminal: bool = (position == TERMINAL_POSITION)
-        """ Whether or not this state is the terminal state. """
-
-class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
+class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[pacai.core.mdp.MDPState]):
     """ An MDP that represents the GridWorld game. """
 
     def __init__(self,
@@ -61,18 +46,18 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         if (self.start_position is None):
             raise ValueError("Could not find starting position.")
 
-    def get_starting_state(self) -> GridWorldMDPState:
+    def get_starting_state(self) -> pacai.core.mdp.MDPState:
         if (self.start_position is None):
             raise ValueError("GridWorld MDP as not been initialized via game_start().")
 
-        return GridWorldMDPState(self.start_position)
+        return pacai.core.mdp.MDPState(self.start_position)
 
-    def get_states(self) -> list[GridWorldMDPState]:
+    def get_states(self) -> list[pacai.core.mdp.MDPState]:
         if (self.board is None):
             raise ValueError("GridWorld MDP as not been initialized via game_start().")
 
         # Start with the terminal state.
-        states = [GridWorldMDPState(TERMINAL_POSITION)]
+        states = [pacai.core.mdp.MDPState(pacai.core.mdp.TERMINAL_POSITION)]
 
         # Possible positions can only have at certain set of markers.
         for row in range(self.board._original_height):
@@ -85,14 +70,14 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
                 if (not markers.issubset(POSSIBLE_STATE_MARKERS)):
                     continue
 
-                states.append(GridWorldMDPState(position))
+                states.append(pacai.core.mdp.MDPState(position))
 
         return states
 
-    def is_terminal_state(self, state: GridWorldMDPState) -> bool:
+    def is_terminal_state(self, state: pacai.core.mdp.MDPState) -> bool:
         return state.is_terminal
 
-    def get_possible_actions(self, state: GridWorldMDPState) -> list[pacai.core.action.Action]:
+    def get_possible_actions(self, state: pacai.core.mdp.MDPState) -> list[pacai.core.action.Action]:
         """
         There are special rules for actions in GridWorld.
 
@@ -116,7 +101,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         # All other states can try moving in any cardinal direction.
         return list(pacai.core.board.CARDINAL_OFFSETS.keys())
 
-    def get_transitions(self, state: GridWorldMDPState, action: pacai.core.action.Action) -> list[pacai.core.mdp.Transition]:
+    def get_transitions(self, state: pacai.core.mdp.MDPState, action: pacai.core.action.Action) -> list[pacai.core.mdp.Transition]:
         """
         In GridWorld, you may not move in the direction you are intending.
 
@@ -136,7 +121,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
 
         # Positions with values will always transition to the true terminal state.
         if (self.board.is_terminal_position(state.position)):
-            return [pacai.core.mdp.Transition(GridWorldMDPState(TERMINAL_POSITION), pacai.core.mdp.ACTION_EXIT, 1.0, 0.0)]
+            return [pacai.core.mdp.Transition(pacai.core.mdp.MDPState(pacai.core.mdp.TERMINAL_POSITION), pacai.core.mdp.ACTION_EXIT, 1.0, 0.0)]
 
         # Stopped agents always just sit there.
         if (action == pacai.core.action.STOP):
@@ -176,7 +161,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
     def _merge_transitions(self, transitions: list[pacai.core.mdp.Transition]) -> list[pacai.core.mdp.Transition]:
         """ Merge transitions that are pointing to the same state together. """
 
-        merged: dict[GridWorldMDPState, pacai.core.mdp.Transition] = {}
+        merged: dict[pacai.core.mdp.MDPState, pacai.core.mdp.Transition] = {}
         for transition in transitions:
             if (transition.state in merged):
                 merged[transition.state].update(transition)
@@ -185,7 +170,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
 
         return list(merged.values())
 
-    def _get_reward(self, state: GridWorldMDPState) -> float:
+    def _get_reward(self, state: pacai.core.mdp.MDPState) -> float:
         if (self.board is None):
             raise ValueError("GridWorld MDP as not been initialized via game_start().")
 
@@ -195,8 +180,8 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
         return self.living_reward
 
     def _get_move_states(self,
-            state: GridWorldMDPState,
-            ) -> tuple[GridWorldMDPState, GridWorldMDPState, GridWorldMDPState, GridWorldMDPState]:
+            state: pacai.core.mdp.MDPState,
+            ) -> tuple[pacai.core.mdp.MDPState, pacai.core.mdp.MDPState, pacai.core.mdp.MDPState, pacai.core.mdp.MDPState]:
         """
         Get the positions an agent could move to.
         If a move would put the agent into a wall, they will "bonk" the wall and not move.
@@ -216,7 +201,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[GridWorldMDPState]):
             if (self.board.is_wall(new_position)):
                 states.append(state)
             else:
-                states.append(GridWorldMDPState(new_position))
+                states.append(pacai.core.mdp.MDPState(new_position))
 
         return tuple(states)  # type: ignore[return-value]
 

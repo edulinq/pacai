@@ -49,7 +49,7 @@ class GameState(pacai.core.gamestate.GameState):
         self._win: bool = False
         """ Keep track if the agent exited the game on a winning state. """
 
-        self._mdp_state_values: dict[pacai.gridworld.mdp.GridWorldMDPState, float] = {}
+        self._mdp_state_values: dict[pacai.core.mdp.MDPState, float] = {}
         """
         The MDP state values computed by the agent.
         This member will not be serialized.
@@ -61,13 +61,13 @@ class GameState(pacai.core.gamestate.GameState):
         This member will not be serialized.
         """
 
-        self._policy: dict[pacai.gridworld.mdp.GridWorldMDPState, pacai.core.action.Action] = {}
+        self._policy: dict[pacai.core.mdp.MDPState, pacai.core.action.Action] = {}
         """
         The policy computed by the agent.
         This member will not be serialized.
         """
 
-        self._qvalues: dict[pacai.gridworld.mdp.GridWorldMDPState, dict[pacai.core.action.Action, float]] = {}
+        self._qvalues: dict[pacai.core.mdp.MDPState, dict[pacai.core.action.Action, float]] = {}
         """
         The Q-values computed by the agent.
         This member will not be serialized.
@@ -89,7 +89,7 @@ class GameState(pacai.core.gamestate.GameState):
 
         if ('mdp_state_values' in agent_action.other_info):
             for (raw_mdp_state, value) in agent_action.other_info['mdp_state_values']:
-                mdp_state = pacai.gridworld.mdp.GridWorldMDPState.from_dict(raw_mdp_state)
+                mdp_state = pacai.core.mdp.MDPState.from_dict(raw_mdp_state)
                 self._mdp_state_values[mdp_state] = value
 
                 min_value = min(self._mdp_state_values.values())
@@ -98,7 +98,7 @@ class GameState(pacai.core.gamestate.GameState):
 
         if ('policy' in agent_action.other_info):
             for (raw_mdp_state, raw_action) in agent_action.other_info['policy']:
-                mdp_state = pacai.gridworld.mdp.GridWorldMDPState.from_dict(raw_mdp_state)
+                mdp_state = pacai.core.mdp.MDPState.from_dict(raw_mdp_state)
                 action = pacai.core.action.Action(raw_action)
                 self._policy[mdp_state] = action
 
@@ -106,7 +106,7 @@ class GameState(pacai.core.gamestate.GameState):
             values = []
 
             for (raw_mdp_state, raw_action, qvalue) in agent_action.other_info['qvalues']:
-                mdp_state = pacai.gridworld.mdp.GridWorldMDPState.from_dict(raw_mdp_state)
+                mdp_state = pacai.core.mdp.MDPState.from_dict(raw_mdp_state)
                 action = pacai.core.action.Action(raw_action)
 
                 if (mdp_state not in self._qvalues):
@@ -224,7 +224,7 @@ class GameState(pacai.core.gamestate.GameState):
         # The MDP state values are to the right of the true board.
         base_offset = pacai.core.board.Position(0, -(board._original_width + 1))
         base_position = position.add(base_offset)
-        mdp_state = pacai.gridworld.mdp.GridWorldMDPState(base_position)
+        mdp_state = pacai.core.mdp.MDPState(base_position)
 
         value = self._mdp_state_values.get(mdp_state, 0.0)
         color = self._red_green_gradient(value, self._minmax_mdp_state_values[0], self._minmax_mdp_state_values[1])
@@ -249,7 +249,7 @@ class GameState(pacai.core.gamestate.GameState):
         # The Q-values are below the true board.
         base_offset = pacai.core.board.Position(-(board._original_height + 1), 0)
         base_position = position.add(base_offset)
-        mdp_state = pacai.gridworld.mdp.GridWorldMDPState(base_position)
+        mdp_state = pacai.core.mdp.MDPState(base_position)
 
         for (direction_index, point_offsets) in enumerate(QVALUE_TRIANGLE_POINT_OFFSETS):
             points = []
@@ -417,7 +417,7 @@ class GameState(pacai.core.gamestate.GameState):
 
         for position in self.board.get_marker_positions(pacai.gridworld.board.MARKER_DISPLAY_VALUE):
             base_position = position.add(base_offset)
-            mdp_state = pacai.gridworld.mdp.GridWorldMDPState(base_position)
+            mdp_state = pacai.core.mdp.MDPState(base_position)
 
             value = self._mdp_state_values.get(mdp_state, None)
             policy_action = self._policy.get(mdp_state, pacai.core.action.STOP)
@@ -447,7 +447,7 @@ class GameState(pacai.core.gamestate.GameState):
 
         for position in self.board.get_marker_positions(pacai.gridworld.board.MARKER_DISPLAY_QVALUE):
             base_position = position.add(base_offset)
-            mdp_state = pacai.gridworld.mdp.GridWorldMDPState(base_position)
+            mdp_state = pacai.core.mdp.MDPState(base_position)
 
             # [(vertical alignment, horizontal alignment), ...]
             alignments = [

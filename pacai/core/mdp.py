@@ -15,6 +15,9 @@ import pacai.util.json
 ACTION_EXIT: pacai.core.action.Action = pacai.core.action.Action('exit')
 """ A new action for exiting the MDP (used to reach the true terminal state). """
 
+TERMINAL_POSITION: pacai.core.board.Position = pacai.core.board.Position(-1, -1)
+""" A special (impossible) position representing the terminal state. """
+
 class MDPState(pacai.util.comparable.SimpleComparable, pacai.util.json.DictConverter):
     """
     A state or "node" in an MDP.
@@ -25,6 +28,9 @@ class MDPState(pacai.util.comparable.SimpleComparable, pacai.util.json.DictConve
             **kwargs) -> None:
         self.position = position
         """ The board position of this MDP state. """
+
+        self.is_terminal: bool = (position == TERMINAL_POSITION)
+        """ Whether or not this state is the terminal state. """
 
     def to_dict(self) -> dict[str, typing.Any]:
         return {
