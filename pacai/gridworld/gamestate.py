@@ -297,6 +297,8 @@ class GameState(pacai.core.gamestate.GameState):
 
         if (math.isclose(value, divider)):
             blue_intensity = 1.0
+            red_intensity = 0.25
+            green_intensity = 0.25
         elif (value < divider):
             red_intensity = 0.25 + (0.75 * (divider - value) / red_mass)
         else:
