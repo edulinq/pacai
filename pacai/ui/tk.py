@@ -154,7 +154,7 @@ class TkUI(pacai.core.ui.UI):
 
     def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
         if (self._window_closed):
-            self._cleanup()
+            self._cleanup(call_exit = True)
             return
 
         # Ensure no pre-mature draws.
@@ -178,6 +178,9 @@ class TkUI(pacai.core.ui.UI):
     def sleep(self, sleep_time_ms: int) -> None:
         if (self._window is not None):
             self._window.after(sleep_time_ms, None)  # type: ignore
+
+    def close(self) -> None:
+        self._cleanup(call_exit = False)
 
     def _handle_resize(self, event: tkinter.Event) -> None:
         """ Handle Tk configure (resize) events. """
@@ -211,7 +214,8 @@ class TkUI(pacai.core.ui.UI):
         """
 
         # Sleep for a short period, so the last state of the game can be seen.
-        time.sleep(DEATH_SLEEP_TIME_SECS)
+        if (not call_exit):
+            time.sleep(DEATH_SLEEP_TIME_SECS)
 
         if (self._window is not None):
             _cleanup_tk_window(self._window)
