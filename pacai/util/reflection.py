@@ -16,6 +16,12 @@ import pacai.util.json
 
 REF_DELIM: str = ':'
 
+_cache: dict[str, typing.Any] = {}
+"""
+A cache to help avoid importing a module multiple times.
+The key is the string representation of a reference.
+"""
+
 class Reference(pacai.util.json.DictConverter):
     """
     A Reference is constructed from a formatted that references a specific Python definition (e.g. class or function).
@@ -169,19 +175,30 @@ def _import_module(reference):
     This may involve importing files.
     """
 
+    reference_string = str(reference)
+
+    # Check the cache before importing.
+    module = _cache.get(reference_string, None)
+    if (module is not None):
+        return module
+
     # Load from a path.
     if (reference.file_path is not None):
         temp_module_name = str(uuid.uuid4()).replace('-', '')
         spec = importlib.util.spec_from_file_location(temp_module_name, reference.file_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        return module
+    else:
+        # Load from a module name.
+        try:
+            module = importlib.import_module(reference.module_name)
+        except ImportError as ex:
+            raise ValueError(f"Unable to locate module '{reference.module_name}'.") from ex
 
-    # Load from a module name.
-    try:
-        return importlib.import_module(reference.module_name)
-    except ImportError as ex:
-        raise ValueError(f"Unable to locate module '{reference.module_name}'.") from ex
+    # Store the module in the cache.
+    _cache[reference_string] = module
+
+    return module
 
 def get_qualified_name(target: type | object | Reference | str) -> str:
     """
