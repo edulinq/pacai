@@ -169,6 +169,19 @@ class DistancePreComputer:
 
         return self._distances.get(lower, {}).get(upper, None)
 
+    def get_distance_default(self,
+            a: pacai.core.board.Position,
+            b: pacai.core.board.Position,
+            default: float
+            ) -> float:
+        """ Get the distance, but return the default if there is no path. """
+
+        distance = self.get_distance(a, b)
+        if (distance is not None):
+            return distance
+
+        return default
+
     def compute(self, board: pacai.core.board.Board) -> None:
         """
         Compute ALL non-wall distances in this board.
