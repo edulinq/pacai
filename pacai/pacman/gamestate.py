@@ -105,6 +105,34 @@ class GameState(pacai.core.gamestate.GameState):
 
         return self.board.get_marker_positions(pacai.pacman.board.MARKER_PELLET)
 
+    def get_ghost_positions(self) -> dict[int, pacai.core.board.Position]:
+        """ Get the position of all ghosts currently on the board. """
+
+        ghosts = {}
+
+        for (agent_index, agent_position) in self.get_agent_positions().items():
+            if (agent_index == PACMAN_AGENT_INDEX):
+                continue
+
+            if (agent_position is None):
+                continue
+
+            ghosts[agent_index] = agent_position
+
+        return ghosts
+
+    def get_scared_ghost_positions(self) -> dict[int, pacai.core.board.Position]:
+        """ Get the position of all scared ghosts currently on the board. """
+
+        ghosts = self.get_ghost_positions()
+        return {index: position for (index, position) in ghosts.items() if self.is_scared(index)}
+
+    def get_nonscared_ghost_positions(self) -> dict[int, pacai.core.board.Position]:
+        """ Get the position of all non-scared ghosts currently on the board. """
+
+        ghosts = self.get_ghost_positions()
+        return {index: position for (index, position) in ghosts.items() if not self.is_scared(index)}
+
     def _get_ghost_legal_actions(self, actions: list[pacai.core.action.Action]) -> None:
         """
         Ghosts cannot stop (unless there are no other actions),
