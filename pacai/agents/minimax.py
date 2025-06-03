@@ -55,10 +55,9 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
     def evaluate_state(self,
             state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action | None = None,
-            old_state: pacai.core.gamestate.GameState | None = None,
             **kwargs) -> float:
         self._stats_states_evaluated[-1] += 1
-        return super().evaluate_state(state, action, old_state)
+        return super().evaluate_state(state, action)
 
     def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
         logging.debug(("Minimax-like agent complete."

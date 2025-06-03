@@ -165,7 +165,6 @@ class Agent(abc.ABC):
     def evaluate_state(self,
             state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action | None = None,
-            old_state: pacai.core.gamestate.GameState | None = None,
             **kwargs) -> float:
         """
         Evaluate the state to get a decide how good an action was.
@@ -173,7 +172,7 @@ class Agent(abc.ABC):
         but child classes may override this method to easily implement their own evaluations.
         """
 
-        return self.evaluation_function(state, agent = self, action = action, old_state = old_state, **kwargs)
+        return self.evaluation_function(state, agent = self, action = action, **kwargs)
 
 def load(agent_info: pacai.core.agentinfo.AgentInfo) -> Agent:
     """

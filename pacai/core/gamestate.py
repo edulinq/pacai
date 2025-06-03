@@ -387,7 +387,6 @@ class AgentStateEvaluationFunction(typing.Protocol):
             state: GameState,
             agent: typing.Any | None = None,
             action: pacai.core.action.Action | None = None,
-            old_state: GameState | None = None,
             **kwargs) -> float:
         """
         Compute a score for a state that the provided agent can use to decide actions.
@@ -400,7 +399,6 @@ def base_eval(
         state: GameState,
         agent: typing.Any | None = None,
         action: pacai.core.action.Action | None = None,
-        old_state: GameState | None = None,
         **kwargs) -> float:
     """ The most basic evaluation function, which just uses the state's current score. """
 

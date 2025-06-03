@@ -27,10 +27,9 @@ class ReflexAgent(pacai.agents.greedy.GreedyAgent):
     def evaluate_state(self,
             state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action | None = None,
-            old_state: pacai.core.gamestate.GameState | None = None,
             **kwargs) -> float:
         # This would be a great place to improve your reflex agent.
-        return super().evaluate_state(state, action, old_state)
+        return super().evaluate_state(state, action)
 
 class MyMinimaxLikeAgent(pacai.agents.minimax.MinimaxLikeAgent):
     """
@@ -88,7 +87,6 @@ def better_state_eval(
         state: pacai.core.gamestate.GameState,
         agent: typing.Any | None = None,
         action: pacai.core.action.Action | None = None,
-        old_state: pacai.core.gamestate.GameState | None = None,
         **kwargs) -> float:
     """
     Create a better state evaluation function for your MyMinimaxLikeAgent agent!
