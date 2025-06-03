@@ -256,6 +256,11 @@ class GameState(pacai.util.json.DictConverter):
         To get a copy of a potential successor state, use generate_successor().
         """
 
+        # If the game is over, don't do anyhting.
+        # This case can come up when planning agent actions and generating successors.
+        if (self.game_over):
+            return
+
         self.process_turn(action, rng, **kwargs)
 
         # Track this last action.

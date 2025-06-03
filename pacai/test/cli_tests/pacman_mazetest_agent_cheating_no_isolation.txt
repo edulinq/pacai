@@ -10,8 +10,8 @@
     ]
 }
 ---
-<LOG_PREFIX> -- Average Score: 999.0
-<LOG_PREFIX> -- Scores:        999
+<LOG_PREFIX> -- Average Score: 1000.0
+<LOG_PREFIX> -- Scores:        1000
 <LOG_PREFIX> -- Win Rate:      1 / 1 (1.00)
 <LOG_PREFIX> -- Record:        Win
 <LOG_PREFIX> -- Average Turns: 1.0

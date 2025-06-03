@@ -1,6 +1,7 @@
 import abc
 import logging
 import random
+import typing
 
 import pacai.core.agentaction
 import pacai.core.action
@@ -77,6 +78,9 @@ class Agent(abc.ABC):
         self.training_epoch: int = training_epoch
         """ The training epoch (number of training games) the agent has completed. """
 
+        self.extra_storage: dict[str, typing.Any] = {}
+        """ An extra place that can be used by and agent subcomponents for persistent storage. """
+
         logging.debug("Created agent '%s' with move delay %d and state evaluation function '%s'.",
                 pacai.util.reflection.get_qualified_name(self.name),
                 self.move_delay,
@@ -96,9 +100,9 @@ class Agent(abc.ABC):
         and only implement this if they need additional functionality.
         """
 
-        action = self.get_action(state)
-
         self.last_positions.append(state.get_agent_position(self.agent_index))
+
+        action = self.get_action(state)
 
         return pacai.core.agentaction.AgentAction(action)
 
