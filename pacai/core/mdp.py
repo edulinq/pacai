@@ -91,15 +91,11 @@ class MDPStateBoard(MDPStatePosition):
             if (board is None):
                 raise ValueError("Cannot create a MDPStateBoard without a board.")
 
-            nonwall_objects = {}
-            for (marker, positions) in sorted(board._nonwall_objects.items()):
-                nonwall_objects[str(marker)] = [str(position) for position in sorted(positions)]
-
-            _board_string = pacai.util.json.dumps(nonwall_objects)
+            _board_string = f"{self.position}::{board.get_nonwall_json()}"
 
         self._board_string: str = _board_string
         """
-        The board represented as a JSON string.
+        The board represented as a string.
         Converting the board to a string makes future comparisons easier.
         """
 
@@ -107,16 +103,16 @@ class MDPStateBoard(MDPStatePosition):
         if (not isinstance(other, MDPStateBoard)):
             return False
 
-        return (super().__lt__(other)) and (self._board_string < other._board_string)
+        return self._board_string < other._board_string
 
     def __eq__(self, other: object) -> bool:
         if (not isinstance(other, MDPStateBoard)):
             return False
 
-        return (super().__eq__(other)) and (self._board_string == other._board_string)
+        return self._board_string == other._board_string
 
     def __hash__(self) -> int:
-        return hash(str(self.position) + "::" + self._board_string)
+        return hash(self._board_string)
 
     def __str__(self) -> str:
         return super().__str__() + "::" + str(hash(self))

@@ -616,6 +616,19 @@ class Board(pacai.util.json.DictConverter):
         marker = Marker(str(agent_index))
         return self._agent_initial_positions.get(marker, None)
 
+    def get_nonwall_json(self) -> str:
+        """
+        Get a JSON string representation of the non-wall objects on the board.
+        This should not be used for any performant code,
+        but provides a consistent way of identifying the "state" of the board.
+        """
+
+        raw_nonwall_objects = []
+        for (marker, positions) in sorted(self._nonwall_objects.items()):
+            raw_nonwall_objects.append([str(marker)] + [str(position) for position in sorted(positions)])
+
+        return pacai.util.json.dumps(raw_nonwall_objects)
+
     def to_grid(self) -> list[list[Marker]]:
         """ Convert this board to a 2-d grid. """
 
