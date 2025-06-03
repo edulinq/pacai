@@ -120,6 +120,14 @@ HEURISTIC_SHORT_NAMES: list[str] = [
     HEURISTIC_NULL.short,
 ]
 
+MDP_STATE_CLASS_BOARD: Alias = Alias('mdp-state-class-board', 'pacai.core.mdp.MDPStateBoard')
+MDP_STATE_CLASS_POSITION: Alias = Alias('mdp-state-class-position', 'pacai.core.mdp.MDPStatePosition')
+
+MDP_STATE_CLASS_SHORT_NAMES: list[str] = [
+    MDP_STATE_CLASS_BOARD.short,
+    MDP_STATE_CLASS_POSITION.short,
+]
+
 SEARCH_PROBLEM_CORNERS: Alias = Alias('search-problem-corners', 'pacai.student.singlesearch.CornersSearchProblem')
 SEARCH_PROBLEM_FOOD: Alias = Alias('search-problem-food', 'pacai.search.food.FoodSearchProblem')
 SEARCH_PROBLEM_POSITION: Alias = Alias('search-problem-position', 'pacai.search.position.PositionSearchProblem')

@@ -55,6 +55,7 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
         'name': args.agent,
         'remember_last_action': False,
         'mdp': mdp,
+        'mdp_state_class': pacai.util.alias.MDP_STATE_CLASS_POSITION.long,
     }
 
     base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] = {

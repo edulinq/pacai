@@ -23,26 +23,40 @@ class MDPState(pacai.util.json.DictConverter):
     A state or "node" in an MDP.
     """
 
+class MDPStatePosition(MDPState):
+    """
+    An MDP state that relies solely on position.
+    """
+
     def __init__(self,
-            position: pacai.core.board.Position,
+            position: pacai.core.board.Position | None = None,
             **kwargs) -> None:
+        if (position is None):
+            raise ValueError("Cannot create a MDPStatePosition without a position.")
+
         self.position = position
         """ The board position of this MDP state. """
 
         self.is_terminal: bool = (position == TERMINAL_POSITION)
         """ Whether or not this state is the terminal state. """
 
-    def __lt__(self, other: 'MDPState') -> bool:
+    def __lt__(self, other: 'MDPStatePosition') -> bool:
         return (self.position < other.position)
 
     def __eq__(self, other: object) -> bool:
-        if (not isinstance(other, MDPState)):
+        if (not isinstance(other, MDPStatePosition)):
             return False
 
         return (self.position == other.position)
 
     def __hash__(self) -> int:
         return hash(self.position)
+
+    def __str__(self) -> str:
+        return str(self.position)
+
+    def __repr__(self) -> str:
+        return str(self)
 
     def to_dict(self) -> dict[str, typing.Any]:
         return {
@@ -54,6 +68,70 @@ class MDPState(pacai.util.json.DictConverter):
         data = data.copy()
         data['position'] = pacai.core.board.Position.from_dict(data['position'])
         return cls(**data)
+
+class MDPStateBoard(MDPStatePosition):
+    """
+    An MDP state that uses an entire board.
+    Technically, this only uses the non-wall markers for a board.
+
+    Using this will be quite slow and is generally not recommended for larger problems.
+    """
+
+    def __init__(self,
+            board: pacai.core.board.Board | None = None,
+            game_state: pacai.core.gamestate.GameState | None = None,
+            _board_string: str | None = None,
+            **kwargs) -> None:
+        super().__init__(**kwargs)
+
+        if (_board_string is None):
+            if ((board is None) and (game_state is not None)):
+                board = game_state.board
+
+            if (board is None):
+                raise ValueError("Cannot create a MDPStateBoard without a board.")
+
+            nonwall_objects = {}
+            for (marker, positions) in sorted(board._nonwall_objects.items()):
+                nonwall_objects[str(marker)] = [str(position) for position in sorted(positions)]
+
+            _board_string = pacai.util.json.dumps(nonwall_objects)
+
+        self._board_string: str = _board_string
+        """
+        The board represented as a JSON string.
+        Converting the board to a string makes future comparisons easier.
+        """
+
+    def __lt__(self, other: object) -> bool:
+        if (not isinstance(other, MDPStateBoard)):
+            return False
+
+        return (super().__lt__(other)) and (self._board_string < other._board_string)
+
+    def __eq__(self, other: object) -> bool:
+        if (not isinstance(other, MDPStateBoard)):
+            return False
+
+        return (super().__eq__(other)) and (self._board_string == other._board_string)
+
+    def __hash__(self) -> int:
+        return hash(str(self.position) + "::" + self._board_string)
+
+    def __str__(self) -> str:
+        return super().__str__() + "::" + str(hash(self))
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    def to_dict(self) -> dict[str, typing.Any]:
+        data = super().to_dict()
+        data['_board_string'] = self._board_string
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+        return super().from_dict(data)
 
 StateType = typing.TypeVar('StateType', bound = MDPState)  # pylint: disable=invalid-name
 
