@@ -173,7 +173,7 @@ class GameState(pacai.util.json.DictConverter):
         if (agent_index is None):
             agent_index = self.agent_index
 
-        if (self.agent_index < 0):
+        if (agent_index < 0):
             return []
 
         if (agent_index not in self.agent_actions):
