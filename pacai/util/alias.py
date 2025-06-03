@@ -106,6 +106,15 @@ COST_FUNC_SHORT_NAMES: list[str] = [
     COST_FUNC_UNIT.short,
 ]
 
+FEATURE_EXTRACTOR_BOARD: Alias = Alias('feature-extractor-board', 'pacai.core.features.board_feature_extractor')
+FEATURE_EXTRACTOR_PACMAN_SIMPLE: Alias = Alias('feature-extractor-pacman-simple', 'pacai.pacman.features.simple_feature_extractor')
+FEATURE_EXTRACTOR_SCORE: Alias = Alias('feature-extractor-score', 'pacai.core.features.score_feature_extractor')
+
+FEATURE_EXTRACTOR_SHORT_NAMES: list[str] = [
+    FEATURE_EXTRACTOR_BOARD.short,
+    FEATURE_EXTRACTOR_SCORE.short,
+]
+
 HEURISTIC_CORNERS: Alias = Alias('heuristic-corners', 'pacai.student.singlesearch.corners_heuristic')
 HEURISTIC_EUCLIDEAN: Alias = Alias('heuristic-euclidean', 'pacai.search.distance.euclidean_heuristic')
 HEURISTIC_FOOD: Alias = Alias('heuristic-food', 'pacai.student.singlesearch.food_heuristic')
