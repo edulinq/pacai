@@ -1,0 +1,18 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--board", "maze-tiny",
+        "--pacman", "agent-scripted",
+        "--ui", "null",
+        "--agent-arg", "0::actions=SOUTH,SOUTH,WEST,SOUTH,WEST,WEST,SOUTH,WEST",
+        "--max-turns", "10",
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: 502.0
+<LOG_PREFIX> -- Scores:        502
+<LOG_PREFIX> -- Win Rate:      1 / 1 (1.00)
+<LOG_PREFIX> -- Record:        Win
+<LOG_PREFIX> -- Average Turns: 8.0
+<LOG_PREFIX> -- Turn Counts:   8
