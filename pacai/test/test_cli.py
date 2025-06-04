@@ -1,3 +1,4 @@
+import argparse
 import contextlib
 import glob
 import importlib
@@ -6,6 +7,7 @@ import os
 import re
 import sys
 import typing
+import unittest
 
 import pacai.test.base
 import pacai.util.file
@@ -245,4 +247,32 @@ def has_content(test: CLITest, expected: str, actual: str, min_length: int = 100
     message = f"Output does not meet minimum length of {min_length}, it is only {len(actual)}."
     test.assertTrue((len(actual) >= min_length), msg = message)
 
-_discover_test_cases()
+def main(args: argparse.Namespace) -> int:
+    """
+    A main for function for testing a specific CLI test file.
+    """
+
+    for path in args.paths:
+        _add_test_case(path)
+
+    runner = unittest.TextTestRunner(verbosity = 2)
+    tests = unittest.defaultTestLoader.loadTestsFromTestCase(CLITest)
+    results = runner.run(tests)
+
+    return len(results.errors) + len(results.failures)
+
+def _load_args() -> argparse.Namespace:
+    """ Load arguments from the CLI for the main. """
+
+    parser = argparse.ArgumentParser(description = 'Run specific CLI test files.')
+
+    parser.add_argument('paths', metavar = 'PATH',
+        type = str, nargs = '+',
+        help = 'Path to CLI test case files.')
+
+    return parser.parse_args()
+
+if (__name__ == '__main__'):
+    sys.exit(main(_load_args()))
+else:
+    _discover_test_cases()
