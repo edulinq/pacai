@@ -2,6 +2,8 @@ import pacai.core.action
 import pacai.core.agent
 import pacai.core.gamestate
 
+ACTION_DELIM: str = ','
+
 class ScriptedAgent(pacai.core.agent.Agent):
     """
     An agent that has a specific set of actions that they will do in order.
@@ -12,12 +14,15 @@ class ScriptedAgent(pacai.core.agent.Agent):
     """
 
     def __init__(self,
-            actions: list[pacai.core.action.Action] | list[str] | None = None,
+            actions: list[pacai.core.action.Action] | list[str] | str | None = None,
             **kwargs) -> None:
         super().__init__(**kwargs)
 
         if (actions is None):
             actions = []
+
+        if (isinstance(actions, str)):
+            actions = actions.split(ACTION_DELIM)
 
         clean_actions = []
         for action in actions:
