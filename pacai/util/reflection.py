@@ -88,7 +88,7 @@ class Reference(pacai.util.json.DictConverter):
         if (check_alias and ('.' not in text)):
             text = pacai.util.alias.lookup(text, text)
 
-        parts = text.split(REF_DELIM, 1)
+        parts = text.rsplit(REF_DELIM, 1)
 
         file_path = None
         remaining = parts[-1].strip()

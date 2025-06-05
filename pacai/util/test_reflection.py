@@ -41,6 +41,24 @@ class ReflectionTest(pacai.test.base.BaseTest):
                 (None, 'pacai.agents.dummy', 'DummyAgent'),
             ),
 
+            # Special Paths
+
+            (
+                '/pacai/util/reflection.py:Reference',
+                None,
+                ('/pacai/util/reflection.py', None, 'Reference'),
+            ),
+            (
+                r'pacai\util\reflection.py:Reference',
+                None,
+                (r'pacai\util\reflection.py', None, 'Reference'),
+            ),
+            (
+                r'C:\pacai\util\reflection.py:Reference',
+                None,
+                (r'C:\pacai\util\reflection.py', None, 'Reference'),
+            ),
+
             # Errors
 
             (
