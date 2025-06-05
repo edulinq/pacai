@@ -35,9 +35,9 @@ def set_cli_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
             action = 'store', type = float, default = pacai.gridworld.mdp.DEFAULT_LIVING_REWARD,
             help = 'The Reward for living for a time step (default %(default)s).')
 
-    parser.add_argument('--qvalue-display', dest = 'qvalue_display',
+    parser.add_argument('--qdisplay', dest = 'qdisplay',
             action = 'store_true', default = False,
-            help = 'Display values, poilcies, and q-values (default %(default)s).')
+            help = 'Display MDP state values, poilcies, and Q-values (default %(default)s).')
 
     return parser
 
@@ -63,7 +63,7 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
     }
 
     board_options = {
-        'qvalue_display': args.qvalue_display,
+        'qdisplay': args.qdisplay,
     }
 
     return base_agent_infos, [], board_options

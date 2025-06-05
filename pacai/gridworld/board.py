@@ -23,11 +23,11 @@ class Board(pacai.core.board.Board):
 
     def __init__(self, *args,
             additional_markers: list[str] | None = None,
-            qvalue_display: bool = False,
+            qdisplay: bool = False,
             **kwargs) -> None:
         """
         Construct a GridWorld board.
-        If qvalue_display is true, then the existing board will be extended to display Q-Values and policies.
+        If qdisplay is true, then the existing board will be extended to display Q-Values and policies.
         """
 
         if (additional_markers is None):
@@ -51,7 +51,7 @@ class Board(pacai.core.board.Board):
         self._original_width: int = self.width
         """ The original width for this board. """
 
-        if (qvalue_display):
+        if (qdisplay):
             self._add_qvalue_display()
 
     def _split_line(self, line: str) -> list[str]:

@@ -97,7 +97,7 @@ class MDPAgent(pacai.core.agent.Agent):
             ) -> pacai.core.agentaction.AgentAction:
         agent_action = super().game_start_full(agent_index, suggested_seed, initial_state)
 
-        # Pass the state values and Q-values back to the game
+        # Pass the mdp state values and Q-values back to the game
         # so they can be displayed in the UI.
 
         serial_mdp_state_values = []  # [(MDP state, MDP state value), ...]
