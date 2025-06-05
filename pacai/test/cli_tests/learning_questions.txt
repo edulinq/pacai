@@ -1,0 +1,14 @@
+{
+    "cli": "pacai.student.learning-questions",
+    "arguments": [
+    ]
+}
+---
+Answers to analysis questions:
+    Question_2 : (0.9, 0.2)
+    Question_3A: (0.9, 0.2, 0.0)
+    Question_3B: (0.9, 0.2, 0.0)
+    Question_3C: (0.9, 0.2, 0.0)
+    Question_3D: (0.9, 0.2, 0.0)
+    Question_3E: (0.9, 0.2, 0.0)
+    Question_6 : (0.3, 0.5)

@@ -3,6 +3,7 @@ The main executable for running a game of GridWorld.
 """
 
 import argparse
+import logging
 import sys
 import typing
 
@@ -50,6 +51,8 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
     mdp = pacai.gridworld.mdp.GridWorldMDP(
             noise = args.noise,
             living_reward = args.living_reward)
+
+    logging.debug("Creating a GridWorld with a noise of %0.2f and a living reward of %0.2f.", args.noise, args.living_reward)
 
     data = {
         'name': args.agent,
