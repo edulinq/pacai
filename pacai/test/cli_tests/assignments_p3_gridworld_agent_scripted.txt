@@ -10,6 +10,7 @@
     ]
 }
 ---
+<LOG_PREFIX> -- Using source seed for games: 5.
 <LOG_PREFIX> -- Starting a game with seed: 15501686781378355951.
 <LOG_PREFIX> -- Created agent 'pacai.agents.scripted.ScriptedAgent' with move delay 100 and state evaluation function 'pacai.core.gamestate.base_eval'.
 <LOG_PREFIX> -- Turn 0, agent 0.

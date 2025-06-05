@@ -500,6 +500,7 @@ def init_from_args(
     if (seed is None):
         seed = random.randint(0, 2**64)
 
+    logging.debug("Using source seed for games: %d.", seed)
     rng = random.Random(seed)
 
     if (board_options is None):

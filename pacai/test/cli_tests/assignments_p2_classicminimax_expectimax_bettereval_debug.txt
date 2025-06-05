@@ -11,6 +11,7 @@
     ]
 }
 ---
+<LOG_PREFIX> -- Using source seed for games: 4.
 <LOG_PREFIX> -- Starting a game with seed: 5594871498841892311.
 <LOG_PREFIX> -- Created agent 'pacai.student.multiagents.MyMinimaxLikeAgent' with move delay 100 and state evaluation function 'pacai.student.multiagents.better_state_eval'.
 <LOG_PREFIX> -- Created agent 'pacai.agents.random.RandomAgent' with move delay 100 and state evaluation function 'pacai.core.gamestate.base_eval'.
