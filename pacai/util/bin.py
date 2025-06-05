@@ -10,6 +10,9 @@ import pacai.core.log
 import pacai.core.ui
 import pacai.util.alias
 
+SCORE_LIST_MAX_INFO_LENGTH: int = 50
+""" If a score list is less than this, log it to info. """
+
 @typing.runtime_checkable
 class SetCLIArgs(typing.Protocol):
     """
@@ -216,9 +219,36 @@ def log_scores(results: list[pacai.core.game.GameResult], winning_agent_indexes:
     win_rate = wins.count(True) / float(len(wins))
     turn_counts = [len(result.history) for result in results]
 
-    logging.info('%sAverage Score: %s', prefix, sum(scores) / float(len(scores)))
-    logging.info('%sScores:        %s', prefix, ', '.join([str(score) for score in scores]))
+    # Avoid logging long lists (which can be a bit slow in Python's logging module).
+    log_lists_to_info = (len(results) < SCORE_LIST_MAX_INFO_LENGTH)
+    log_lists_to_debug = (logging.getLogger().getEffectiveLevel() <= logging.DEBUG)
+
+    joined_scores = ''
+    joined_record = ''
+    joined_turn_counts = ''
+
+    if (log_lists_to_info or log_lists_to_debug):
+        joined_scores = ', '.join([str(score) for score in scores])
+        joined_record = ', '.join([['Loss', 'Win'][int(win)] for win in wins])
+        joined_turn_counts = ', '.join([str(turn_count) for turn_count in turn_counts])
+
+    logging.info('%sAverage Score: %s', prefix, sum(scores) / float(len(results)))
+
+    if (log_lists_to_info):
+        logging.info('%sScores:        %s', prefix, joined_scores)
+    elif (log_lists_to_debug):
+        logging.debug('%sScores:        %s', prefix, joined_scores)
+
     logging.info('%sWin Rate:      %d / %d (%0.2f)', prefix, wins.count(True), len(wins), win_rate)
-    logging.info('%sRecord:        %s', prefix, ', '.join([['Loss', 'Win'][int(win)] for win in wins]))
-    logging.info('%sAverage Turns: %s', prefix, sum(turn_counts) / float(len(turn_counts)))
-    logging.info('%sTurn Counts:   %s', prefix, ', '.join([str(turn_count) for turn_count in turn_counts]))
+
+    if (log_lists_to_info):
+        logging.info('%sRecord:        %s', prefix, joined_record)
+    elif (log_lists_to_debug):
+        logging.debug('%sRecord:        %s', prefix, joined_record)
+
+    logging.info('%sAverage Turns: %s', prefix, sum(turn_counts) / float(len(results)))
+
+    if (log_lists_to_info):
+        logging.info('%sTurn Counts:   %s', prefix, joined_turn_counts)
+    elif (log_lists_to_debug):
+        logging.debug('%sTurn Counts:   %s', prefix, joined_turn_counts)
