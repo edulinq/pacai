@@ -50,7 +50,7 @@ class MDPStatePosition(MDPState):
         return (self.position == other.position)
 
     def __hash__(self) -> int:
-        return hash(self.position)
+        return self.position._hash
 
     def __str__(self) -> str:
         return str(self.position)

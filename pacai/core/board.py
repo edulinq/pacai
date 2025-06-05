@@ -117,8 +117,11 @@ class Position(pacai.util.json.DictConverter):
         self._point: tuple[int, int] = (row, col)
         """ The location as a tuple (row, col). """
 
-        self._hash: int = hash(self._point)
-        """ Cache the hash value to speed up checks. """
+        self._hash: int = (row * 1000000) + col
+        """
+        Cache the hash value to speed up checks.
+        This hash value is accurate as long as the board dimensions are under one million.
+        """
 
     @property
     def row(self) -> int:
