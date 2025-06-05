@@ -1,0 +1,16 @@
+{
+    "cli": "pacai.gridworld.bin",
+    "arguments": [
+        "--seed", "4",
+        "--ui", "null",
+        "--max-turns", "100",
+        "--agent", "agent-value-iteration"
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: 0.0
+<LOG_PREFIX> -- Scores:        0.0
+<LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
+<LOG_PREFIX> -- Record:        Loss
+<LOG_PREFIX> -- Average Turns: 100.0
+<LOG_PREFIX> -- Turn Counts:   100
