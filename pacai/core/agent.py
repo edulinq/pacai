@@ -52,7 +52,7 @@ class Agent(abc.ABC):
         self.evaluation_function: pacai.core.gamestate.AgentStateEvaluationFunction = clean_state_eval_func
         """ The evaluation function that agent will use to assess game states. """
 
-        self.rng: random.Random = random.Random()
+        self.rng: random.Random = random.Random(4)
         """
         The RNG this agent should use whenever it wants randomness.
         This object will be constructed right away,

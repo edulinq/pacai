@@ -313,7 +313,7 @@ class GameState(pacai.core.gamestate.GameState):
             **kwargs) -> None:
         if (rng is None):
             logging.warning("No RNG passed to pacai.gridworld.gamestate.GameState.process_turn().")
-            rng = random.Random()
+            rng = random.Random(4)
 
         if (mdp is None):
             raise ValueError("No MDP passed to pacai.gridworld.gamestate.GameState.process_turn().")
