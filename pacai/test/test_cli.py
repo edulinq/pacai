@@ -21,6 +21,7 @@ DATA_DIR: str = os.path.join(THIS_DIR, "data")
 TEST_CASE_SEP: str = '---'
 DATA_DIR_ID: str = '__DATA_DIR__'
 TEMP_DIR_ID: str = '__TEMP_DIR__'
+REL_DIR_ID: str = '__REL_DIR__'
 
 DEFAULT_OUTPUT_CHECK: str = 'content_equals_normalize'
 
@@ -62,6 +63,8 @@ class CLITest(pacai.test.base.BaseTest):
     def _get_test_info(self, test_name: str, path: str) -> tuple[str, list[str], str, typing.Callable, int, bool, bool]:
         options, expected_output = _read_test_file(path)
 
+        base_dir = os.path.dirname(os.path.abspath(path))
+
         temp_dir = os.path.join(CLITest._base_temp_dir, test_name)
         os.makedirs(temp_dir, exist_ok = True)
 
@@ -82,26 +85,27 @@ class CLITest(pacai.test.base.BaseTest):
         cli_arguments = options.get('arguments', [])
 
         # Make any substitutions.
-        expected_output = _prepare_string(expected_output, temp_dir)
+        expected_output = _prepare_string(expected_output, temp_dir, base_dir)
         for (i, cli_argument) in enumerate(cli_arguments):
-            cli_arguments[i] = _prepare_string(cli_argument, temp_dir)
+            cli_arguments[i] = _prepare_string(cli_argument, temp_dir, base_dir)
 
         return module_name, cli_arguments, expected_output, output_check, exit_status, is_error, skip_windows
 
-def _prepare_string(text: str, temp_dir: str) -> str:
+def _prepare_string(text: str, temp_dir: str, base_dir: str) -> str:
     """ Prepare a string for testing. """
 
     replacements = [
         (DATA_DIR_ID, DATA_DIR),
         (TEMP_DIR_ID, temp_dir),
+        (REL_DIR_ID, base_dir),
     ]
 
-    for (key, base_dir) in replacements:
-        text = _replace_path(text, key, base_dir)
+    for (key, target_dir) in replacements:
+        text = _replace_path(text, key, target_dir)
 
     return text
 
-def _replace_path(text: str, key: str, base_dir: str) -> str:
+def _replace_path(text: str, key: str, target_dir: str) -> str:
     """ Make any test replacement inside the given string. """
 
     match = re.search(rf'{key}\(([^)]*)\)', text)
@@ -112,9 +116,9 @@ def _replace_path(text: str, key: str, base_dir: str) -> str:
         filename = os.path.join(*filename.split('/'))
 
         if (filename == ''):
-            path = base_dir
+            path = target_dir
         else:
-            path = os.path.join(base_dir, filename)
+            path = os.path.join(target_dir, filename)
 
         text = text.replace(match.group(0), path)
 
