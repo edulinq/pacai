@@ -63,12 +63,16 @@ AGENT_GO_WEST: Alias = Alias('agent-go-west', 'pacai.agents.gowest.GoWestAgent')
 AGENT_GREEDY: Alias = Alias('agent-greedy', 'pacai.agents.greedy.GreedyAgent')
 AGENT_LEFT_TURN: Alias = Alias('agent-left-turn', 'pacai.agents.leftturn.LeftTurnAgent')
 AGENT_MINIMAX: Alias = Alias('agent-minimax', 'pacai.student.multiagents.MyMinimaxLikeAgent')
+AGENT_QLEARNING: Alias = Alias('agent-qlearning', 'pacai.student.learning.QLearningAgent')
+AGENT_QLEARNING_APPROX: Alias = Alias('agent-qlearning-approx', 'pacai.student.learning.ApproximateQLearningAgent')
+AGENT_QLEARNING_USER: Alias = Alias('agent-qlearning-user', 'pacai.student.learning.QLearningUserInputAgent')
 AGENT_RANDOM: Alias = Alias('agent-random', 'pacai.agents.random.RandomAgent')
 AGENT_REFLEX: Alias = Alias('agent-reflex', 'pacai.student.multiagents.ReflexAgent')
 AGENT_SCRIPTED: Alias = Alias('agent-scripted', 'pacai.agents.scripted.ScriptedAgent')
 AGENT_SEARCH_PROBLEM: Alias = Alias('agent-search-problem', 'pacai.agents.search.problem.SearchProblemAgent')
 AGENT_SEARCH_CLOSEST_DOT: Alias = Alias('agent-search-closest-dot', 'pacai.student.singlesearch.ClosestDotSearchAgent')
 AGENT_USER_INPUT: Alias = Alias('agent-user-input', 'pacai.agents.userinput.UserInputAgent')
+AGENT_VALUE_ITERATION: Alias = Alias('agent-value-iteration', 'pacai.student.learning.ValueIterationAgent')
 
 AGENT_SHORT_NAMES: list[str] = [
     AGENT_CHEATING.short,
@@ -82,6 +86,7 @@ AGENT_SHORT_NAMES: list[str] = [
     AGENT_SEARCH_PROBLEM.short,
     AGENT_SEARCH_CLOSEST_DOT.short,
     AGENT_USER_INPUT.short,
+    AGENT_VALUE_ITERATION.short,
 ]
 
 DISTANCE_EUCLIDEAN: Alias = Alias('distance-euclidean', 'pacai.search.distance.euclidean_distance')

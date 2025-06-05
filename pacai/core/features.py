@@ -30,7 +30,7 @@ class FeatureExtractor(typing.Protocol):
             state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action,
             agent: pacai.core.agent.Agent | None = None,
-            **kwargs) -> float:
+            **kwargs) -> FeatureDict:
         """
         Extract the features for the given state/action pair.
 

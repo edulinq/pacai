@@ -1,0 +1,38 @@
+{
+    "cli": "pacai.gridworld.bin",
+    "arguments": [
+        "--seed", "5",
+        "--debug",
+        "--ui", "null",
+        "--max-turns", "100",
+        "--agent", "agent-scripted",
+        "--agent-arg", "0::actions=NORTH,NORTH,NORTH,NORTH,NORTH,EAST,EAST,EAST,EXIT"
+    ]
+}
+---
+<LOG_PREFIX> -- Starting a game with seed: 15501686781378355951.
+<LOG_PREFIX> -- Created agent 'pacai.agents.scripted.ScriptedAgent' with move delay 100 and state evaluation function 'pacai.core.gamestate.base_eval'.
+<LOG_PREFIX> -- Turn 0, agent 0.
+<LOG_PREFIX> -- Requested Action: 'NORTH', Actual Action: 'NORTH', Reward: 0.00.
+<LOG_PREFIX> -- Turn 1, agent 0.
+<LOG_PREFIX> -- Requested Action: 'NORTH', Actual Action: 'EAST', Reward: 0.00.
+<LOG_PREFIX> -- Turn 2, agent 0.
+<LOG_PREFIX> -- Requested Action: 'NORTH', Actual Action: 'EAST', Reward: 0.00.
+<LOG_PREFIX> -- Turn 3, agent 0.
+<LOG_PREFIX> -- Requested Action: 'NORTH', Actual Action: 'NORTH', Reward: 0.00.
+<LOG_PREFIX> -- Turn 4, agent 0.
+<LOG_PREFIX> -- Requested Action: 'NORTH', Actual Action: 'EAST', Reward: 0.00.
+<LOG_PREFIX> -- Turn 5, agent 0.
+<LOG_PREFIX> -- Requested Action: 'EAST', Actual Action: 'NORTH', Reward: 0.00.
+<LOG_PREFIX> -- Turn 6, agent 0.
+<LOG_PREFIX> -- Requested Action: 'EAST', Actual Action: 'EAST', Reward: 0.00.
+<LOG_PREFIX> -- Turn 7, agent 0.
+<LOG_PREFIX> -- Requested Action: 'EAST', Actual Action: 'EAST', Reward: 1.00.
+<LOG_PREFIX> -- Turn 8, agent 0.
+<LOG_PREFIX> -- Got the EXIT action, game is over.
+<LOG_PREFIX> -- Average Score: 1.0
+<LOG_PREFIX> -- Scores:        1.0
+<LOG_PREFIX> -- Win Rate:      1 / 1 (1.00)
+<LOG_PREFIX> -- Record:        Win
+<LOG_PREFIX> -- Average Turns: 9.0
+<LOG_PREFIX> -- Turn Counts:   9
