@@ -75,7 +75,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[pacai.core.mdp.MDPStateP
         return states
 
     def is_terminal_state(self, state: pacai.core.mdp.MDPStatePosition) -> bool:
-        return state.is_terminal
+        return state.is_terminal()
 
     def get_possible_actions(self, state: pacai.core.mdp.MDPStatePosition) -> list[pacai.core.action.Action]:
         """

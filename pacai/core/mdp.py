@@ -23,6 +23,10 @@ class MDPState(pacai.util.json.DictConverter):
     A state or "node" in an MDP.
     """
 
+    @abc.abstractmethod
+    def is_terminal(self) -> bool:
+        """ Whether or not this state is the terminal state. """
+
 class MDPStatePosition(MDPState):
     """
     An MDP state that relies solely on position.
@@ -37,8 +41,8 @@ class MDPStatePosition(MDPState):
         self.position = position
         """ The board position of this MDP state. """
 
-        self.is_terminal: bool = (position == TERMINAL_POSITION)
-        """ Whether or not this state is the terminal state. """
+    def is_terminal(self) -> bool:
+        return (self.position == TERMINAL_POSITION)
 
     def __lt__(self, other: 'MDPStatePosition') -> bool:
         return (self.position < other.position)
