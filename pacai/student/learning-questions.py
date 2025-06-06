@@ -12,68 +12,93 @@ def question_2() -> tuple[float, float]:
 
     return discount, noise
 
-def question_3a() -> tuple[float, float, float]:
+def question_3a() -> tuple[float, float, float] | None:
     """
     Question 3A.
 
-    TODO
+    Modify any of these three options.
+    If the requested scenario is not possible,
+    return just `None`.
     """
 
     discount = 0.9
     noise = 0.2
     living_reward = 0.0
 
+    # If the requested scenario is not possible, return None.
+    # return None
+
     return discount, noise, living_reward
 
-def question_3b() -> tuple[float, float, float]:
+def question_3b() -> tuple[float, float, float] | None:
     """
     Question 3B.
 
-    TODO
+    Modify any of these three options.
+    If the requested scenario is not possible,
+    return just `None`.
     """
 
     discount = 0.9
     noise = 0.2
     living_reward = 0.0
 
+    # If the requested scenario is not possible, return None.
+    # return None
+
     return discount, noise, living_reward
 
-def question_3c() -> tuple[float, float, float]:
+def question_3c() -> tuple[float, float, float] | None:
     """
     Question 3C.
 
-    TODO
+    Modify any of these three options.
+    If the requested scenario is not possible,
+    return just `None`.
     """
 
     discount = 0.9
     noise = 0.2
     living_reward = 0.0
 
+    # If the requested scenario is not possible, return None.
+    # return None
+
     return discount, noise, living_reward
 
-def question_3d() -> tuple[float, float, float]:
+def question_3d() -> tuple[float, float, float] | None:
     """
-    Question 3d.
+    Question 3D.
 
-    TODO
+    Modify any of these three options.
+    If the requested scenario is not possible,
+    return just `None`.
     """
 
     discount = 0.9
     noise = 0.2
     living_reward = 0.0
 
+    # If the requested scenario is not possible, return None.
+    # return None
+
     return discount, noise, living_reward
 
-def question_3e() -> tuple[float, float, float]:
+def question_3e() -> tuple[float, float, float] | None:
     """
     Question 3E.
 
-    TODO
+    Modify any of these three options.
+    If the requested scenario is not possible,
+    return just `None`.
     """
 
     discount = 0.9
     noise = 0.2
     living_reward = 0.0
+
+    # If the requested scenario is not possible, return None.
+    # return None
 
     return discount, noise, living_reward
 
