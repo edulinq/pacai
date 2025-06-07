@@ -106,13 +106,18 @@ def question_6() -> tuple[float, float]:
     """
     Question 6.
 
-    TODO
+    Modify any of these two options.
+    If the requested scenario is not possible,
+    return just `None`.
     """
 
-    epsilon = 0.3
+    exploration_rate = 0.3
     learning_rate = 0.5
 
-    return epsilon, learning_rate
+    # If the requested scenario is not possible, return None.
+    # return None
+
+    return exploration_rate, learning_rate
 
 def main() -> int:
     """ Print the answers to all the questions. """
