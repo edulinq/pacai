@@ -30,15 +30,24 @@ class MDPState(pacai.util.json.DictConverter):
 class MDPStatePosition(MDPState):
     """
     An MDP state that relies solely on position.
+
+    Because this class is fairly high-traffic (and MDPStateBoard can be large),
+    this class will prefer optimization over generalization.
     """
 
     def __init__(self,
-            position: pacai.core.board.Position | None = None,
+            position: pacai.core.board.Position | dict[str, typing.Any] | None = None,
             **kwargs) -> None:
         if (position is None):
             raise ValueError("Cannot create a MDPStatePosition without a position.")
 
-        self.position = position
+        if (isinstance(position, dict)):
+            position = pacai.core.board.Position.from_dict(position)
+
+        if (not isinstance(position, pacai.core.board.Position)):
+            raise ValueError(f"Cannot create a MDPStatePosition with a non-position type: {type(position)}.")
+
+        self.position: pacai.core.board.Position = position
         """ The board position of this MDP state. """
 
     def is_terminal(self) -> bool:
@@ -69,9 +78,7 @@ class MDPStatePosition(MDPState):
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        data = data.copy()
-        data['position'] = pacai.core.board.Position.from_dict(data['position'])
-        return cls(**data)
+        return MDPStatePosition(data['position'])
 
 class MDPStateBoard(MDPStatePosition):
     """
@@ -79,6 +86,8 @@ class MDPStateBoard(MDPStatePosition):
     Technically, this only uses the non-wall markers for a board.
 
     Using this will be quite slow and is generally not recommended for larger problems.
+    Because this class is fairly high-traffic (and the board data can be large),
+    this class will prefer optimization over generalization.
     """
 
     def __init__(self,
@@ -95,7 +104,7 @@ class MDPStateBoard(MDPStatePosition):
             if (board is None):
                 raise ValueError("Cannot create a MDPStateBoard without a board.")
 
-            _board_string = f"{self.position}::{board.get_nonwall_json()}"
+            _board_string = f"{self.position}::{board.get_nonwall_string()}"
 
         self._board_string: str = _board_string
         """
@@ -125,13 +134,14 @@ class MDPStateBoard(MDPStatePosition):
         return str(self)
 
     def to_dict(self) -> dict[str, typing.Any]:
-        data = super().to_dict()
-        data['_board_string'] = self._board_string
-        return data
+        return {
+            'position': self.position.to_dict(),
+            '_board_string': self._board_string,
+        }
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return super().from_dict(data)
+        return MDPStateBoard(position = data['position'], _board_string = data['_board_string'])
 
 StateType = typing.TypeVar('StateType', bound = MDPState)  # pylint: disable=invalid-name
 

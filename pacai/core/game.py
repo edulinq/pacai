@@ -328,7 +328,7 @@ class Game(abc.ABC):
         ui.game_start(state, board_highlights = board_highlights)
 
         while (not self.check_end(state)):
-            logging.debug("Turn %d, agent %d.", state.turn_count, state.agent_index)
+            logging.trace("Turn %d, agent %d.", state.turn_count, state.agent_index)  # type: ignore[attr-defined]  # pylint: disable=no-member
 
             # Receive any user inputs from the UI.
             self._receive_user_inputs(agent_user_inputs, ui)

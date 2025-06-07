@@ -93,7 +93,7 @@ class QLearningAgent(pacai.agents.mdp.MDPAgent):
         Purely for display/logging purposes.
         """
 
-        self.qvalues: dict[pacai.core.mdp.MDPStatePosition, dict[pacai.core.action.Action, float]] = {}
+        self.qvalues: dict[tuple[pacai.core.mdp.MDPStatePosition, pacai.core.action.Action], float] = {}
         """ The Q-values for this agent. """
 
         # Load any training information.
@@ -108,15 +108,9 @@ class QLearningAgent(pacai.agents.mdp.MDPAgent):
         The dict should be JSON serializable.
         """
 
-        # [(raw mdp state, action, action), ...]
-        flat_qvalues = []
-
-        for mdp_state, action_qvalues in self.qvalues.items():
-            for (action, qvalue) in action_qvalues.items():
-                flat_qvalues.append((mdp_state.to_dict(), action, qvalue))
-
         return {
-            'qvalues': flat_qvalues,
+            # [(raw mdp state, action, action), ...]
+            'qvalues': [(mdp_state.to_dict(), action, qvalue) for ((mdp_state, action), qvalue) in self.qvalues.items()]
         }
 
     def unpack_training_info(self, data: dict[str, typing.Any]) -> None:
@@ -128,11 +122,7 @@ class QLearningAgent(pacai.agents.mdp.MDPAgent):
         for (raw_mdp_state, raw_action, qvalue) in data.get('qvalues', []):
             mdp_state = self.mdp_state_class.from_dict(raw_mdp_state)
             action = pacai.core.action.Action(raw_action)
-
-            if (mdp_state not in self.qvalues):
-                self.qvalues[mdp_state] = {}
-
-            self.qvalues[mdp_state][action] = qvalue
+            self.qvalues[(mdp_state, action)] = qvalue
 
     def game_start(self, initial_state: pacai.core.gamestate.GameState) -> None:
         self.last_state = initial_state
@@ -218,10 +208,7 @@ class QLearningAgent(pacai.agents.mdp.MDPAgent):
             game_state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action,
             ) -> float:
-        if (mdp_state not in self.qvalues):
-            self.qvalues[mdp_state] = {}
-
-        return self.qvalues[mdp_state].get(action, 0.0)
+        return self.qvalues.get((mdp_state, action), 0.0)
 
     def update_qvalue(self,
             reward: float,

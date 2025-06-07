@@ -75,7 +75,7 @@ def board_feature_extractor(
     This will be slow, and should generally not be used outside of learning applications.
     """
 
-    key = f"{action}::{state.board.get_nonwall_json()}"
+    key = f"{action}::{state.board.get_nonwall_string()}"
 
     features = FeatureDict()
     features[key] = 1.0

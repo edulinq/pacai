@@ -200,7 +200,7 @@ class GameState(pacai.util.json.DictConverter):
         if (action is None):
             return None
 
-        return action.get_reverse_direction()
+        return pacai.core.action.get_reverse_direction(action)
 
     def generate_successor(self,
             action: pacai.core.action.Action,
@@ -349,7 +349,7 @@ class GameState(pacai.util.json.DictConverter):
 
         data['board'] = pacai.core.board.Board.from_dict(data['board'])
         data['tickets'] = {int(agent_index): pacai.core.ticket.Ticket.from_dict(ticket) for (agent_index, ticket) in data['tickets'].items()}
-        data['agent_actions'] = {int(agent_index): [pacai.core.action.Action(raw_action) for raw_action in raw_actions]
+        data['agent_actions'] = {int(agent_index): [pacai.core.action.Action(raw_action, safe = True) for raw_action in raw_actions]
                 for (agent_index, raw_actions) in data['agent_actions'].items()}
 
         return cls(**data)

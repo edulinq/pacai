@@ -6,23 +6,34 @@ Default actions are provided, but custom actions can be easily created.
 import typing
 
 class Action(str):
-    """ An action that an agent is allowed to take. """
+    """
+    An action that an agent is allowed to take.
 
-    def __new__(cls, raw_text: str) -> 'Action':
-        text = super().__new__(cls, raw_text.strip().upper())
+    Actions are just strings with no additional functionality.
+    This type is more semantic than functional.
+    """
+
+    def __new__(cls, raw_text: str, safe = False) -> 'Action':
+        # If the caller deems the imput "safe" then we will skip all checks and cleaning,
+        # and return just the input string.
+        if (safe):
+            return typing.cast('Action', raw_text)
+
+        raw_text = raw_text.strip().upper()
+        text = super().__new__(cls, raw_text)
 
         if (len(text) == 0):
             raise ValueError('Actions must not be empty.')
 
         return text
 
-    def get_reverse_direction(self) -> typing.Union['Action', None]:
-        """
-        If this action is a cardinal direction, return the reveres direction.
-        Returns None otherwise.
-        """
+def get_reverse_direction(action: Action) -> Action | None:
+    """
+    If this action is a cardinal direction, return the reveres direction.
+    Returns None otherwise.
+    """
 
-        return REVERSE_CARDINAL_DIRECTIONS.get(self, None)
+    return REVERSE_CARDINAL_DIRECTIONS.get(action, None)
 
 NORTH = Action("north")
 """ The action for moving north/up. """

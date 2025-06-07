@@ -113,11 +113,19 @@ class Position(pacai.util.json.DictConverter):
     ROW_INDEX: int = 0
     COL_INDEX: int = 1
 
-    def __init__(self, row: int, col: int) -> None:
-        self._point: tuple[int, int] = (row, col)
-        """ The location as a tuple (row, col). """
+    MAX_SIZE: int = 1000000
 
-        self._hash: int = (row * 1000000) + col
+    def __init__(self, row: int, col: int) -> None:
+        if ((abs(row) > Position.MAX_SIZE) or (abs(col) > Position.MAX_SIZE)):
+            raise ValueError(f"Dimensions {(row, col)} is greater than max of {(Position.MAX_SIZE, Position.MAX_SIZE)}.")
+
+        self._row = row
+        """ The row/y/height of this position. """
+
+        self._col = col
+        """ The col/x/width of this position. """
+
+        self._hash: int = (row * Position.MAX_SIZE) + col
         """
         Cache the hash value to speed up checks.
         This hash value is accurate as long as the board dimensions are under one million.
@@ -127,22 +135,20 @@ class Position(pacai.util.json.DictConverter):
     def row(self) -> int:
         """ Get this position's row. """
 
-        return self._point[Position.ROW_INDEX]
+        return self._row
 
     @property
     def col(self) -> int:
         """ Get this position's col. """
 
-        return self._point[Position.COL_INDEX]
+        return self._col
 
     def add(self, other: 'Position') -> 'Position':
         """
         Add another position (offset) to this one and return the result.
         """
 
-        row = self._point[Position.ROW_INDEX] + other._point[Position.ROW_INDEX]
-        col = self._point[Position.COL_INDEX] + other._point[Position.COL_INDEX]
-        return Position(row, col)
+        return Position(self._row + other._row, self._col + other._col)
 
     def apply_action(self, action: pacai.core.action.Action) -> 'Position':
         """
@@ -158,32 +164,32 @@ class Position(pacai.util.json.DictConverter):
         return self.add(offset)
 
     def __lt__(self, other: 'Position') -> bool:
-        return (self._point < other._point)
+        return (self._hash < other._hash)
 
     def __eq__(self, other: object) -> bool:
         if (not isinstance(other, Position)):
             return False
 
-        return (self._point == other._point)
+        return (self._hash == other._hash)
 
     def __hash__(self) -> int:
         return self._hash
 
     def __str__(self) -> str:
-        return f"({self.row}, {self.col})"
+        return f"({self._row}, {self._col})"
 
     def __repr__(self) -> str:
         return str(self)
 
     def to_dict(self) -> dict[str, typing.Any]:
         return {
-            'row': self.row,
-            'col': self.col,
+            'row': self._row,
+            'col': self._col,
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return cls(**data)
+        return Position(row = data['row'], col = data['col'])
 
 CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
     pacai.core.action.NORTH: Position(-1, 0),
@@ -619,18 +625,18 @@ class Board(pacai.util.json.DictConverter):
         marker = Marker(str(agent_index))
         return self._agent_initial_positions.get(marker, None)
 
-    def get_nonwall_json(self) -> str:
+    def get_nonwall_string(self) -> str:
         """
-        Get a JSON string representation of the non-wall objects on the board.
+        Get a string representation of the non-wall objects on the board.
         This should not be used for any performant code,
         but provides a consistent way of identifying the "state" of the board.
         """
 
         raw_nonwall_objects = []
         for (marker, positions) in sorted(self._nonwall_objects.items()):
-            raw_nonwall_objects.append([str(marker)] + [str(position) for position in sorted(positions)])
+            raw_nonwall_objects.append(f"{marker}::{','.join([str(position) for position in sorted(positions)])}")
 
-        return pacai.util.json.dumps(raw_nonwall_objects)
+        return '||'.join(raw_nonwall_objects)
 
     def to_grid(self) -> list[list[Marker]]:
         """ Convert this board to a 2-d grid. """
