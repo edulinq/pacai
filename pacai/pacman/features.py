@@ -17,6 +17,12 @@ def simple_feature_extractor(
         **kwargs) -> pacai.core.features.FeatureDict:
     """
     Get simple features for a basic reflex Pac-Man.
+
+    Features:
+     - 'bias' -- A constant value that allows a bias weight to be learned.
+     - 'close-ghosts-count' -- The number of ghosts within CLOSE_GHOST_DISTANCE (may not always be present).
+     - 'close-food-count' -- The number of food with CLOSE_FOOD_DISTANCE (may not always be present).
+     - 'closest-food' -- A normalized distance to the closest food.
     """
 
     state = typing.cast(pacai.pacman.gamestate.GameState, state)

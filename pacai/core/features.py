@@ -51,7 +51,12 @@ def score_feature_extractor(
         action: pacai.core.action.Action,
         agent: pacai.core.agent.Agent | None = None,
         **kwargs) -> FeatureDict:
-    """ The most basic evaluation function, which just uses the state's current score. """
+    """
+    The most basic feature extractor, which just uses the state's current score.
+
+    Features:
+     - 'score' -- The current score of the game.
+    """
 
     rng = None
     if (agent is not None):
@@ -73,6 +78,9 @@ def board_feature_extractor(
     A feature extractor that just creates a key unique to the board/action pair and assigns it a value of 1.0.
     It accomplishes this by generating a JSON string for all the non-wall objects in the board.
     This will be slow, and should generally not be used outside of learning applications.
+
+    Features:
+     - '<action::board>' -- A key unique to each action/board pair. The value is always 1.0.
     """
 
     key = f"{action}::{state.board.get_nonwall_string()}"
