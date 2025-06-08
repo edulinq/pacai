@@ -1,6 +1,7 @@
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.gamestate
+import pacai.pacman.board
 
 class CheatingAgent(pacai.core.agent.Agent):
     """
@@ -13,9 +14,9 @@ class CheatingAgent(pacai.core.agent.Agent):
         # Get a bunch of points.
         state.score = 1000
 
-        # Declare myself the winner (in pacman).
-        if (hasattr(state, 'food_count')):
-            setattr(state, 'food_count', 0)
+        # Eat all the food, thereby winning the game.
+        for food_position in state.board.get_marker_positions(pacai.pacman.board.MARKER_PELLET):
+            state.board.remove_marker(pacai.pacman.board.MARKER_PELLET, food_position)
 
         # End the game.
         state.game_over = True

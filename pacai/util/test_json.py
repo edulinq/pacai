@@ -670,7 +670,6 @@ class JSONTest(pacai.test.base.BaseTest):
                     "game_over": False,
                     "score": 0,
                     "turn_count": 0,
-                    "food_count": 0,
                     "scared_timers": {},
                 },
                 None,

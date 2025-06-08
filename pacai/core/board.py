@@ -475,6 +475,11 @@ class Board(pacai.util.json.DictConverter):
 
         return self._nonwall_objects.get(marker, set()).copy()
 
+    def get_marker_count(self, marker: Marker) -> int:
+        """ Get a count of the non-wall positions for a specific marker. """
+
+        return len(self._nonwall_objects.get(marker, []))
+
     def get_walls(self) -> set[Position]:
         """ Get all the walls. """
 

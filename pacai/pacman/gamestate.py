@@ -51,13 +51,9 @@ class GameState(pacai.core.gamestate.GameState):
     """ A game state specific to a standard Pacman game. """
 
     def __init__(self,
-            food_count: int = 0,
             scared_timers: dict[int, int] | None = None,
             **kwargs) -> None:
         super().__init__(**kwargs)
-
-        self.food_count: int = food_count
-        """ The number of food pellets on the board. """
 
         if (scared_timers is None):
             scared_timers = {}
@@ -99,6 +95,11 @@ class GameState(pacai.core.gamestate.GameState):
             self._get_ghost_legal_actions(actions)
 
         return actions
+
+    def food_count(self) -> int:
+        """ Get the count of all food currently on the board. """
+
+        return self.board.get_marker_count(pacai.pacman.board.MARKER_PELLET)
 
     def get_food(self) -> set[pacai.core.board.Position]:
         """ Get the positions of all food currently on the board. """
@@ -155,7 +156,7 @@ class GameState(pacai.core.gamestate.GameState):
 
     def game_complete(self) -> list[int]:
         # Pacman wins if there is no food on the board.
-        if (self.food_count == 0):
+        if (self.food_count() == 0):
             return [PACMAN_AGENT_INDEX]
 
         # Otherwise, the ghosts (if any) win.
@@ -220,11 +221,9 @@ class GameState(pacai.core.gamestate.GameState):
             if (interaction_marker == pacai.pacman.board.MARKER_PELLET):
                 # Eat a food pellet.
                 self.board.remove_marker(interaction_marker, new_position)
-
-                self.food_count -= 1
                 self.score += FOOD_POINTS
 
-                if (self.food_count <= 0):
+                if (self.food_count() == 0):
                     self.score += BOARD_CLEAR_POINTS
                     self.game_over = True
             elif (interaction_marker == pacai.pacman.board.MARKER_CAPSULE):

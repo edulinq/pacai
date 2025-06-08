@@ -1,5 +1,5 @@
 """
-A shortcut for the main pacman executable: `pacai.pacman.bin`.
+A shortcut for the main Pac-Man executable: `pacai.pacman.bin`.
 """
 
 import sys
