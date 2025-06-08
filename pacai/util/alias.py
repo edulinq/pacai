@@ -178,6 +178,7 @@ STATE_EVAL_SHORT_NAMES: list[str] = [
 
 UI_NULL: Alias = Alias('null', 'pacai.ui.null.NullUI')
 UI_STDIO: Alias = Alias('text', 'pacai.ui.text.StdioUI', skip_windows_test = True)
+UI_STDIO_PACMAN: Alias = Alias('text-pacman', 'pacai.pacman.textui.StdioUI', skip_windows_test = True)
 UI_RAW_TEXT: Alias = Alias('raw-text', 'pacai.ui.text.TextUI', skip_windows_test = True)
 UI_TK: Alias = Alias('tk', 'pacai.ui.tk.TkUI')
 UI_WEB: Alias = Alias('web', 'pacai.ui.web.WebUI')
