@@ -55,7 +55,7 @@ class GameState(pacai.pacman.gamestate.GameState):
         if (position is None):
             raise ValueError("Could not find position.")
 
-        if (position.row < (self.board.width / 2)):
+        if (position.col < (self.board.width / 2)):
             return -1
 
         return 1
@@ -66,6 +66,13 @@ class GameState(pacai.pacman.gamestate.GameState):
         return [agent_index for agent_index in self.get_agent_indexes() if (self._team_modifier(agent_index) == team_modifier)]
 
     def is_scared(self, agent_index: int = -1) -> bool:
+        if (agent_index == -1):
+            agent_index = self.agent_index
+
+        # Dead agents have nothing to fear
+        if (self.get_agent_position(agent_index = agent_index) is None):
+            return False
+
         # Agents cannot be scared when on the opponent's side of the board.
         if (self._team_side(agent_index = agent_index) != self._team_modifier(agent_index = agent_index)):
             return False
@@ -86,7 +93,8 @@ class GameState(pacai.pacman.gamestate.GameState):
         if (position is None):
             return [pacai.core.action.STOP]
 
-        return super().get_legal_actions(position)
+        # Call directly into pacai.core.gamestate.GameState because Pac-Man has special actions for ghosts.
+        return pacai.core.gamestate.GameState.get_legal_actions(self, position)
 
     def food_count(self, team_modifier: int = 0, agent_index: int = -1) -> int:
         """
@@ -228,6 +236,8 @@ class GameState(pacai.pacman.gamestate.GameState):
             new_position = self.board.get_agent_initial_position(self.agent_index)
             if (new_position is None):
                 raise ValueError(f"Cannot find initial position for agent {self.agent_index}.")
+
+            self.board.place_marker(agent_marker, new_position)
         else:
             new_position = old_position.apply_action(action)
 
@@ -236,15 +246,20 @@ class GameState(pacai.pacman.gamestate.GameState):
         if (old_position != new_position):
             interaction_markers = self.board.get(new_position)
 
-            # Since we are moving, pickup the agent from their current location.
+            # Since we are moving, pickup the agent from their current location and move them to their new location.
             if (old_position is not None):
                 self.board.remove_marker(agent_marker, old_position)
+                self.board.place_marker(agent_marker, new_position)
 
         died = False
 
         # Process actions for all the markers we are moving onto.
         for interaction_marker in interaction_markers:
             if (interaction_marker == pacai.pacman.board.MARKER_PELLET):
+                # Ignore our own food.
+                if (team_modifier == self._team_side(position = new_position)):
+                    continue
+
                 # Eat a food pellet.
                 self.board.remove_marker(interaction_marker, new_position)
                 self.score += team_modifier * FOOD_POINTS
@@ -252,6 +267,10 @@ class GameState(pacai.pacman.gamestate.GameState):
                 if (self.food_count(team_modifier = team_modifier) == 0):
                     self.game_over = True
             elif (interaction_marker == pacai.pacman.board.MARKER_CAPSULE):
+                # Ignore our own capsules.
+                if (team_modifier == self._team_side(position = new_position)):
+                    continue
+
                 # Eat a power capsule, scare all enemy ghosts.
                 self.board.remove_marker(interaction_marker, new_position)
 
@@ -267,21 +286,21 @@ class GameState(pacai.pacman.gamestate.GameState):
                     continue
 
                 # Check if anyone is scared.
-                self_scared = self.is_scared(agent_index)
+                self_scared = self.is_scared(self.agent_index)
                 other_scared = self.is_scared(other_agent_index)
 
                 # Check who is a ghost (agent's on their own side are a ghost).
-                # We know if we are a ghost if the other agent is a ghost or scared.
+                self_ghost = (team_modifier == self._team_side(agent_index = self.agent_index))
                 other_ghost = (other_team_modifier == self._team_side(agent_index = other_agent_index))
 
                 # Check who was eaten (and remove them), what team did the eating, and the points that should be awarded.
                 eating_team_modifier = 0
                 points = 0
 
-                if (self_scared or other_ghost):
+                if ((self_scared and self_ghost) or ((not other_scared) and other_ghost)):
                     # We got eaten, but our marker is already off the board.
                     died = True
-                    self._kill_agent(agent_index)
+                    self._kill_agent(self.agent_index)
 
                     eating_team_modifier = other_team_modifier
 
@@ -303,9 +322,9 @@ class GameState(pacai.pacman.gamestate.GameState):
 
                 self.score += (eating_team_modifier * points)
 
-        # Move the agent to the new location if it did not die.
-        if (not died):
-            self.board.place_marker(agent_marker, new_position)
+        # The current agent has died, remove their marker.
+        if (died):
+            self.board.remove_marker(agent_marker, new_position)
 
         # Decrement the scared timer.
         if (self.agent_index in self.scared_timers):
