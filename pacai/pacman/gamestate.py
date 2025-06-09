@@ -87,6 +87,14 @@ class GameState(pacai.core.gamestate.GameState):
 
         return self.scared_timers.get(agent_index, 0) > 0
 
+    def compute_move_delay(self, agent_index: int) -> int:
+        move_delay = super().compute_move_delay(agent_index)
+
+        if (self.is_scared(agent_index)):
+            move_delay += SCARED_MOVE_PENALTY
+
+        return move_delay
+
     def get_legal_actions(self, position: pacai.core.board.Position | None = None) -> list[pacai.core.action.Action]:
         actions = super().get_legal_actions(position)
 
@@ -236,7 +244,6 @@ class GameState(pacai.core.gamestate.GameState):
                         continue
 
                     self.scared_timers[agent_index] = SCARED_TIME
-                    self.move_delays[agent_index] += SCARED_MOVE_PENALTY
             elif (interaction_marker.is_agent()):
                 # Interact with a ghost.
 
@@ -336,6 +343,3 @@ class GameState(pacai.core.gamestate.GameState):
         # Reset the scared timer.
         if (agent_index in self.scared_timers):
             del self.scared_timers[agent_index]
-
-        # Reset speed.
-        self.move_delays[agent_index] -= SCARED_MOVE_PENALTY

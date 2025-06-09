@@ -116,8 +116,8 @@ class GameState(pacai.util.json.DictConverter):
         """
 
         # Issue initial tickets.
-        for (agent_index, move_delay) in self.move_delays.items():
-            self.tickets[agent_index] = pacai.core.ticket.Ticket(agent_index + move_delay, 0, 0)
+        for agent_index in self.move_delays.keys():
+            self.tickets[agent_index] = pacai.core.ticket.Ticket(agent_index + self.compute_move_delay(agent_index), 0, 0)
 
         # Choose the first agent to move.
         self.last_agent_index = self.agent_index
@@ -270,7 +270,7 @@ class GameState(pacai.util.json.DictConverter):
         self.agent_actions[self.agent_index].append(action)
 
         # Issue this agent a new ticket.
-        self.tickets[self.agent_index] = self.tickets[self.agent_index].next(self.move_delays[self.agent_index])
+        self.tickets[self.agent_index] = self.tickets[self.agent_index].next(self.compute_move_delay(self.agent_index))
 
         # If the game is not over, pick an agent for the next turn.
         self.last_agent_index = self.agent_index
@@ -280,6 +280,16 @@ class GameState(pacai.util.json.DictConverter):
 
         # Increment the move count.
         self.turn_count += 1
+
+    def compute_move_delay(self, agent_index: int) -> int:
+        """
+        The the current move delay for the agent.
+        By default, this just looks up the value in self.move_delays.
+        However, this method allows children to implement move complex functionality
+        (e.g., power-ups that affect an agent's speed).
+        """
+
+        return self.move_delays[agent_index]
 
     def get_next_agent_index(self) -> int:
         """
