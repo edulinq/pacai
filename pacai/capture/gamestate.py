@@ -1,4 +1,3 @@
-# TEST
 import random
 
 import PIL.Image
@@ -20,6 +19,17 @@ KILL_GHOST_POINTS: int = 0
 
 KILL_PACMAN_POINTS: int = 0
 """ Points for eating a Pac-Man. """
+
+PREFIX_MARKERS: set[pacai.core.board.Marker] = {
+    pacai.core.board.MARKER_WALL,
+    pacai.pacman.board.MARKER_PELLET,
+    pacai.pacman.board.MARKER_CAPSULE,
+    pacai.pacman.board.MARKER_SCARED_GHOST,
+}
+""" These markers get prefixed with -/+ when searching for sprites. """
+
+GHOST_MARKER_PREFIX: str = 'G'
+""" Prefix (non-scared) ghost markers with this. """
 
 class GameState(pacai.pacman.gamestate.GameState):
     """
@@ -65,16 +75,35 @@ class GameState(pacai.pacman.gamestate.GameState):
 
         return [agent_index for agent_index in self.get_agent_indexes() if (self._team_modifier(agent_index) == team_modifier)]
 
-    def is_scared(self, agent_index: int = -1) -> bool:
+    def is_ghost(self, agent_index: int = -1) -> bool:
+        """ Check if this agent is currently in "ghost mode", i.e., on their own side of the board. """
+
         if (agent_index == -1):
             agent_index = self.agent_index
 
-        # Dead agents have nothing to fear
-        if (self.get_agent_position(agent_index = agent_index) is None):
+        position = self.get_agent_position(agent_index = agent_index)
+
+        if (position is None):
             return False
 
-        # Agents cannot be scared when on the opponent's side of the board.
-        if (self._team_side(agent_index = agent_index) != self._team_modifier(agent_index = agent_index)):
+        return (self._team_side(agent_index = agent_index) == self._team_modifier(agent_index = agent_index))
+
+    def is_pacman(self, agent_index: int = -1) -> bool:
+        """ Check if this agent is currently in "Pac-Man mode", i.e., on the opponent's side of the board. """
+
+        if (agent_index == -1):
+            agent_index = self.agent_index
+
+        position = self.get_agent_position(agent_index = agent_index)
+
+        if (position is None):
+            return False
+
+        return (self._team_side(agent_index = agent_index) != self._team_modifier(agent_index = agent_index))
+
+    def is_scared(self, agent_index: int = -1) -> bool:
+        # Only ghosts can be scared.
+        if (not self.is_ghost(agent_index)):
             return False
 
         return super().is_scared(agent_index = agent_index)
@@ -200,7 +229,6 @@ class GameState(pacai.pacman.gamestate.GameState):
 
         return []
 
-    # TEST
     def sprite_lookup(self,
             sprite_sheet: pacai.core.spritesheet.SpriteSheet,
             position: pacai.core.board.Position,
@@ -209,18 +237,24 @@ class GameState(pacai.pacman.gamestate.GameState):
             adjacency: pacai.core.board.AdjacencyString | None = None,
             animation_key: str | None = None,
             ) -> PIL.Image.Image:
-        # TEST - Modify food, walls.
+        # If the agent in on their own side, they should be a ghost (maybe a scared one).
+        if ((marker is not None) and (marker.is_agent()) and (self.is_ghost(marker.get_agent_index()))):
+            if (self.is_scared(marker.get_agent_index())):
+                marker = pacai.pacman.board.MARKER_SCARED_GHOST
+            else:
+                marker = pacai.core.board.Marker(GHOST_MARKER_PREFIX + str(marker))
 
-        ''' TEST
-        # If the ghost is scared, swap the marker.
-        if ((marker is not None)
-                and (marker.is_agent())
-                and (marker != PACMAN_MARKER)
-                and (self.is_scared(marker.get_agent_index()))):
-            marker = SCARED_GHOST_MARKER
-        '''
+        # Prefix specific markers with a -/+ depending on the side it is on.
+        if (marker in PREFIX_MARKERS):
+            prefix = '-'
+            if (self._team_side(position = position) > 0):
+                prefix = '+'
 
-        return super().sprite_lookup(sprite_sheet, position, marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
+            marker = pacai.core.board.Marker(prefix + str(marker))
+
+        return pacai.core.gamestate.GameState.sprite_lookup(self,
+                sprite_sheet, position,
+                marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
 
     def process_turn(self,  # pylint: disable=too-many-statements
             action: pacai.core.action.Action,
@@ -290,8 +324,8 @@ class GameState(pacai.pacman.gamestate.GameState):
                 other_scared = self.is_scared(other_agent_index)
 
                 # Check who is a ghost (agent's on their own side are a ghost).
-                self_ghost = (team_modifier == self._team_side(agent_index = self.agent_index))
-                other_ghost = (other_team_modifier == self._team_side(agent_index = other_agent_index))
+                self_ghost = self.is_ghost(self.agent_index)
+                other_ghost = self.is_ghost(other_agent_index)
 
                 # Check who was eaten (and remove them), what team did the eating, and the points that should be awarded.
                 eating_team_modifier = 0

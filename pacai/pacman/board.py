@@ -1,7 +1,13 @@
 import pacai.core.board
 
 MARKER_PELLET: pacai.core.board.Marker = pacai.core.board.Marker('.')
+""" Marker for pellets/food. """
+
 MARKER_CAPSULE: pacai.core.board.Marker = pacai.core.board.Marker('o')
+""" Marker for power capsules. """
+
+MARKER_SCARED_GHOST: pacai.core.board.Marker = pacai.core.board.Marker('!')
+""" A special marker for scared ghosts. """
 
 class Board(pacai.core.board.Board):
     """

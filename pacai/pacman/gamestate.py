@@ -11,9 +11,6 @@ import pacai.pacman.board
 PACMAN_MARKER: pacai.core.board.Marker = pacai.core.board.MARKER_AGENT_0
 """ The board marker that Pac-Man always uses. """
 
-SCARED_GHOST_MARKER: pacai.core.board.Marker = pacai.core.board.Marker('!')
-""" A special marker for scared ghosts. """
-
 SCARED_TIME: int = 40
 """ When a Pacman eats a capsule, ghosts get scared for this number of moves. """
 
@@ -186,7 +183,7 @@ class GameState(pacai.core.gamestate.GameState):
                 and (marker.is_agent())
                 and (marker != PACMAN_MARKER)
                 and (self.is_scared(marker.get_agent_index()))):
-            marker = SCARED_GHOST_MARKER
+            marker = pacai.pacman.board.MARKER_SCARED_GHOST
 
         return super().sprite_lookup(sprite_sheet, position, marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
 

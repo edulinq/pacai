@@ -10,7 +10,7 @@ import pacai.capture.game
 import pacai.util.bin
 
 DEFAULT_BOARD: str = 'capture-medium'
-DEFAULT_SPRITE_SHEET: str = 'pacman'
+DEFAULT_SPRITE_SHEET: str = 'capture'
 
 def get_additional_ui_options(args: argparse.Namespace) -> dict[str, typing.Any]:
     """ Get additional options for the UI. """
