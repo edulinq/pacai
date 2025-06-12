@@ -89,6 +89,16 @@ AGENT_SHORT_NAMES: list[str] = [
     AGENT_VALUE_ITERATION.short,
 ]
 
+CAPTURE_TEAM_DUMMY: Alias = Alias('capture-team-dummy', 'pacai.capture.team.create_team_dummy')
+CAPTURE_TEAM_RANDOM: Alias = Alias('capture-team-random', 'pacai.capture.team.create_team_random')
+CAPTURE_TEAM_STUDENT: Alias = Alias('capture-team-student', 'pacai.student.capture.create_team')
+
+CAPTURE_TEAM_SHORT_NAMES: list[str] = [
+    CAPTURE_TEAM_DUMMY.short,
+    CAPTURE_TEAM_RANDOM.short,
+    CAPTURE_TEAM_STUDENT.short,
+]
+
 DISTANCE_EUCLIDEAN: Alias = Alias('distance-euclidean', 'pacai.search.distance.euclidean_distance')
 DISTANCE_MANHATTAN: Alias = Alias('distance-manhattan', 'pacai.search.distance.manhattan_distance')
 DISTANCE_MAZE: Alias = Alias('distance-maze', 'pacai.search.distance.maze_distance')

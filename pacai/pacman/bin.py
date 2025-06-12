@@ -76,8 +76,8 @@ def main() -> int:
         description = "Play a game of Pac-Man.",
         default_board = DEFAULT_BOARD,
         game_class = pacai.pacman.game.Game,
-        custom_set_cli_args = set_cli_args,
         get_additional_ui_options = get_additional_ui_options,
+        custom_set_cli_args = set_cli_args,
         custom_init_from_args = init_from_args,
         winning_agent_indexes = {pacai.pacman.gamestate.PACMAN_AGENT_INDEX},
     )

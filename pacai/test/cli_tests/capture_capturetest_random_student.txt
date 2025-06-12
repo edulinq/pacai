@@ -1,0 +1,17 @@
+{
+    "cli": "pacai.capture.bin",
+    "arguments": [
+        "--seed", "4",
+        "--ui", "null",
+        "--board", "capture-test",
+        "--red", "capture-team-random",
+        "--blue", "capture-team-student"
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: -10.0
+<LOG_PREFIX> -- Scores:        -10
+<LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
+<LOG_PREFIX> -- Record:        Loss
+<LOG_PREFIX> -- Average Turns: 883.0
+<LOG_PREFIX> -- Turn Counts:   883
