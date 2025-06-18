@@ -72,6 +72,7 @@ AGENT_SCRIPTED: Alias = Alias('agent-scripted', 'pacai.agents.scripted.ScriptedA
 AGENT_SEARCH_PROBLEM: Alias = Alias('agent-search-problem', 'pacai.agents.searchproblem.SearchProblemAgent')
 AGENT_SEARCH_CLOSEST_DOT: Alias = Alias('agent-search-closest-dot', 'pacai.student.singlesearch.ClosestDotSearchAgent')
 AGENT_USER_INPUT: Alias = Alias('agent-user-input', 'pacai.agents.userinput.UserInputAgent')
+AGENT_TIMEOUT: Alias = Alias('agent-timeout', 'pacai.agents.testing.TimeoutAgent')
 AGENT_VALUE_ITERATION: Alias = Alias('agent-value-iteration', 'pacai.student.learning.ValueIterationAgent')
 
 AGENT_SHORT_NAMES: list[str] = [

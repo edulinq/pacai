@@ -108,7 +108,11 @@ class GameState(pacai.pacman.gamestate.GameState):
 
         return super().is_scared(agent_index = agent_index)
 
-    def process_agent_crash(self, agent_index: int):
+    def process_agent_timeout(self, agent_index: int) -> None:
+        # Treat timeouts like crashes.
+        self.process_agent_crash(agent_index)
+
+    def process_agent_crash(self, agent_index: int) -> None:
         super().process_agent_crash(agent_index)
 
         # Set the score in favor of the non-crashing team.

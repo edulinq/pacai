@@ -60,7 +60,7 @@ class CLITest(pacai.test.base.BaseTest):
 
     _base_temp_dir: str = pacai.util.dirent.get_temp_path('pacai_CLITest_')
 
-    def _get_test_info(self, test_name: str, path: str) -> tuple[str, list[str], str, typing.Callable, int, bool, bool]:
+    def _get_test_info(self, test_name: str, path: str) -> tuple[str, list[str], str, typing.Callable, int, bool, bool, bool]:
         options, expected_output = _read_test_file(path)
 
         base_dir = os.path.dirname(os.path.abspath(path))
@@ -72,6 +72,7 @@ class CLITest(pacai.test.base.BaseTest):
         exit_status = options.get('exit_status', 0)
         is_error = options.get('error', False)
         skip_windows = options.get('skip_windows', False)
+        skip_mac = options.get('skip_mac', False)
 
         output_check_name = options.get('output-check', DEFAULT_OUTPUT_CHECK)
         if (output_check_name not in globals()):
@@ -89,7 +90,7 @@ class CLITest(pacai.test.base.BaseTest):
         for (i, cli_argument) in enumerate(cli_arguments):
             cli_arguments[i] = _prepare_string(cli_argument, temp_dir, base_dir)
 
-        return module_name, cli_arguments, expected_output, output_check, exit_status, is_error, skip_windows
+        return module_name, cli_arguments, expected_output, output_check, exit_status, is_error, skip_windows, skip_mac
 
 def _prepare_string(text: str, temp_dir: str, base_dir: str) -> str:
     """ Prepare a string for testing. """
@@ -164,10 +165,13 @@ def _get_test_method(test_name: str, path: str) -> typing.Callable:
     """ Get a test method that represents the test case at the given path. """
 
     def __method(self):
-        module_name, cli_arguments, expected_output, output_check, expected_exit_status, is_error, skip_windows = self._get_test_info(test_name, path)
+        (module_name, cli_arguments, expected_output, output_check,
+        expected_exit_status, is_error, skip_windows, skip_mac) = self._get_test_info(test_name, path)
 
         if (skip_windows and sys.platform.startswith("win")):
             self.skipTest("Test is not available on Windows.")
+        elif (skip_mac and (sys.platform == "darwin")):
+            self.skipTest("Test is not available on Mac.")
 
         module = importlib.import_module(module_name)
 

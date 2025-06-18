@@ -1,0 +1,22 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--board", "maze-tiny",
+        "--pacman", "agent-timeout",
+        "--ui", "null",
+        "--isolation", "none",
+        "--agent-start-timeout", "0.01",
+        "--agent-end-timeout", "0.01",
+        "--agent-action-timeout", "0.01",
+        "--agent-arg", "0::get_action_wait=0.1",
+        "--max-turns", "2",
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: -2.0
+<LOG_PREFIX> -- Scores:        -2
+<LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
+<LOG_PREFIX> -- Record:        Loss
+<LOG_PREFIX> -- Average Turns: 2.0
+<LOG_PREFIX> -- Turn Counts:   2

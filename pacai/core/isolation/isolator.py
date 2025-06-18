@@ -27,6 +27,7 @@ class AgentIsolator(abc.ABC):
     def game_start(self,
             rng: random.Random,
             initial_state: pacai.core.gamestate.GameState,
+            timeout: float,
             ) -> dict[int, pacai.core.agentaction.AgentActionRecord]:
         """
         Pass along the initial game state to each agent and all them the allotted time to start.
@@ -35,6 +36,7 @@ class AgentIsolator(abc.ABC):
     @abc.abstractmethod
     def game_complete(self,
             final_state: pacai.core.gamestate.GameState,
+            timeout: float,
             ) -> dict[int, pacai.core.agentaction.AgentActionRecord]:
         """
         Notify all agents that the game is over.
@@ -44,6 +46,7 @@ class AgentIsolator(abc.ABC):
     def get_action(self,
             state: pacai.core.gamestate.GameState,
             user_inputs: list[pacai.core.action.Action],
+            timeout: float,
             ) -> pacai.core.agentaction.AgentActionRecord:
         """
         Get the current agent's next action.
@@ -54,4 +57,5 @@ class AgentIsolator(abc.ABC):
     def close(self) -> None:
         """
         Close the isolator and release all owned resources.
+        This call should not communicate with agents and forcibly release any agent resources.
         """

@@ -34,6 +34,7 @@ class NoneIsolator(pacai.core.isolation.isolator.AgentIsolator):
     def game_start(self,
             rng: random.Random,
             initial_state: pacai.core.gamestate.GameState,
+            timeout: float,
             ) -> dict[int, pacai.core.agentaction.AgentActionRecord]:
         results = {}
         for (agent_index, agent) in self._agents.items():
@@ -49,6 +50,7 @@ class NoneIsolator(pacai.core.isolation.isolator.AgentIsolator):
 
     def game_complete(self,
             final_state: pacai.core.gamestate.GameState,
+            timeout: float,
             ) -> dict[int, pacai.core.agentaction.AgentActionRecord]:
         results = {}
         for (agent_index, agent) in self._agents.items():
@@ -63,6 +65,7 @@ class NoneIsolator(pacai.core.isolation.isolator.AgentIsolator):
     def get_action(self,
             state: pacai.core.gamestate.GameState,
             user_inputs: list[pacai.core.action.Action],
+            timeout: float,
             ) -> pacai.core.agentaction.AgentActionRecord:
         agent = self._agents[state.agent_index]
         data = {

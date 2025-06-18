@@ -25,6 +25,9 @@ class Agent(abc.ABC):
     but are a little more complex.
     By default, this class will just call the simple methods from the "full" ones,
     allowing children to just implement the simple methods.
+
+    Agents should avoid doing any heavy work in their constructors,
+    and instead do that work in game_start_full()/game_start() (where they will have access to the game state).
     """
 
     def __init__(self,

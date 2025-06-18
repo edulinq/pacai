@@ -216,7 +216,15 @@ class GameState(pacai.util.json.DictConverter):
 
         return successor
 
-    def process_agent_crash(self, agent_index: int):
+    def process_agent_timeout(self, agent_index: int) -> None:
+        """
+        Notify the state that the given agent has timed out.
+        The state should make any updates and set the end of game information.
+        """
+
+        self.game_over = True
+
+    def process_agent_crash(self, agent_index: int) -> None:
         """
         Notify the state that the given agent has crashed.
         The state should make any updates and set the end of game information.
@@ -224,7 +232,7 @@ class GameState(pacai.util.json.DictConverter):
 
         self.game_over = True
 
-    def process_game_timeout(self):
+    def process_game_timeout(self) -> None:
         """
         Notify the state that the game has reached the maximum number of turns without ending.
         The state should make any updates and set the end of game information.

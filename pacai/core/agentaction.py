@@ -78,7 +78,8 @@ class AgentActionRecord(pacai.util.json.DictConverter):
             agent_index: int,
             agent_action: AgentAction | None,
             duration: pacai.util.time.Duration,
-            crashed: bool,
+            crashed: bool = False,
+            timeout: bool = False,
             ) -> None:
         self.agent_index: int = agent_index
         """ The index of the agent making this action. """
@@ -91,6 +92,9 @@ class AgentActionRecord(pacai.util.json.DictConverter):
 
         self.crashed: bool = crashed
         """ Whether or not the agent crashed (e.g., raised an exception) when computing this action. """
+
+        self.timeout: bool = timeout
+        """ Whether or not the agent timed out when computing this action. """
 
     def get_action(self) -> pacai.core.action.Action:
         """ Get the agent's action, or pacai.core.action.STOP if there is no action. """
@@ -122,6 +126,7 @@ class AgentActionRecord(pacai.util.json.DictConverter):
             'agent_action': self.agent_action.to_dict() if (self.agent_action is not None) else None,
             'duration': self.duration,
             'crashed': self.crashed,
+            'timeout': self.timeout,
         }
 
     @classmethod
@@ -130,5 +135,6 @@ class AgentActionRecord(pacai.util.json.DictConverter):
             agent_index = data['agent_index'],
             agent_action = AgentAction.from_dict(data['agent_action']) if data['agent_action'] is not None else None,
             duration = pacai.util.time.Duration(data['duration']),
-            crashed = data['crashed'],
+            crashed = data.get('crashed', False),
+            timeout = data.get('timeout', False),
         )

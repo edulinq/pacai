@@ -15,6 +15,10 @@ import pacai.util.alias
 import pacai.util.json
 
 DEFAULT_MAX_TURNS: int = -1
+DEFAULT_AGENT_START_TIMEOUT: float = 0.0
+DEFAULT_AGENT_END_TIMEOUT: float = 0.0
+DEFAULT_AGENT_ACTION_TIMEOUT: float = 0.0
+
 DEFAULT_AGENT: str = pacai.util.alias.AGENT_RANDOM.short
 
 class GameInfo(pacai.util.json.DictConverter):
@@ -27,6 +31,9 @@ class GameInfo(pacai.util.json.DictConverter):
             agent_infos: dict[int, pacai.core.agentinfo.AgentInfo],
             isolation_level: pacai.core.isolation.level.Level = pacai.core.isolation.level.Level.NONE,
             max_turns: int = DEFAULT_MAX_TURNS,
+            agent_start_timeout: float = DEFAULT_AGENT_START_TIMEOUT,
+            agent_end_timeout: float = DEFAULT_AGENT_END_TIMEOUT,
+            agent_action_timeout: float = DEFAULT_AGENT_ACTION_TIMEOUT,
             seed: int | None = None,
             training: bool = False,
             extra_info: dict[str, typing.Any] | None = None,
@@ -55,6 +62,24 @@ class GameInfo(pacai.util.json.DictConverter):
         If -1, unlimited moves are allowed.
         """
 
+        self.agent_start_timeout: float = agent_start_timeout
+        """
+        The maximum number of seconds an agent is allowed when starting a game.
+        If <= 0, unlimited time is allowed.
+        """
+
+        self.agent_end_timeout: float = agent_end_timeout
+        """
+        The maximum number of seconds an agent is allowed when ending a game.
+        If <= 0, unlimited time is allowed.
+        """
+
+        self.agent_action_timeout: float = agent_action_timeout
+        """
+        The maximum number of seconds an agent is allowed when getting an action.
+        If <= 0, unlimited time is allowed.
+        """
+
         self.training: bool = training
         """ Whether this game is meant for training agents. """
 
@@ -71,6 +96,9 @@ class GameInfo(pacai.util.json.DictConverter):
             'agent_infos': {id: info.to_dict() for (id, info) in self.agent_infos.items()},
             'isolation_level': self.isolation_level.value,
             'max_turns': self.max_turns,
+            'agent_start_timeout': self.agent_start_timeout,
+            'agent_end_timeout': self.agent_end_timeout,
+            'agent_action_timeout': self.agent_action_timeout,
             'training': self.training,
             'extra_info': self.extra_info,
         }
@@ -83,6 +111,9 @@ class GameInfo(pacai.util.json.DictConverter):
             agent_infos = {int(id): pacai.core.agentinfo.AgentInfo.from_dict(raw_info) for (id, raw_info) in data['agent_infos'].items()},
             isolation_level = pacai.core.isolation.level.Level(data.get('isolation_level', pacai.core.isolation.level.Level.NONE.value)),
             max_turns = data.get('max_turns', DEFAULT_MAX_TURNS),
+            agent_start_timeout = data.get('agent_start_timeout', DEFAULT_AGENT_START_TIMEOUT),
+            agent_end_timeout = data.get('agent_end_timeout', DEFAULT_AGENT_END_TIMEOUT),
+            agent_action_timeout = data.get('agent_action_timeout', DEFAULT_AGENT_ACTION_TIMEOUT),
             training = data.get('training', False),
             extra_info = data.get('extra_info', None))
 
@@ -243,6 +274,12 @@ class Game(abc.ABC):
         The returned game state may be a copy or modified version of the passed in game state.
         """
 
+        # The agent has timed out.
+        if (action_record.timeout):
+            result.timeout_agent_indexes.append(action_record.agent_index)
+            state.process_agent_timeout(action_record.agent_index)
+            return state
+
         # The agent has crashed.
         if (action_record.crashed):
             result.crash_agent_indexes.append(action_record.agent_index)
@@ -314,9 +351,12 @@ class Game(abc.ABC):
         board_highlights: list[pacai.core.board.Highlight] = []
 
         # Notify agents about the start of the game.
-        records = isolator.game_start(rng, state)
+        records = isolator.game_start(rng, state, self.game_info.agent_start_timeout)
         for record in records.values():
-            if (record.crashed):
+            if (record.timeout):
+                result.timeout_agent_indexes.append(record.agent_index)
+                state.process_agent_timeout(record.agent_index)
+            elif (record.crashed):
                 result.crash_agent_indexes.append(record.agent_index)
                 state.process_agent_crash(record.agent_index)
             else:
@@ -334,7 +374,7 @@ class Game(abc.ABC):
             self._receive_user_inputs(agent_user_inputs, ui)
 
             # Get the next action from the agent.
-            action_record = isolator.get_action(state, agent_user_inputs[state.agent_index])
+            action_record = isolator.get_action(state, agent_user_inputs[state.agent_index], self.game_info.agent_action_timeout)
 
             # Check if we need to clear any user inputs.
             if (action_record.get_clear_inputs()):
@@ -369,7 +409,7 @@ class Game(abc.ABC):
         result.score = state.score
 
         # Notify agents about the end of this game.
-        result.agent_complete_records = isolator.game_complete(state)
+        result.agent_complete_records = isolator.game_complete(state, self.game_info.agent_end_timeout)
 
         # All the game to make final updates to the result.
         self.game_complete(state, result)
@@ -425,6 +465,21 @@ def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = No
     parser.add_argument('--max-turns', dest = 'max_turns',
             action = 'store', type = int, default = DEFAULT_MAX_TURNS,
             help = 'The maximum number of turns/moves (total for all agents) allowed in this game (-1 for unlimited) (default: %(default)s).')
+
+    parser.add_argument('--agent-start-timeout', dest = 'agent_start_timeout',
+            action = 'store', type = float, default = DEFAULT_AGENT_START_TIMEOUT,
+            help = ('The maximum number of seconds each agent is allowed when starting a game (<= 0 for unlimited time) (default: %(default)s).'
+                    + ' Note that the "none" isolation level cannot enforce timeouts.'))
+
+    parser.add_argument('--agent-end-timeout', dest = 'agent_end_timeout',
+            action = 'store', type = float, default = DEFAULT_AGENT_END_TIMEOUT,
+            help = ('The maximum number of seconds each agent is allowed when ending a game (<= 0 for unlimited time) (default: %(default)s).'
+                    + ' Note that the "none" isolation level cannot enforce timeouts.'))
+
+    parser.add_argument('--agent-action-timeout', dest = 'agent_action_timeout',
+            action = 'store', type = float, default = DEFAULT_AGENT_ACTION_TIMEOUT,
+            help = ('The maximum number of seconds each agent is allowed when getting an action (<= 0 for unlimited time) (default: %(default)s).'
+                    + ' Note that the "none" isolation level cannot enforce timeouts.'))
 
     parser.add_argument('--isolation', dest = 'isolation_level', metavar = 'LEVEL',
             action = 'store', type = str, default = pacai.core.isolation.level.Level.NONE.value,
@@ -532,6 +587,9 @@ def init_from_args(
                 all_agent_infos[-1],
                 isolation_level = pacai.core.isolation.level.Level(args.isolation_level),
                 max_turns = args.max_turns,
+                agent_start_timeout = args.agent_start_timeout,
+                agent_end_timeout = args.agent_end_timeout,
+                agent_action_timeout = args.agent_action_timeout,
                 training = (i < args.num_training),
                 seed = game_seed
         )

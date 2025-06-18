@@ -70,7 +70,11 @@ class GameState(pacai.core.gamestate.GameState):
 
         return new_state
 
-    def process_agent_crash(self, agent_index: int):
+    def process_agent_timeout(self, agent_index: int) -> None:
+        # Treat timeouts like crashes.
+        self.process_agent_crash(agent_index)
+
+    def process_agent_crash(self, agent_index: int) -> None:
         super().process_agent_crash(agent_index)
 
         if (agent_index == PACMAN_AGENT_INDEX):
