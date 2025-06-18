@@ -4,7 +4,7 @@ In this file, you will implement code relating to simple single-agent searches.
 
 import random
 
-import pacai.agents.search.greedy
+import pacai.agents.searchproblem
 import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.search
@@ -135,7 +135,7 @@ def food_heuristic(node: pacai.search.food.FoodSearchNode, problem: pacai.search
     # *** Your Code Here ***
     return pacai.search.common.null_heuristic(node, problem)  # Default to a trivial solution.
 
-class ClosestDotSearchAgent(pacai.agents.search.greedy.GreedySubproblemSearchAgent):
+class ClosestDotSearchAgent(pacai.agents.searchproblem.GreedySubproblemSearchAgent):
     """
     Search for a path to all the food by greedily searching for the next closest food again and again
     (util we have reached all the food).
@@ -143,8 +143,8 @@ class ClosestDotSearchAgent(pacai.agents.search.greedy.GreedySubproblemSearchAge
     This agent is left to you to fill out.
     But make sure to take your time and think.
     The final solution is quite simple if you take your time to understand everything up until this point and leverage
-    pacai.agents.search.greedy.GreedySubproblemSearchAgent and pacai.student.problem.AnyMarkerSearchProblem.
-    pacai.agents.search.greedy.GreedySubproblemSearchAgent is already implemented,
+    pacai.agents.searchproblem.GreedySubproblemSearchAgent and pacai.student.problem.AnyMarkerSearchProblem.
+    pacai.agents.searchproblem.GreedySubproblemSearchAgent is already implemented,
     but you should take some time to understand it.
     pacai.student.problem.AnyMarkerSearchProblem (below in this file) has not yet been implemented,
     but is the quickest and easiest way to implement this class.
