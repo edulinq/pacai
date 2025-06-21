@@ -57,6 +57,8 @@ def lookup(short: str, default: str | None = None) -> str:
 
     raise ValueError(f"Could not find alias: '{short}'.")
 
+AGENT_CAPTURE_DEFENSIVE: Alias = Alias('agent-capture-defensive', 'pacai.capture.agents.DefensiveAgent')
+AGENT_CAPTURE_OFFENSIVE: Alias = Alias('agent-capture-offensive', 'pacai.capture.agents.OffensiveAgent')
 AGENT_CHEATING: Alias = Alias('agent-cheating', 'pacai.agents.cheating.CheatingAgent')
 AGENT_DUMMY: Alias = Alias('agent-dummy', 'pacai.agents.dummy.DummyAgent')
 AGENT_GO_WEST: Alias = Alias('agent-go-west', 'pacai.agents.gowest.GoWestAgent')
@@ -76,6 +78,8 @@ AGENT_TIMEOUT: Alias = Alias('agent-timeout', 'pacai.agents.testing.TimeoutAgent
 AGENT_VALUE_ITERATION: Alias = Alias('agent-value-iteration', 'pacai.student.learning.ValueIterationAgent')
 
 AGENT_SHORT_NAMES: list[str] = [
+    AGENT_CAPTURE_DEFENSIVE.short,
+    AGENT_CAPTURE_OFFENSIVE.short,
     AGENT_CHEATING.short,
     AGENT_DUMMY.short,
     AGENT_GO_WEST.short,
@@ -92,11 +96,13 @@ AGENT_SHORT_NAMES: list[str] = [
 
 CAPTURE_TEAM_DUMMY: Alias = Alias('capture-team-dummy', 'pacai.capture.team.create_team_dummy')
 CAPTURE_TEAM_RANDOM: Alias = Alias('capture-team-random', 'pacai.capture.team.create_team_random')
+CAPTURE_TEAM_SIMPLE: Alias = Alias('capture-team-simple', 'pacai.capture.team.create_team_simple')
 CAPTURE_TEAM_STUDENT: Alias = Alias('capture-team-student', 'pacai.student.capture.create_team')
 
 CAPTURE_TEAM_SHORT_NAMES: list[str] = [
     CAPTURE_TEAM_DUMMY.short,
     CAPTURE_TEAM_RANDOM.short,
+    CAPTURE_TEAM_SIMPLE.short,
     CAPTURE_TEAM_STUDENT.short,
 ]
 

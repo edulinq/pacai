@@ -75,6 +75,14 @@ class GameState(pacai.pacman.gamestate.GameState):
 
         return [agent_index for agent_index in self.get_agent_indexes() if (self._team_modifier(agent_index) == team_modifier)]
 
+    def get_normalized_score(self, agent_index: int = -1) -> float:
+        """
+        Get the score of this state normalized according to the team asking for it.
+        Higher numbers are always "better".
+        """
+
+        return self._team_modifier(agent_index) * self.score
+
     def is_ghost(self, agent_index: int = -1) -> bool:
         """ Check if this agent is currently in "ghost mode", i.e., on their own side of the board. """
 
@@ -191,16 +199,16 @@ class GameState(pacai.pacman.gamestate.GameState):
 
         return agents
 
-    def get_scared_ally_positions(self) -> dict[int, pacai.core.board.Position]:
+    def get_scared_ally_positions(self, agent_index: int = -1) -> dict[int, pacai.core.board.Position]:
         """ Get the position of all scared allies currently on the board. """
 
-        allies = self.get_ally_positions()
+        allies = self.get_ally_positions(agent_index = agent_index)
         return {index: position for (index, position) in allies.items() if self.is_scared(index)}
 
-    def get_nonscared_ally_positions(self) -> dict[int, pacai.core.board.Position]:
+    def get_nonscared_ally_positions(self, agent_index: int = -1) -> dict[int, pacai.core.board.Position]:
         """ Get the position of all non-scared allies currently on the board. """
 
-        allies = self.get_ally_positions()
+        allies = self.get_ally_positions(agent_index = agent_index)
         return {index: position for (index, position) in allies.items() if not self.is_scared(index)}
 
     def get_opponent_positions(self, agent_index: int = -1) -> dict[int, pacai.core.board.Position]:
@@ -213,17 +221,23 @@ class GameState(pacai.pacman.gamestate.GameState):
 
         return self.get_team_positions(-team_modifier)
 
-    def get_scared_opponent_positions(self) -> dict[int, pacai.core.board.Position]:
+    def get_scared_opponent_positions(self, agent_index: int = -1) -> dict[int, pacai.core.board.Position]:
         """ Get the position of all scared opponents currently on the board. """
 
-        opponents = self.get_opponent_positions()
+        opponents = self.get_opponent_positions(agent_index = agent_index)
         return {index: position for (index, position) in opponents.items() if self.is_scared(index)}
 
-    def get_nonscared_opponent_positions(self) -> dict[int, pacai.core.board.Position]:
+    def get_nonscared_opponent_positions(self, agent_index: int = -1) -> dict[int, pacai.core.board.Position]:
         """ Get the position of all non-scared opponents currently on the board. """
 
-        opponents = self.get_opponent_positions()
+        opponents = self.get_opponent_positions(agent_index = agent_index)
         return {index: position for (index, position) in opponents.items() if not self.is_scared(index)}
+
+    def get_invader_positions(self, agent_index: int = -1) -> dict[int, pacai.core.board.Position]:
+        """ Get the position of all invading opponents (opponents on your side of the board). """
+
+        opponents = self.get_opponent_positions(agent_index = agent_index)
+        return {index: position for (index, position) in opponents.items() if self.is_pacman(index)}
 
     def game_complete(self) -> list[int]:
         # A side wins if there is no food left for them to eat.
