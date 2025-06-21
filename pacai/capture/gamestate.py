@@ -14,6 +14,9 @@ TEAM_MODIFIERS: tuple[int, int] = (-1, 1)
 FOOD_POINTS: int = 10
 """ Points for eating food. """
 
+CAPSULE_POINTS: int = 0
+""" Points for eating a power capsule. """
+
 KILL_GHOST_POINTS: int = 0
 """ Points for eating a scared ghost. """
 
@@ -325,6 +328,7 @@ class GameState(pacai.pacman.gamestate.GameState):
 
                 # Eat a power capsule, scare all enemy ghosts.
                 self.board.remove_marker(interaction_marker, new_position)
+                self.score += team_modifier * CAPSULE_POINTS
 
                 # Scare all enemies.
                 for agent_index in self._team_agent_indexes(-team_modifier):
