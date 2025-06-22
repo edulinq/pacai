@@ -11,7 +11,7 @@ import pacai.util.reflection
 
 MIN_SIZE: int = 10
 
-MAX_RANDOM_SIZE: int = 32
+MAX_RANDOM_SIZE: int = 24
 """ The maximum size for a maze with unspecified size. """
 
 MIN_MAZE_AXIS_WIDTH: int = 1
@@ -24,10 +24,13 @@ GAP_FACTOR_STDEV: float = 0.1
 
 MAX_PRISON_WIDTH: int = 3
 
-MAX_CAPSULES: int = 4
+MIN_PELLETS: int = 1
 MAX_PELLETS: int = 100
 
-NUM_AGENTS: int = 2
+MIN_CAPSULES: int = 0
+MAX_CAPSULES: int = 4
+
+DEFAULT_NUM_AGENTS: int = 2
 
 class Maze:
     """
@@ -258,8 +261,8 @@ class Maze:
             rng: random.Random,
             gaps: float = DEFAULT_GAPS, gap_factor: float = DEFAULT_GAP_FACTOR,
             vertical: bool = True,
-            max_pellets: int = MAX_PELLETS, max_capsules: int = MAX_PELLETS,
-            num_agents: int = NUM_AGENTS,
+            max_pellets: int = MAX_PELLETS, max_capsules: int = MAX_CAPSULES,
+            num_agents: int = DEFAULT_NUM_AGENTS,
             ) -> None:
         """
         Build a full maze into this maze.
@@ -349,16 +352,56 @@ class Maze:
                     gaps = max(1, gaps * gap_factor), gap_factor = gap_factor,
                     vertical = (not vertical))
 
-    def _place_capture_markers(self, rng: random.Random, max_pellets: int = MAX_PELLETS, max_capsules: int = MAX_PELLETS) -> None:
+    def _place_capture_markers(self, rng: random.Random,
+            min_pellets: int = MIN_PELLETS, max_pellets: int = MAX_PELLETS,
+            min_capsules: int = MIN_CAPSULES, max_capsules: int = MAX_CAPSULES,
+            ) -> None:
         """
         Place capture markers/objects on the board.
         This includes pellets and capsules, but not agents.
         """
 
-        # TEST
-        self.place_relative(3, 3, pacai.pacman.board.MARKER_PELLET)
+        # Choose a number of pellets and capsules to place, and randomize the placement order.
+        num_pellets = rng.randint(min_pellets, max_pellets)
+        num_capsules = rng.randint(min_capsules, max_capsules)
 
-    def _place_agents(self, rng: random.Random, num_agents: int = NUM_AGENTS) -> None:
+        markers = ([pacai.pacman.board.MARKER_PELLET] * num_pellets) + ([pacai.pacman.board.MARKER_CAPSULE] * num_capsules)
+        rng.shuffle(markers)
+
+        # Collect all the empty locations, separated into dead-ends and non-dead-ends.
+        dead_ends = []
+        non_dead_ends = []
+
+        for row in range(self.height):
+            for col in range(self.width):
+                if (not self.is_marker_relative(row, col, pacai.core.board.MARKER_EMPTY)):
+                    continue
+
+                dead_end = True
+                for offset in pacai.core.board.CARDINAL_OFFSETS.values():
+                    if (not self.is_marker_relative(row + offset.row, col + offset.col, pacai.core.board.MARKER_EMPTY)):
+                        dead_end = False
+                        break
+
+                if (dead_end):
+                    dead_ends.append((row, col))
+                else:
+                    non_dead_ends.append((row, col))
+
+        # Shuffle the filling order, making sure that dead-ends get priority.
+        rng.shuffle(dead_ends)
+        rng.shuffle(non_dead_ends)
+        locations = dead_ends + non_dead_ends
+
+        # Keep filling until we run out of objects or locations.
+        for marker in markers:
+            (row, col) = locations.pop(0)
+            self.place_relative(row, col, marker)
+
+            if (len(locations) == 0):
+                break
+
+    def _place_agents(self, rng: random.Random, num_agents: int = DEFAULT_NUM_AGENTS) -> None:
         """
         Place agent in this maze.
         Start on the far left column and randomly choose empty locations.
@@ -384,26 +427,21 @@ class Maze:
 def generate(
         seed: int | None = None,
         size: int | None = None,
-        gaps: int = DEFAULT_GAPS,
+        gaps: float = DEFAULT_GAPS, gap_factor: float | None = None,
+        max_pellets: int = MAX_PELLETS, max_capsules: int = MAX_CAPSULES,
+        num_agents: int = DEFAULT_NUM_AGENTS,
         ) -> pacai.core.board.Board:
     """
-    Generare a radom capture board.
+    Generate a random capture board.
 
-    TEST
-
-    Algorithm:
-     - Start with an empty grid.
-     - Draw a wall with gaps, dividing the grid in 2.
-     - Repeat recursively for each sub-grid.
-
-    Pacman Details:
-     - Players 1 and 3 always start in the bottom left; 2 and 4 in the top right.
-     - Food is placed in dead ends and then randomly
-        (though not too close to the pacmen starting positions).
-
-    Notes:
-     - The final map includes a symmetric, flipped copy.
-     - The first wall has k gaps, the next wall has k / 2 gaps, etc. (min=1).
+    General Procedure:
+     - Create a maze for just one team.
+       - Create a starting area ("prison") for the team.
+       - Recursively create a maze in the rest of the area be making a wall and then making a maze in each new "room" created by the wall.
+     - Place agents on the maze, prioritizing the starting area.
+     - Place pellets and capsules randomly, ensuring that dead-ends are filled first.
+     - Created a mirrored (on both axes) copy of the maze to create the other team's half of the board.
+       - Re-index all agents so that evens (and zero) are on the left and odds on the right.
 
     This process was originally created by Dan Gillick and Jie Tang as a part of
     UC Berkley's CS188 AI project:
@@ -423,7 +461,8 @@ def generate(
 
     logging.debug("Generating a Capture board with seed %d and size %d.", seed, size)
 
-    gap_factor = min(MAX_GAP_FACTOR, rng.gauss(DEFAULT_GAP_FACTOR, GAP_FACTOR_STDEV))
+    if (gap_factor is None):
+        gap_factor = min(MAX_GAP_FACTOR, rng.gauss(DEFAULT_GAP_FACTOR, GAP_FACTOR_STDEV))
 
     maze = Maze(size, size)
     maze.build(rng, gaps = gaps, gap_factor = gap_factor)
