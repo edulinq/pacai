@@ -561,7 +561,11 @@ def init_from_args(
     if (board_options is None):
         board_options = {}
 
-    board = pacai.core.board.load_path(args.board, **board_options)
+    # Either take the board as given, or load it from a path.
+    if (isinstance(args.board, pacai.core.board.Board)):
+        board = args.board
+    else:
+        board = pacai.core.board.load_path(args.board, **board_options)
 
     # Remove specified agents from the board.
     remove_agent_indexes += args.remove_agent_indexes

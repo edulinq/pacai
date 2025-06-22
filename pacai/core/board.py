@@ -876,3 +876,11 @@ def load_string(source: str, text: str, **kwargs) -> Board:
 
     board_class = options.get('class', DEFAULT_BOARD_CLASS)
     return pacai.util.reflection.new_object(board_class, source, board_text, **options)
+
+def create_empty(source: str, rows: int, cols: int, **kwargs) -> Board:
+    """
+    Create an empty board with the given dimensions.
+    """
+
+    text = ((MARKER_EMPTY * cols) + "\n") * rows
+    return load_string(source, text, strip = False)

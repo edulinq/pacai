@@ -6,6 +6,7 @@ import argparse
 import sys
 import typing
 
+import pacai.capture.board
 import pacai.capture.game
 import pacai.capture.team
 import pacai.util.alias
@@ -13,6 +14,8 @@ import pacai.util.bin
 
 DEFAULT_BOARD: str = 'capture-medium'
 DEFAULT_SPRITE_SHEET: str = 'capture'
+
+RANDOM_BOARD_PREFIX: str = 'random'
 
 def set_cli_args(parser: argparse.ArgumentParser, **kwargs) -> argparse.ArgumentParser:
     """
@@ -29,6 +32,11 @@ def set_cli_args(parser: argparse.ArgumentParser, **kwargs) -> argparse.Argument
             action = 'store', type = str, default = pacai.util.alias.CAPTURE_TEAM_DUMMY.short,
             help = ('Select the capture team that will play on the blue team (default: %(default)s).'
                     + f' Builtin teams: {pacai.util.alias.CAPTURE_TEAM_SHORT_NAMES}.'))
+
+    # Edit the --board argument to add informastion about random boards.
+    board_arg = getattr(parser, '_option_string_actions', {}).get('--board', None)
+    if (board_arg is not None):
+        board_arg.help = board_arg.help.replace(', or just a filename', ', just a filename, or `random[-seed]` (e.g. "random", "random-123")')
 
     return parser
 
@@ -59,6 +67,15 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
             agent_info = team_base.pop(0)
 
         base_agent_infos[i] = agent_info
+
+    # Check for random boards.
+    if (args.board.startswith(RANDOM_BOARD_PREFIX)):
+        board_seed = None
+        if (args.board != RANDOM_BOARD_PREFIX):
+            # Strip 'random-' and 'random'.
+            board_seed = int(args.board.removeprefix(RANDOM_BOARD_PREFIX + '-').removeprefix(RANDOM_BOARD_PREFIX))
+
+        args.board = pacai.capture.board.generate(seed = board_seed)
 
     return base_agent_infos, [], {}
 
