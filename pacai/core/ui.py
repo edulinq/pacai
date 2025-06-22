@@ -13,7 +13,6 @@ import pacai.core.font
 import pacai.core.gamestate
 import pacai.core.spritesheet
 import pacai.util.alias
-import pacai.util.math
 import pacai.util.time
 import pacai.util.reflection
 
@@ -371,13 +370,11 @@ class UI(abc.ABC):
                 sprite = self._get_sprite(state, position, marker = marker, action = last_action, animation_key = ANIMATION_KEY)
                 self._place_sprite(position, sprite, image)
 
-        # Draw the score.
-        score_image_coordinates = (0, state.board.height * self._sprite_sheet.height)
-        score_text = f"Score: {pacai.util.math.display_number(state.score, places = 2)}"
-        if (state.game_over):
-            score_text += " - Final"
-
-        canvas.text(score_image_coordinates, score_text, self._sprite_sheet.text, self._get_font(pacai.core.font.FontSize.LARGE))
+        # Draw the footer (usually the score).
+        footer_text = state.get_footer_text()
+        if (footer_text is not None):
+            (base_x, base_y) = self._position_to_image_coords(pacai.core.board.Position(state.board.height, 0))
+            self._draw_text(footer_text, base_x, base_y, canvas)
 
         # Store this image in the cache.
         self._image_cache[state.turn_count] = image
@@ -448,29 +445,38 @@ class UI(abc.ABC):
         if (len(board_texts) == 0):
             return
 
-        if (self._sprite_sheet is None):
-            raise ValueError("Cannot draw images without a sprite sheet.")
-
         canvas = PIL.ImageDraw.Draw(image)
         for board_text in board_texts:
             # Base positions start in the upper left.
             (base_x, base_y) = self._position_to_image_coords(board_text.position)
 
-            # Compute alignment offsets.
-            vertical_offset = self._sprite_sheet.height * board_text.vertical_align.value
-            horizontal_offset = self._sprite_sheet.width * board_text.horizontal_align.value
+            self._draw_text(board_text, base_x, base_y, canvas)
 
-            y = base_y + vertical_offset
-            x = base_x + horizontal_offset
+    def _draw_text(self,
+            text: pacai.core.font.Text,
+            base_x: int, base_y: int,
+            canvas: PIL.ImageDraw.ImageDraw,
+            ) -> None:
+        """ Draw text to the board. """
 
-            color = board_text.color
-            if (color is None):
-                color = self._sprite_sheet.text
+        if (self._sprite_sheet is None):
+            raise ValueError("Cannot draw text without a sprite sheet.")
 
-            canvas.text((x, y), board_text.text, color,
-                    self._get_font(board_text.size),
-                    anchor = board_text.anchor,
-                    align = 'center')
+        # Compute alignment offsets.
+        vertical_offset = self._sprite_sheet.height * text.vertical_align.value
+        horizontal_offset = self._sprite_sheet.width * text.horizontal_align.value
+
+        y = base_y + vertical_offset
+        x = base_x + horizontal_offset
+
+        color = text.color
+        if (color is None):
+            color = self._sprite_sheet.text
+
+        canvas.text((x, y), text.text, color,
+                self._get_font(text.size),
+                anchor = text.anchor,
+                align = 'center')
 
     def _get_sprite(self, state: pacai.core.gamestate.GameState, position: pacai.core.board.Position, **kwargs) -> PIL.Image.Image:
         """ Get the requested sprite. """

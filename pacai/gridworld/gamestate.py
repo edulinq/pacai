@@ -380,7 +380,7 @@ class GameState(pacai.core.gamestate.GameState):
             if ((position.row > board._original_height) or (position.col > board._original_width)):
                 text_color = (0, 0, 0)
 
-            texts.append(pacai.core.font.BoardText(position, str(value), pacai.core.font.FontSize.SMALL, color = text_color))
+            texts.append(pacai.core.font.BoardText(position, str(value), size = pacai.core.font.FontSize.SMALL, color = text_color))
 
         # If we are using the extended display, fill in all the information.
         if (board.display_qvalues()):

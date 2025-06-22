@@ -12,6 +12,7 @@ import pacai.core.font
 import pacai.core.spritesheet
 import pacai.core.ticket
 import pacai.util.json
+import pacai.util.math
 
 class GameState(pacai.util.json.DictConverter):
     """
@@ -351,6 +352,18 @@ class GameState(pacai.util.json.DictConverter):
         """ Get any non-static text to display on board positions. """
 
         return []
+
+    def get_footer_text(self) -> pacai.core.font.Text | None:
+        """
+        Get any text to draw in the UI's footer.
+        By default, this will return the score.
+        """
+
+        score_text = f" Score: {pacai.util.math.display_number(self.score, places = 2)}"
+        if (self.game_over):
+            score_text += " - Final"
+
+        return pacai.core.font.Text(score_text, horizontal_align = pacai.core.font.TextHorizontalAlign.LEFT)
 
     def to_dict(self) -> dict[str, typing.Any]:
         data = vars(self).copy()

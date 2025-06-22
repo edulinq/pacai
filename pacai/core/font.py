@@ -40,13 +40,12 @@ DEFAULT_HORIZONTAL_ANCHORS: dict[TextHorizontalAlign, str] = {
     TextHorizontalAlign.RIGHT: 'r',
 }
 
-class BoardText:
+class Text:
     """
-    A representation of text that will appear on the board.
+    A representation of text.
     """
 
     def __init__(self,
-            position: pacai.core.board.Position,
             text: str,
             size: FontSize = FontSize.MEDIUM,
             vertical_align: TextVerticalAlign = TextVerticalAlign.MIDDLE,
@@ -54,9 +53,6 @@ class BoardText:
             anchor: str | None = None,
             color: tuple[int, int, int] | None = None,
             ) -> None:
-        self.position: pacai.core.board.Position = position
-        """ The position to display the text. """
-
         self.text: str = text
         """ The text to display. """
 
@@ -80,3 +76,17 @@ class BoardText:
 
         self.color: tuple[int, int, int] | None = color
         """ The color of the text. """
+
+class BoardText(Text):
+    """
+    A representation of text that will appear on the board.
+    """
+
+    def __init__(self,
+            position: pacai.core.board.Position,
+            text: str,
+            **kwargs) -> None:
+        super().__init__(text, **kwargs)
+
+        self.position: pacai.core.board.Position = position
+        """ The position to display the text. """

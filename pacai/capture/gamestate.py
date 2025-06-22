@@ -3,6 +3,7 @@ import random
 import PIL.Image
 
 import pacai.core.action
+import pacai.core.font
 import pacai.core.gamestate
 import pacai.core.spritesheet
 import pacai.pacman.board
@@ -33,6 +34,10 @@ PREFIX_MARKERS: set[pacai.core.board.Marker] = {
 
 GHOST_MARKER_PREFIX: str = 'G'
 """ Prefix (non-scared) ghost markers with this. """
+
+SCORE_COLOR_ZERO: tuple[int, int, int] = (255, 255, 255)
+SCORE_COLOR_NEGATIVE: tuple[int, int, int] = (229, 0, 0)
+SCORE_COLOR_POSITIVE: tuple[int, int, int] = (0, 66, 255)
 
 class GameState(pacai.pacman.gamestate.GameState):
     """
@@ -276,6 +281,20 @@ class GameState(pacai.pacman.gamestate.GameState):
         return pacai.core.gamestate.GameState.sprite_lookup(self,
                 sprite_sheet, position,
                 marker = marker, action = action, adjacency = adjacency, animation_key = animation_key)
+
+    def get_footer_text(self) -> pacai.core.font.Text | None:
+        text = super().get_footer_text()
+
+        # Color the text based on who's winning.
+        if (text is not None):
+            if (self.score < 0.0):
+                text.color = SCORE_COLOR_NEGATIVE
+            elif (self.score > 0.0):
+                text.color = SCORE_COLOR_POSITIVE
+            else:
+                text.color = SCORE_COLOR_ZERO
+
+        return text
 
     def process_turn(self,  # pylint: disable=too-many-statements
             action: pacai.core.action.Action,
