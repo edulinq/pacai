@@ -2,12 +2,11 @@ import argparse
 import logging
 import random
 import sys
+import typing
 
 import pacai.core.board
 import pacai.core.log
 import pacai.pacman.board
-
-# TODO - Needs more updates.
 
 # TEST - Old size is always 16x16
 # DEFAULT_SIZE: int = 16
@@ -18,86 +17,18 @@ MIN_SIZE: int = 10
 MAX_RANDOM_SIZE: int = 32
 """ The maximum size for a maze with unspecified size. """
 
-def generate(seed: int | None = None, size: int | None = None) -> pacai.core.board.Board:
-    """
-    Generare a radom capture board.
-
-    TEST
-
-    Algorithm:
-     - Start with an empty grid.
-     - Draw a wall with gaps, dividing the grid in 2.
-     - Repeat recursively for each sub-grid.
-
-    Pacman Details:
-     - Players 1 and 3 always start in the bottom left; 2 and 4 in the top right.
-     - Food is placed in dead ends and then randomly
-        (though not too close to the pacmen starting positions).
-
-    Notes:
-     - The final map includes a symmetric, flipped copy.
-     - The first wall has k gaps, the next wall has k / 2 gaps, etc. (min=1).
-
-    This process was originally created by Dan Gillick and Jie Tang as a part of
-    UC Berkley's CS188 AI project:
-    https://ai.berkeley.edu/project_overview.html
-    """
-
-    if (seed is None):
-        seed = random.randint(0, 2**64)
-
-    rng = random.Random(seed)
-
-    if (size is None):
-        size = rng.choice(range(MIN_SIZE, MAX_RANDOM_SIZE + 1, 2))
-
-    if ((size < MIN_SIZE) or (size % 2 != 0)):
-        raise ValueError(f"Found dissallowed random board size of {size}. Size must be an even number >= {MIN_SIZE}.")
-
-    logging.debug("Generating a Capture board with seed %d and size %d.", seed, size)
-
-    # TEST - Prison location?
-    _add_walls(rng, board)
-
-    base_maze = _generate_maze(rng)
-
-    ''' TEST
-    maze.to_map()
-    add_pacman_stuff(rng, maze, 2 * (maze.height * int(maze.width / 20)), 4, skip)
-    '''
-
-    # TEST - Double and add two for a border?
-    board = pacai.core.board.create_empty(source = f"random-{seed}", height = size, width = size)
-
-    # TEST
-    print('---')
-    print(board)
-    print('---')
-
-    # TEST
-
-    # TEST
-    return board
-
-def _generate_maze(rng: random.Random, size: int) -> Maze:
-    # TEST
-    size = 16
-
-    maze = Maze(size, size)
-
-    # TEST
-    gap_factor = min(0.65, rng.gauss(0.5, 0.1))
-
-    # TEST - integrate skip into Maze class.
-    skip = make_with_prison(rng, maze, depth = 0, gaps = 3, vert = True, min_width = 1, gap_factor = gap_factor)
-
-    return maze
-
+# TEST
+MIN_MAZE_AXIS_WIDTH: int = 1
 
 # TEST
-MAX_DIFFERENT_MAZES = 10000
+DEFAULT_GAPS: int = 3
 
-# TEST
+DEFAULT_GAP_FACTOR: float = 0.50
+MAX_GAP_FACTOR: float = 0.65
+GAP_FACTOR_STDEV: float = 0.1
+
+MAX_PRISON_WIDTH: int = 3
+
 class Maze:
     """
     A recursive definition of a maze.
@@ -109,6 +40,7 @@ class Maze:
     def __init__(self,
             height: int, width: int,
             anchor: pacai.core.board.Position | None = None, root: typing.Union['Maze', None] = None,
+            prison_width: int = 0,
             ) -> None:
         self.height: int = height
         """ The height of this submaze. """
@@ -147,15 +79,23 @@ class Maze:
         if (len(self.grid) == 0):
             raise ValueError("Grid cannot have a zero height.")
 
+        # TEST - Rename. children?
         self.rooms: list['Maze'] = []
         """ The submazes ("rooms"/children) in this maze. """
+
+        self.prison_width: int = prison_width
+        """
+        The number of columns used by the "prisons".
+        Prisons are the starting areas for each agent.
+        This number does not include walls.
+        """
 
     def place_relative(self, row: int, col: int, marker: pacai.core.board.Marker) -> None:
         """ Place a marker in the grid according to the relative coordinates of this submaze. """
 
-        grid[self.anchor.row + row][self.anchor.col + col] = marker
+        self.grid[self.anchor.row + row][self.anchor.col + col] = marker
 
-    def is_marker_relative(self, row: int, col: int, marker: pacai.core.board.Marker) -> None:
+    def is_marker_relative(self, row: int, col: int, marker: pacai.core.board.Marker) -> bool:
         """ Check if the given marker exists at the relative coordinates of this submaze. """
 
         true_row = self.anchor.row + row
@@ -165,40 +105,46 @@ class Maze:
         if ((true_row < 0) or (true_row >= len(self.grid)) or (true_col < 0) or (true_col >= len(self.grid[0]))):
             return False
 
-        return (grid[true_row][true_col] == marker)
+        return (self.grid[true_row][true_col] == marker)
 
-    # TEST - to_board() ?
-    def to_map(self):
+    def to_board(self, source: str) -> pacai.core.board.Board:
         """
-        Add a flipped symmetric copy on the right.
-        Add a border.
+        Create a pacai capture board from this maze.
+        This will add a border (of walls), add a mirrored copy (for the other team), and properly set agent indexes.
         """
 
-        # Add a flipped symmetric copy
-        for row in range(self.height):
-            for col in range(self.width - 1, -1, -1):
-                self.grid[self.height - row - 1].append(self.grid[row][col])
-        self.width *= 2
+        # Make a new grid that is big enough to include the opposing side (mirrored) and a border (wall) around the entire board.
+        # Initialize with wall markers for the boarder.
+        new_grid = [[pacai.core.board.MARKER_WALL for col in range((self.width * 2) + 2)] for row in range(self.height + 2)]
 
-        # Add a border
-        for row in range(self.height):
-            self.grid[row] = [pacai.core.board.MARKER_WALL] + self.grid[row] + [pacai.core.board.MARKER_WALL]
-        self.width += 2
+        for base_row in range(self.height):
+            for base_col in range(self.width):
+                # Offset for the boarder.
+                row = base_row + 1
+                col = base_col + 1
 
-        self.grid.insert(0, [pacai.core.board.MARKER_WALL for _ in range(self.width)])
-        self.grid.append([pacai.core.board.MARKER_WALL for _ in range(self.width)])
-        self.height += 2
+                # Copy the left side.
+                new_grid[row][col] = self.grid[base_row][base_col]
 
-    def add_wall(self, rng: random.Random, col: int, gaps: float = 1.0, vertical = True) -> bool:
+                # Mirror around both axes for the right side.
+                new_grid[row][col + self.width] = self.grid[self.height - base_row - 1][self.width - base_col - 1]
+
+        # TEST - agent indexes.
+
+        board_text = "\n".join([''.join(row) for row in new_grid])
+
+        return pacai.core.board.load_string(source, board_text)
+
+    def _add_wall(self, rng: random.Random, wall_index: int, gaps: float = 1.0, vertical = True) -> bool:
         """
         Try to add a vertical wall with gaps at the given location.
         Return True if a wall was added, False otherwise.
         """
 
         if (vertical):
-            return self._add_vertical_wall(rng, index, gaps = gaps)
+            return self._add_vertical_wall(rng, wall_index, gaps = gaps)
 
-        return self._add_horizontal_wall(rng, index, gaps = gaps)
+        return self._add_horizontal_wall(rng, wall_index, gaps = gaps)
 
     def _add_vertical_wall(self, rng: random.Random, col: int, gaps: float = 1.0) -> bool:
         """
@@ -218,6 +164,9 @@ class Maze:
 
         if (self.is_marker_relative(-1, col, pacai.core.board.MARKER_EMPTY)):
             slots.remove(0)
+
+        if (len(slots) == 0):
+            return False
 
         if (self.is_marker_relative(self.height, col, pacai.core.board.MARKER_EMPTY)):
             slots.remove(self.height - 1)
@@ -244,14 +193,14 @@ class Maze:
 
         return True
 
-    def _add_horizontal_wall(self, rng: random.Random, row: int, gaps: int = 1) -> bool:
+    def _add_horizontal_wall(self, rng: random.Random, row: int, gaps: float = 1.0) -> bool:
         """
         Try to add a horizontal wall with gaps at the given row.
         Return True if a wall was added, False otherwise.
         """
 
         # Choose the specific number of gaps we are expecting.
-        gaps = int(round(min(self.width, gaps)))
+        discrete_gaps = int(round(min(self.width, gaps)))
 
         # The places (cols) that we may put a wall.
         slots = list(range(self.width))
@@ -263,18 +212,21 @@ class Maze:
         if (self.is_marker_relative(row, -1, pacai.core.board.MARKER_EMPTY)):
             slots.remove(0)
 
+        if (len(slots) == 0):
+            return False
+
         if (self.is_marker_relative(row, self.width, pacai.core.board.MARKER_EMPTY)):
             slots.remove(self.width - 1)
 
         # If we cannot provided the requested number of gaps, then don't put down the wall.
-        if (len(slots) <= gaps):
+        if (len(slots) <= discrete_gaps):
             return False
 
         # Randomize where we will put our walls.
         rng.shuffle(slots)
 
         # Skip the first slots (these are gaps), and place the rest.
-        for col in slots[gaps:]:
+        for col in slots[discrete_gaps:]:
             self.place_relative(row, col, pacai.core.board.MARKER_WALL)
 
         # By placing a wall, we have created two new rooms (on each side of the wall).
@@ -288,87 +240,154 @@ class Maze:
 
         return True
 
+    def build(self,
+            rng: random.Random,
+            gaps: float = DEFAULT_GAPS, gap_factor: float = DEFAULT_GAP_FACTOR,
+            vertical: bool = True,
+            ) -> None:
+        """
+        Build a full maze into this maze.
+        This happens in two parts:
+         - Building "prisons" which are the starting places for each team.
+         - Building the rest of the maze in the non-prison area.
+        """
 
+        self.prison_width = rng.randint(0, MAX_PRISON_WIDTH)
 
+        for prison_col in range(self.prison_width):
+            # Compute the actual column the wall for this prison column is on.
+            wall_col = (2 * (prison_col + 1)) - 1
 
+            # Mark a full vertical of walls.
+            for row in range(self.height):
+                self.place_relative(row, wall_col, pacai.core.board.MARKER_WALL)
 
+            # Make an opening at either the top or bottom.
+            if (prison_col % 2 == 0):
+                self.place_relative(0, wall_col, pacai.core.board.MARKER_EMPTY)
+            else:
+                self.place_relative(self.height - 1, wall_col, pacai.core.board.MARKER_EMPTY)
+
+        # Everything outside the prison is now a submaze.
+        # We will not make a submaze for the prison, since we don't want to edit that.
+        anchor_offset = pacai.core.board.Position(0, 2 * self.prison_width)
+        self.rooms.append(Maze(self.height, self.width - (2 * self.prison_width), self.anchor.add(anchor_offset), self.root))
+
+        # Build the rest of the maze.
+        for submaze in self.rooms:
+            submaze._build_submaze(rng, gaps = gaps, gap_factor = gap_factor, vertical = vertical)
+
+    def _build_submaze(self,
+            rng: random.Random,
+            gaps: float = DEFAULT_GAPS, gap_factor: float = DEFAULT_GAP_FACTOR,
+            vertical: bool = True) -> None:
+        """
+        Recursively build a maze by making a wall (which will create 0 or two submazes),
+        and then building a maze with a different orientation in the submaze.
+        """
+
+        # Stop when there is no more room in either orientation.
+        if ((self.height <= MIN_MAZE_AXIS_WIDTH) and (self.width <= MIN_MAZE_AXIS_WIDTH)):
+            return
+
+        # Decide between vertical and horizontal walls by seeing how much space is left across the primary axis
+        # (width if vertical, height if horizontal).
+        if (vertical):
+            axis_width = self.width
+        else:
+            axis_width = self.height
+
+        # If there is not enough room on this axis, flip the orientation.
+        if (axis_width < (MIN_MAZE_AXIS_WIDTH + 2)):
+            vertical = not vertical
+            if vertical:
+                axis_width = self.width
+            else:
+                axis_width = self.height
+
+        # Add a wall to the current maze
+        wall_slots = range(1, axis_width - 1)
+
+        if (len(wall_slots) == 0):
+            return
+
+        wall_index = rng.choice(wall_slots)
+        wall_added = self._add_wall(rng, wall_index, gaps = gaps, vertical = vertical)
+
+        # If we did not add a wall, then stop.
+        if (not wall_added):
+            return
+
+        # Recursively build submazes in the opposite orientation.
+        for submaze in self.rooms:
+            submaze._build_submaze(rng,
+                    gaps = max(1, gaps * gap_factor), gap_factor = gap_factor,
+                    vertical = (not vertical))
+
+def generate(
+        seed: int | None = None,
+        size: int | None = None,
+        gaps: int = DEFAULT_GAPS,
+        ) -> pacai.core.board.Board:
+    """
+    Generare a radom capture board.
+
+    TEST
+
+    Algorithm:
+     - Start with an empty grid.
+     - Draw a wall with gaps, dividing the grid in 2.
+     - Repeat recursively for each sub-grid.
+
+    Pacman Details:
+     - Players 1 and 3 always start in the bottom left; 2 and 4 in the top right.
+     - Food is placed in dead ends and then randomly
+        (though not too close to the pacmen starting positions).
+
+    Notes:
+     - The final map includes a symmetric, flipped copy.
+     - The first wall has k gaps, the next wall has k / 2 gaps, etc. (min=1).
+
+    This process was originally created by Dan Gillick and Jie Tang as a part of
+    UC Berkley's CS188 AI project:
+    https://ai.berkeley.edu/project_overview.html
+    """
+
+    if (seed is None):
+        seed = random.randint(0, 2**64)
+
+    rng = random.Random(seed)
+
+    if (size is None):
+        size = rng.choice(range(MIN_SIZE, MAX_RANDOM_SIZE + 1, 2))
+
+    if ((size < MIN_SIZE) or (size % 2 != 0)):
+        raise ValueError(f"Found dissallowed random board size of {size}. Size must be an even number >= {MIN_SIZE}.")
+
+    logging.debug("Generating a Capture board with seed %d and size %d.", seed, size)
+
+    ''' TEST
+    maze.to_map()
+    '''
+
+    # TEST
+    size = 16
+
+    maze = Maze(size, size)
+
+    gap_factor = min(MAX_GAP_FACTOR, rng.gauss(DEFAULT_GAP_FACTOR, GAP_FACTOR_STDEV))
+
+    maze.build(rng, gaps = gaps, gap_factor = gap_factor)
+
+    board = maze.to_board(f"random-{seed}")
+
+    # TEST
+    # add_pacman_stuff(rng, maze, 2 * (maze.height * int(maze.width / 20)), 4)
+
+    return board
 
 # TEST
-
-
-
-
-def make_with_prison(rng, room, depth, gaps=1, vert=True, min_width=1, gap_factor=0.5):
-    """
-    Build a maze with 0,1,2 layers of prison (randomly).
-    """
-
-    p = rng.randint(0, 2)
-    proll = rng.random()
-    if proll < 0.5:
-        p = 1
-    elif proll < 0.7:
-        p = 0
-    elif proll < 0.9:
-        p = 2
-    else:
-        p = 3
-
-    add_r, add_c = room.anchor
-    for j in range(p):
-        cur_col = 2 * (j + 1) - 1
-        for row in range(room.height):
-            room.root.grid[row][cur_col] = pacai.core.board.MARKER_WALL
-
-        if j % 2 == 0:
-            room.root.grid[0][cur_col] = pacai.core.board.MARKER_EMPTY
-        else:
-            room.root.grid[room.height - 1][cur_col] = pacai.core.board.MARKER_EMPTY
-
-    room.rooms.append(Maze(room.height, room.width - (2 * p), (add_r, add_c + (2 * p)), room.root))
-    for sub_room in room.rooms:
-        make(rng, sub_room, depth + 1, gaps, vert, min_width, gap_factor)
-
-    return 2 * p
-
-def make(rng, room, depth, gaps=1, vert=True, min_width=1, gap_factor=0.5):
-    """
-    Recursively build a maze.
-    """
-
-    # Extreme base case
-    if room.height <= min_width and room.width <= min_width:
-        return
-
-    # Decide between vertical and horizontal wall
-    if vert:
-        num = room.width
-    else:
-        num = room.height
-
-    if num < min_width + 2:
-        vert = not vert
-        if vert:
-            num = room.width
-        else:
-            num = room.height
-
-    # Add a wall to the current room
-    if depth == 0:
-        wall_slots = [num - 2]  # Fix the first wall
-    else:
-        wall_slots = range(1, num - 1)
-
-    if len(wall_slots) == 0:
-        return
-
-    choice = rng.choice(wall_slots)
-    if not room.add_wall(rng, choice, gaps, vertical = vert):
-        return
-
-    # Recursively add walls
-    for sub_room in room.rooms:
-        make(rng, sub_room, depth + 1, max(1, gaps * gap_factor), not vert, min_width, gap_factor)
+'''
 
 def copy_grid(grid):
     new_grid = []
@@ -380,11 +399,15 @@ def copy_grid(grid):
 
     return new_grid
 
-def add_pacman_stuff(rng, maze, max_food=60, max_capsules=4, toskip=0):
+# TEST: toskip = 2 * maze.prison_width
+def add_pacman_stuff(rng, maze, max_food=60, max_capsules=4):
     """
-    Add pacmen starting position.
+    Add agent starting position.
     Add food at dead ends plus some extra.
     """
+
+    # TEST
+    toskip = 2 * maze.prison_width
 
     # Parameters
     max_depth = 2
@@ -463,6 +486,7 @@ def add_pacman_stuff(rng, maze, max_food=60, max_capsules=4, toskip=0):
             maze.grid[row][col] = pacai.pacman.board.MARKER_PELLET
             maze.grid[maze.height - row - 1][maze.width - col - 1] = pacai.pacman.board.MARKER_PELLET
             total_food += 2
+'''
 
 def main() -> int:
     parser = argparse.ArgumentParser(description = "Randomly generate a capture board.")
