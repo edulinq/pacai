@@ -7,20 +7,15 @@ import typing
 import pacai.core.board
 import pacai.core.log
 import pacai.pacman.board
+import pacai.util.reflection
 
-# TEST - Old size is always 16x16
-# DEFAULT_SIZE: int = 16
-
-# TEST
 MIN_SIZE: int = 10
 
 MAX_RANDOM_SIZE: int = 32
 """ The maximum size for a maze with unspecified size. """
 
-# TEST
 MIN_MAZE_AXIS_WIDTH: int = 1
 
-# TEST
 DEFAULT_GAPS: int = 3
 
 DEFAULT_GAP_FACTOR: float = 0.50
@@ -28,6 +23,11 @@ MAX_GAP_FACTOR: float = 0.65
 GAP_FACTOR_STDEV: float = 0.1
 
 MAX_PRISON_WIDTH: int = 3
+
+MAX_CAPSULES: int = 4
+MAX_PELLETS: int = 100
+
+NUM_AGENTS: int = 2
 
 class Maze:
     """
@@ -79,9 +79,8 @@ class Maze:
         if (len(self.grid) == 0):
             raise ValueError("Grid cannot have a zero height.")
 
-        # TEST - Rename. children?
-        self.rooms: list['Maze'] = []
-        """ The submazes ("rooms"/children) in this maze. """
+        self.submazes: list['Maze'] = []
+        """ The submazes/children in this maze. """
 
         self.prison_width: int = prison_width
         """
@@ -123,17 +122,32 @@ class Maze:
                 row = base_row + 1
                 col = base_col + 1
 
-                # Copy the left side.
-                new_grid[row][col] = self.grid[base_row][base_col]
+                # Copy the left side, and mirror around both axes for the right side.
 
-                # Mirror around both axes for the right side.
-                new_grid[row][col + self.width] = self.grid[self.height - base_row - 1][self.width - base_col - 1]
+                copy_marker = self.grid[base_row][base_col]
+                mirror_marker = self.grid[self.height - base_row - 1][self.width - base_col - 1]
 
-        # TEST - agent indexes.
+                # If either marker is an agent, adjust the indexes.
+                # Even (including 0) are on the left, and odds are on the right.
+
+                if (copy_marker.is_agent()):
+                    copy_marker = pacai.core.board.Marker(str(copy_marker.get_agent_index() * 2))
+
+                if (mirror_marker.is_agent()):
+                    mirror_marker = pacai.core.board.Marker(str((mirror_marker.get_agent_index() * 2) + 1))
+
+                # Place the final markers.
+                new_grid[row][col] = copy_marker
+                new_grid[row][col + self.width] = mirror_marker
 
         board_text = "\n".join([''.join(row) for row in new_grid])
 
-        return pacai.core.board.load_string(source, board_text)
+        kwargs = {
+            'strip': False,
+            'class': pacai.util.reflection.get_qualified_name(pacai.pacman.board.Board),
+        }
+
+        return pacai.core.board.load_string(source, board_text, **kwargs)
 
     def _add_wall(self, rng: random.Random, wall_index: int, gaps: float = 1.0, vertical = True) -> bool:
         """
@@ -182,14 +196,14 @@ class Maze:
         for row in slots[gaps:]:
             self.place_relative(row, col, pacai.core.board.MARKER_WALL)
 
-        # By placing a wall, we have created two new rooms (on each side of the wall).
+        # By placing a wall, we have created two new submazes (on each side of the wall).
 
-        # One room to the left.
-        self.rooms.append(Maze(self.height, col, anchor = self.anchor, root = self.root))
+        # One submaze to the left.
+        self.submazes.append(Maze(self.height, col, anchor = self.anchor, root = self.root))
 
-        # One room to the right.
+        # One submaze to the right.
         anchor_offset = pacai.core.board.Position(0, col + 1)
-        self.rooms.append(Maze(self.height, (self.width - col - 1), self.anchor.add(anchor_offset), self.root))
+        self.submazes.append(Maze(self.height, (self.width - col - 1), self.anchor.add(anchor_offset), self.root))
 
         return True
 
@@ -229,14 +243,14 @@ class Maze:
         for col in slots[discrete_gaps:]:
             self.place_relative(row, col, pacai.core.board.MARKER_WALL)
 
-        # By placing a wall, we have created two new rooms (on each side of the wall).
+        # By placing a wall, we have created two new submazes (on each side of the wall).
 
-        # One room above.
-        self.rooms.append(Maze(row, self.width, anchor = self.anchor, root = self.root))
+        # One submaze above.
+        self.submazes.append(Maze(row, self.width, anchor = self.anchor, root = self.root))
 
-        # One room below.
+        # One submaze below.
         anchor_offset = pacai.core.board.Position(row + 1, 0)
-        self.rooms.append(Maze((self.height - row - 1), self.width, self.anchor.add(anchor_offset), self.root))
+        self.submazes.append(Maze((self.height - row - 1), self.width, self.anchor.add(anchor_offset), self.root))
 
         return True
 
@@ -244,12 +258,16 @@ class Maze:
             rng: random.Random,
             gaps: float = DEFAULT_GAPS, gap_factor: float = DEFAULT_GAP_FACTOR,
             vertical: bool = True,
+            max_pellets: int = MAX_PELLETS, max_capsules: int = MAX_PELLETS,
+            num_agents: int = NUM_AGENTS,
             ) -> None:
         """
         Build a full maze into this maze.
-        This happens in two parts:
-         - Building "prisons" which are the starting places for each team.
+        This happens in several parts:
+         - Building a "prison" which is the starting places for a team.
          - Building the rest of the maze in the non-prison area.
+         - Filling the non-prison area with capture objects (food, capsules).
+         - Placing agents on the board prioritizing the left columns.
         """
 
         self.prison_width = rng.randint(0, MAX_PRISON_WIDTH)
@@ -271,11 +289,18 @@ class Maze:
         # Everything outside the prison is now a submaze.
         # We will not make a submaze for the prison, since we don't want to edit that.
         anchor_offset = pacai.core.board.Position(0, 2 * self.prison_width)
-        self.rooms.append(Maze(self.height, self.width - (2 * self.prison_width), self.anchor.add(anchor_offset), self.root))
+        non_prison_submaze = Maze(self.height, self.width - (2 * self.prison_width), self.anchor.add(anchor_offset), self.root)
+        self.submazes.append(non_prison_submaze)
 
         # Build the rest of the maze.
-        for submaze in self.rooms:
+        for submaze in self.submazes:
             submaze._build_submaze(rng, gaps = gaps, gap_factor = gap_factor, vertical = vertical)
+
+        # Place agents.
+        self._place_agents(rng, num_agents = num_agents)
+
+        # Place capture objects.
+        non_prison_submaze._place_capture_markers(rng, max_pellets = max_pellets, max_capsules = max_capsules)
 
     def _build_submaze(self,
             rng: random.Random,
@@ -319,10 +344,42 @@ class Maze:
             return
 
         # Recursively build submazes in the opposite orientation.
-        for submaze in self.rooms:
+        for submaze in self.submazes:
             submaze._build_submaze(rng,
                     gaps = max(1, gaps * gap_factor), gap_factor = gap_factor,
                     vertical = (not vertical))
+
+    def _place_capture_markers(self, rng: random.Random, max_pellets: int = MAX_PELLETS, max_capsules: int = MAX_PELLETS) -> None:
+        """
+        Place capture markers/objects on the board.
+        This includes pellets and capsules, but not agents.
+        """
+
+        # TEST
+        self.place_relative(3, 3, pacai.pacman.board.MARKER_PELLET)
+
+    def _place_agents(self, rng: random.Random, num_agents: int = NUM_AGENTS) -> None:
+        """
+        Place agent in this maze.
+        Start on the far left column and randomly choose empty locations.
+        If there are not enough locations for agents, move to the next column.
+        Will raise an error if not all agents can be placed.
+        """
+
+        agent_indexes = list(range(num_agents))
+
+        for col in range(self.width):
+            empty_rows = [row for row in range(self.height) if self.is_marker_relative(row, col, pacai.core.board.MARKER_EMPTY)]
+            rng.shuffle(empty_rows)
+
+            for row in empty_rows:
+                marker = pacai.core.board.Marker(str(agent_indexes.pop(0)))
+                self.place_relative(row, col, marker)
+
+                if (len(agent_indexes) == 0):
+                    return
+
+        raise ValueError("Unable to find enough empty locations to place all agents.")
 
 def generate(
         seed: int | None = None,
@@ -362,133 +419,21 @@ def generate(
         size = rng.choice(range(MIN_SIZE, MAX_RANDOM_SIZE + 1, 2))
 
     if ((size < MIN_SIZE) or (size % 2 != 0)):
-        raise ValueError(f"Found dissallowed random board size of {size}. Size must be an even number >= {MIN_SIZE}.")
+        raise ValueError(f"Found disallowed random board size of {size}. Size must be an even number >= {MIN_SIZE}.")
 
     logging.debug("Generating a Capture board with seed %d and size %d.", seed, size)
 
-    ''' TEST
-    maze.to_map()
-    '''
-
-    # TEST
-    size = 16
-
-    maze = Maze(size, size)
-
     gap_factor = min(MAX_GAP_FACTOR, rng.gauss(DEFAULT_GAP_FACTOR, GAP_FACTOR_STDEV))
 
+    maze = Maze(size, size)
     maze.build(rng, gaps = gaps, gap_factor = gap_factor)
-
     board = maze.to_board(f"random-{seed}")
-
-    # TEST
-    # add_pacman_stuff(rng, maze, 2 * (maze.height * int(maze.width / 20)), 4)
 
     return board
 
-# TEST
-'''
-
-def copy_grid(grid):
-    new_grid = []
-
-    for row in range(len(grid)):
-        new_grid.append([])
-        for col in range(len(grid[row])):
-            new_grid[row].append(grid[row][col])
-
-    return new_grid
-
-# TEST: toskip = 2 * maze.prison_width
-def add_pacman_stuff(rng, maze, max_food=60, max_capsules=4):
-    """
-    Add agent starting position.
-    Add food at dead ends plus some extra.
-    """
-
-    # TEST
-    toskip = 2 * maze.prison_width
-
-    # Parameters
-    max_depth = 2
-
-    # Add food at dead ends
-    depth = 0
-    total_food = 0
-
-    while True:
-        new_grid = copy_grid(maze.grid)
-        depth += 1
-        num_added = 0
-
-        for row in range(1, maze.height - 1):
-            for col in range(1 + toskip, int(maze.width / 2) - 1):
-                if (row > maze.height - 6) and (col < 6):
-                    continue
-
-                if maze.grid[row][col] != pacai.core.board.MARKER_EMPTY:
-                    continue
-
-                neighbors = 0
-                neighbors += (maze.grid[row - 1][col] == pacai.core.board.MARKER_EMPTY)
-                neighbors += (maze.grid[row][col - 1] == pacai.core.board.MARKER_EMPTY)
-                neighbors += (maze.grid[row + 1][col] == pacai.core.board.MARKER_EMPTY)
-                neighbors += (maze.grid[row][col + 1] == pacai.core.board.MARKER_EMPTY)
-
-                if neighbors == 1:
-                    new_grid[row][col] = pacai.pacman.board.MARKER_PELLET
-                    new_grid[maze.height - row - 1][maze.width - col - 1] = pacai.pacman.board.MARKER_PELLET
-                    num_added += 2
-                    total_food += 2
-
-        maze.grid = new_grid
-        if num_added == 0:
-            break
-
-        if depth >= max_depth:
-            break
-
-    # Starting pacmen positions
-    maze.grid[maze.height - 2][1] = '3'
-    maze.grid[maze.height - 3][1] = '1'
-    maze.grid[1][maze.width - 2] = '4'
-    maze.grid[2][maze.width - 2] = '2'
-
-    # Add capsules
-    total_capsules = 0
-    while (total_capsules < max_capsules):
-        row = rng.randint(1, maze.height - 1)
-        col = rng.randint(1 + toskip, int(maze.width / 2) - 2)
-
-        if (row > maze.height - 6) and (col < 6):
-            continue
-
-        if (abs(col - int(maze.width / 2)) < 3):
-            continue
-
-        if maze.grid[row][col] == pacai.core.board.MARKER_EMPTY:
-            maze.grid[row][col] = pacai.pacman.board.MARKER_CAPSULE
-            maze.grid[maze.height - row - 1][maze.width - col - 1] = pacai.pacman.board.MARKER_CAPSULE
-            total_capsules += 2
-
-    # Extra random food
-    while (total_food < max_food):
-        row = rng.randint(1, maze.height - 1)
-        col = rng.randint(1 + toskip, int(maze.width / 2) - 1)
-
-        if (row > maze.height - 6) and (col < 6):
-            continue
-
-        if (abs(col - int(maze.width / 2)) < 3):
-            continue
-
-        if maze.grid[row][col] == pacai.core.board.MARKER_EMPTY:
-            maze.grid[row][col] = pacai.pacman.board.MARKER_PELLET
-            maze.grid[maze.height - row - 1][maze.width - col - 1] = pacai.pacman.board.MARKER_PELLET
-            total_food += 2
-'''
-
 def main() -> int:
+    """ Randomly generate a capture board and then print it. """
+
     parser = argparse.ArgumentParser(description = "Randomly generate a capture board.")
     parser = pacai.core.log.set_cli_args(parser)
 
