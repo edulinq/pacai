@@ -52,7 +52,7 @@ class SearchProblemAgent(pacai.core.agent.Agent):
         self._actions: list[pacai.core.action.Action] = []
         """ The actions that the search solver came up with. """
 
-        logging.info("Created a SearchProblemAgent using problem '%s', cost function '%s', solver '%s', and heuristic '%s'.",
+        logging.debug("Created a SearchProblemAgent using problem '%s', cost function '%s', solver '%s', and heuristic '%s'.",
                 pacai.util.reflection.get_qualified_name(problem),
                 pacai.util.reflection.get_qualified_name(problem_cost),
                 pacai.util.reflection.get_qualified_name(solver),

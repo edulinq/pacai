@@ -9,7 +9,6 @@
     ]
 }
 ---
-<LOG_PREFIX> -- Created a SearchProblemAgent using problem 'pacai.search.position.PositionSearchProblem', cost function 'pacai.search.common.unit_cost_function', solver 'pacai.search.mazetiny.maze_tiny_search', and heuristic 'pacai.search.common.null_heuristic'.
 <LOG_PREFIX> -- Path found with 8 steps and a total cost of 0.00 in <DURATION_SECONDS>. 0 search nodes expanded.
 <LOG_PREFIX> -- Average Score: 502.0
 <LOG_PREFIX> -- Scores:        502

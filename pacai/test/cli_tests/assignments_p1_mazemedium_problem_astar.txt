@@ -9,7 +9,6 @@
     ]
 }
 ---
-<LOG_PREFIX> -- Created a SearchProblemAgent using problem 'pacai.search.position.PositionSearchProblem', cost function 'pacai.search.common.unit_cost_function', solver 'pacai.student.singlesearch.astar_search', and heuristic 'pacai.search.common.null_heuristic'.
 <LOG_PREFIX> -- Agent 0 crashed.
 Traceback (most recent call last):
 <TRACEBACK>
