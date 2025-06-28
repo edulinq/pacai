@@ -3,6 +3,7 @@ The main executable for running a game of Capture.
 """
 
 import argparse
+import logging
 import sys
 import typing
 
@@ -86,6 +87,48 @@ def get_additional_ui_options(args: argparse.Namespace) -> dict[str, typing.Any]
         'sprite_sheet_path': DEFAULT_SPRITE_SHEET,
     }
 
+def log_capture_results(results: list[pacai.core.game.GameResult], winning_agent_indexes: set[int], prefix = '') -> None:
+    """
+    Log the result of running several games.
+    """
+
+    scores = [result.score for result in results]
+    turn_counts = [len(result.history) for result in results]
+
+    record = [('red' if (score < 0.0) else 'blue' if (score > 0.0) else 'tie') for score in scores]
+
+    # Avoid logging long lists (which can be a bit slow in Python's logging module).
+    log_lists_to_info = (len(results) < pacai.util.bin.SCORE_LIST_MAX_INFO_LENGTH)
+    log_lists_to_debug = (logging.getLogger().getEffectiveLevel() <= logging.DEBUG)
+
+    joined_scores = ''
+    joined_record = ''
+    joined_turn_counts = ''
+
+    if (log_lists_to_info or log_lists_to_debug):
+        joined_scores = ', '.join([str(score) for score in scores])
+        joined_record = ', '.join(record)
+        joined_turn_counts = ', '.join([str(turn_count) for turn_count in turn_counts])
+
+    logging.info('%sAverage Score: %s', prefix, sum(scores) / float(len(results)))
+
+    if (log_lists_to_info):
+        logging.info('%sScores:        %s', prefix, joined_scores)
+    elif (log_lists_to_debug):
+        logging.debug('%sScores:        %s', prefix, joined_scores)
+
+    if (log_lists_to_info):
+        logging.info('%sRecord:        %s', prefix, joined_record)
+    elif (log_lists_to_debug):
+        logging.debug('%sRecord:        %s', prefix, joined_record)
+
+    logging.info('%sAverage Turns: %s', prefix, sum(turn_counts) / float(len(results)))
+
+    if (log_lists_to_info):
+        logging.info('%sTurn Counts:   %s', prefix, joined_turn_counts)
+    elif (log_lists_to_debug):
+        logging.debug('%sTurn Counts:   %s', prefix, joined_turn_counts)
+
 def main() -> int:
     """ Invoke a game of Capture. """
 
@@ -96,6 +139,7 @@ def main() -> int:
         get_additional_ui_options = get_additional_ui_options,
         custom_set_cli_args = set_cli_args,
         custom_init_from_args = init_from_args,
+        log_results = log_capture_results,
     )
 
 if (__name__ == '__main__'):
