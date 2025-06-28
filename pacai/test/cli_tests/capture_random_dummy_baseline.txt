@@ -5,13 +5,12 @@
         "--ui", "null",
         "--board", "random-10",
         "--red", "capture-team-dummy",
-        "--blue", "capture-team-simple"
+        "--blue", "capture-team-baseline"
     ]
 }
 ---
 <LOG_PREFIX> -- Average Score: 520.0
 <LOG_PREFIX> -- Scores:        520
-<LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
-<LOG_PREFIX> -- Record:        Loss
+<LOG_PREFIX> -- Record:        blue
 <LOG_PREFIX> -- Average Turns: 399.0
 <LOG_PREFIX> -- Turn Counts:   399

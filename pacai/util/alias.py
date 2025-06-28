@@ -96,13 +96,13 @@ AGENT_SHORT_NAMES: list[str] = [
 
 CAPTURE_TEAM_DUMMY: Alias = Alias('capture-team-dummy', 'pacai.capture.team.create_team_dummy')
 CAPTURE_TEAM_RANDOM: Alias = Alias('capture-team-random', 'pacai.capture.team.create_team_random')
-CAPTURE_TEAM_SIMPLE: Alias = Alias('capture-team-simple', 'pacai.capture.team.create_team_simple')
+CAPTURE_TEAM_BASELINE: Alias = Alias('capture-team-baseline', 'pacai.capture.team.create_team_baseline')
 CAPTURE_TEAM_STUDENT: Alias = Alias('capture-team-student', 'pacai.student.capture.create_team')
 
 CAPTURE_TEAM_SHORT_NAMES: list[str] = [
     CAPTURE_TEAM_DUMMY.short,
     CAPTURE_TEAM_RANDOM.short,
-    CAPTURE_TEAM_SIMPLE.short,
+    CAPTURE_TEAM_BASELINE.short,
     CAPTURE_TEAM_STUDENT.short,
 ]
 

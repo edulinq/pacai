@@ -43,7 +43,7 @@ def create_team_random() -> list[pacai.core.agentinfo.AgentInfo]:
         pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_RANDOM.long),
     ]
 
-def create_team_simple() -> list[pacai.core.agentinfo.AgentInfo]:
+def create_team_baseline() -> list[pacai.core.agentinfo.AgentInfo]:
     """
     Create a team with balanced defensive and offensive agents.
     """

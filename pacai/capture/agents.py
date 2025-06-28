@@ -13,7 +13,7 @@ class DefensiveAgent(pacai.agents.greedy.GreedyFeatureAgent):
     """
 
     def __init__(self, **kwargs) -> None:
-        kwargs['feature_extractor_func'] = _extract_simple_defensive_features
+        kwargs['feature_extractor_func'] = _extract_baseline_defensive_features
         super().__init__(**kwargs)
 
         self._distances: pacai.search.distance.DistancePreComputer = pacai.search.distance.DistancePreComputer()
@@ -34,7 +34,7 @@ class OffensiveAgent(pacai.agents.greedy.GreedyFeatureAgent):
     """
 
     def __init__(self, **kwargs) -> None:
-        kwargs['feature_extractor_func'] = _extract_simple_offensive_features
+        kwargs['feature_extractor_func'] = _extract_baseline_offensive_features
         super().__init__(**kwargs)
 
         self._distances: pacai.search.distance.DistancePreComputer = pacai.search.distance.DistancePreComputer()
@@ -46,7 +46,7 @@ class OffensiveAgent(pacai.agents.greedy.GreedyFeatureAgent):
     def game_start(self, initial_state: pacai.core.gamestate.GameState) -> None:
         self._distances.compute(initial_state.board)
 
-def _extract_simple_defensive_features(
+def _extract_baseline_defensive_features(
         state: pacai.core.gamestate.GameState,
         action: pacai.core.action.Action,
         agent: pacai.core.agent.Agent | None = None,
@@ -84,7 +84,7 @@ def _extract_simple_defensive_features(
 
     return features
 
-def _extract_simple_offensive_features(
+def _extract_baseline_offensive_features(
         state: pacai.core.gamestate.GameState,
         action: pacai.core.action.Action,
         agent: pacai.core.agent.Agent | None = None,

@@ -10,7 +10,6 @@
 ---
 <LOG_PREFIX> -- Average Score: 0.0
 <LOG_PREFIX> -- Scores:        0
-<LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
-<LOG_PREFIX> -- Record:        Loss
+<LOG_PREFIX> -- Record:        tie
 <LOG_PREFIX> -- Average Turns: 100.0
 <LOG_PREFIX> -- Turn Counts:   100
