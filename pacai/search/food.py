@@ -31,18 +31,30 @@ class FoodSearchProblem(pacai.core.search.SearchProblem[FoodSearchNode]):
 
     def __init__(self,
             game_state: pacai.core.gamestate.GameState,
+            start_position: pacai.core.board.Position | None = None,
             **kwargs) -> None:
+        """
+        Create a food search problem.
+
+        If no start position is provided, the current agent's position will be used.
+        """
+
         super().__init__()
 
         self.state = game_state
         """ Keep track of the enire game state. """
 
-    def get_starting_node(self) -> FoodSearchNode:
-        position = self.state.get_agent_position()
-        if (position is None):
-            raise ValueError("Could not find starting agent position.")
+        if (start_position is None):
+            start_position = game_state.get_agent_position()
 
-        return FoodSearchNode(position, self.state.board.get_marker_positions(pacai.pacman.board.MARKER_PELLET))
+        if (start_position is None):
+            raise ValueError("Could not find starting position.")
+
+        self.start_position = start_position
+        """ The position to start from. """
+
+    def get_starting_node(self) -> FoodSearchNode:
+        return FoodSearchNode(self.start_position, self.state.board.get_marker_positions(pacai.pacman.board.MARKER_PELLET))
 
     def is_goal_node(self, node: FoodSearchNode) -> bool:
         return (len(node.remaining_food) == 0)
