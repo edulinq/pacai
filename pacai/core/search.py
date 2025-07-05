@@ -122,6 +122,20 @@ class SearchSolution(typing.Generic[NodeType]):
         May be None in cases where the solver does not use search nodes.
         """
 
+    def get_path(self, start_position: pacai.core.board.Position) -> list[pacai.core.board.Position]:
+        """
+        Given the starting locatrion, get the path this search solution represents.
+        The resulting path will start at the starting position.
+        It is assumed that unknown actions will not result in a move.
+        """
+
+        path = [start_position]
+
+        for action in self.actions:
+            path.append(path[-1].apply_action(action))
+
+        return path
+
 @typing.runtime_checkable
 class CostFunction(typing.Protocol):
     """

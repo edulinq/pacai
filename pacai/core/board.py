@@ -436,6 +436,26 @@ class Board(pacai.util.json.DictConverter):
 
         return self.height * self.width
 
+    def get_corners(self, offset: int = 0) -> tuple[Position, Position, Position, Position]:
+        """
+        Get the corner positions of this board (ordered as NE, SE, SW, NW).
+
+        The offset is how much to move diagonally in from each corner.
+        By default, it is zero and will be exactly at each corner position.
+        However many board have a border of walls,
+        in this case an offset of 1 will return those non-border corners.
+        """
+
+        # Add 1 for zero indexing.
+        high_offset = (1 + offset)
+
+        return (
+            Position(offset, self.width - high_offset),
+            Position(self.height - high_offset, self.width - high_offset),
+            Position(self.height - high_offset, offset),
+            Position(offset, offset),
+        )
+
     def agent_count(self) -> int:
         """
         Return the number of agents supported by this board.
