@@ -14,15 +14,29 @@ class FoodSearchNode(pacai.core.search.SearchNode):
     def __init__(self,
             position: pacai.core.board.Position,
             remaining_food: typing.Iterable[pacai.core.board.Position]) -> None:
-        self.position = position
+        self.position: pacai.core.board.Position = position
         """ The current position being searched. """
 
-        self.remaining_food = list(sorted(list(remaining_food).copy()))
+        self.remaining_food: tuple[pacai.core.board.Position, ...] = tuple(sorted(list(remaining_food).copy()))
         """
         The food left to eat.
-        This is kept sorted to ensure that underlying checks run cleanly
-        (see pacai.core.search.SeachNode._to_json_string()).
+        This is kept sorted to ensure that underlying comparison checks run cleanly.
         """
+
+    def __lt__(self, other: object) -> bool:
+        if (not isinstance(other, FoodSearchNode)):
+            return False
+
+        return ((self.position, self.remaining_food) < (other.position, other.remaining_food))
+
+    def __eq__(self, other: object) -> bool:
+        if (not isinstance(other, FoodSearchNode)):
+            return False
+
+        return ((self.position == other.position) and (self.remaining_food == other.remaining_food))
+
+    def __hash__(self) -> int:
+        return hash((self.position, self.remaining_food))
 
 class FoodSearchProblem(pacai.core.search.SearchProblem[FoodSearchNode]):
     """
@@ -41,7 +55,7 @@ class FoodSearchProblem(pacai.core.search.SearchProblem[FoodSearchNode]):
 
         super().__init__()
 
-        self.state = game_state
+        self.state: pacai.core.gamestate.GameState = game_state
         """ Keep track of the enire game state. """
 
         if (start_position is None):
@@ -68,7 +82,7 @@ class FoodSearchProblem(pacai.core.search.SearchProblem[FoodSearchNode]):
 
         # Check all the non-wall neighbors.
         for (action, position) in self.state.board.get_neighbors(node.position):
-            new_remaining_food = node.remaining_food.copy()
+            new_remaining_food = list(node.remaining_food).copy()
             if (position in new_remaining_food):
                 new_remaining_food.remove(position)
 

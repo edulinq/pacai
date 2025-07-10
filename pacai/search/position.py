@@ -16,8 +16,23 @@ class PositionSearchNode(pacai.core.search.SearchNode):
     """
 
     def __init__(self, position: pacai.core.board.Position) -> None:
-        self.position = position
+        self.position: pacai.core.board.Position = position
         """ The current position being searched. """
+
+    def __lt__(self, other: object) -> bool:
+        if (not isinstance(other, PositionSearchNode)):
+            return False
+
+        return (self.position < other.position)
+
+    def __eq__(self, other: object) -> bool:
+        if (not isinstance(other, PositionSearchNode)):
+            return False
+
+        return (self.position == other.position)
+
+    def __hash__(self) -> int:
+        return hash(self.position)
 
 class PositionSearchProblem(pacai.core.search.SearchProblem[PositionSearchNode]):
     """
@@ -41,7 +56,7 @@ class PositionSearchProblem(pacai.core.search.SearchProblem[PositionSearchNode])
 
         super().__init__()
 
-        self.board = game_state.board
+        self.board: pacai.core.board.Board = game_state.board
         """ Keep track of the board so we can navigate walls. """
 
         if (goal_position is None):
@@ -50,7 +65,7 @@ class PositionSearchProblem(pacai.core.search.SearchProblem[PositionSearchNode])
             else:
                 goal_position = DEFAULT_GOAL_POSITION
 
-        self.goal_position = goal_position
+        self.goal_position: pacai.core.board.Position = goal_position
         """ The position to search for. """
 
         if (start_position is None):
@@ -59,13 +74,13 @@ class PositionSearchProblem(pacai.core.search.SearchProblem[PositionSearchNode])
         if (start_position is None):
             raise ValueError("Could not find starting position.")
 
-        self.start_position = start_position
+        self.start_position: pacai.core.board.Position = start_position
         """ The position to start from. """
 
         if (isinstance(cost_function, str)):
             cost_function = typing.cast(pacai.core.search.CostFunction, pacai.util.reflection.fetch(cost_function))
 
-        self._cost_function = cost_function
+        self._cost_function: pacai.core.search.CostFunction = cost_function
         """ The function used to score search nodes. """
 
     def get_starting_node(self) -> PositionSearchNode:

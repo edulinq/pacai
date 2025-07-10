@@ -1,0 +1,18 @@
+{
+    "cli": "pacai.pacman.bin",
+    "arguments": [
+        "--seed", "4",
+        "--ui", "null",
+        "--board", "search-test",
+        "--pacman", "agent-search-problem",
+        "--agent-arg", "0::problem=search-problem-food"
+    ]
+}
+---
+<LOG_PREFIX> -- Path found with 29 steps and a total cost of 29.00 in <DURATION_SECONDS>. 29 search nodes expanded.
+<LOG_PREFIX> -- Average Score: 491.0
+<LOG_PREFIX> -- Scores:        491
+<LOG_PREFIX> -- Win Rate:      1 / 1 (1.00)
+<LOG_PREFIX> -- Record:        Win
+<LOG_PREFIX> -- Average Turns: 29.0
+<LOG_PREFIX> -- Turn Counts:   29
