@@ -328,13 +328,13 @@ class Game(abc.ABC):
         # Create a new random number generator just for this game.
         rng = random.Random(self.game_info.seed)
 
-        # Initialize the agent isolator.
-        isolator = self.game_info.isolation_level.get_isolator()
-        isolator.init_agents(self.game_info.agent_infos)
-
         # Keep track of what happens during this game.
         game_id = rng.randint(0, 2**64)
         result = GameResult(game_id, self.game_info)
+
+        # Initialize the agent isolator.
+        isolator = self.game_info.isolation_level.get_isolator()
+        isolator.init_agents(self.game_info.agent_infos)
 
         # Keep track of all the user inputs since the last time an agent moved.
         # Note that we need to keep track for all agents,
