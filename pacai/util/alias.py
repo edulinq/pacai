@@ -71,8 +71,9 @@ AGENT_QLEARNING_USER: Alias = Alias('agent-qlearning-user', 'pacai.student.learn
 AGENT_RANDOM: Alias = Alias('agent-random', 'pacai.agents.random.RandomAgent')
 AGENT_REFLEX: Alias = Alias('agent-reflex', 'pacai.student.multiagents.ReflexAgent')
 AGENT_SCRIPTED: Alias = Alias('agent-scripted', 'pacai.agents.scripted.ScriptedAgent')
-AGENT_SEARCH_PROBLEM: Alias = Alias('agent-search-problem', 'pacai.agents.searchproblem.SearchProblemAgent')
+AGENT_SEARCH_APPROX: Alias = Alias('agent-search-approx', 'pacai.student.singlesearch.ApproximateSearchAgent')
 AGENT_SEARCH_CLOSEST_DOT: Alias = Alias('agent-search-closest-dot', 'pacai.student.singlesearch.ClosestDotSearchAgent')
+AGENT_SEARCH_PROBLEM: Alias = Alias('agent-search-problem', 'pacai.agents.searchproblem.SearchProblemAgent')
 AGENT_USER_INPUT: Alias = Alias('agent-user-input', 'pacai.agents.userinput.UserInputAgent')
 AGENT_TIMEOUT: Alias = Alias('agent-timeout', 'pacai.agents.testing.TimeoutAgent')
 AGENT_VALUE_ITERATION: Alias = Alias('agent-value-iteration', 'pacai.student.learning.ValueIterationAgent')
@@ -85,12 +86,18 @@ AGENT_SHORT_NAMES: list[str] = [
     AGENT_GO_WEST.short,
     AGENT_GREEDY.short,
     AGENT_LEFT_TURN.short,
-    AGENT_REFLEX.short,
+    AGENT_MINIMAX.short,
+    AGENT_QLEARNING.short,
+    AGENT_QLEARNING_APPROX.short,
+    AGENT_QLEARNING_USER.short,
     AGENT_RANDOM.short,
+    AGENT_REFLEX.short,
     AGENT_SCRIPTED.short,
-    AGENT_SEARCH_PROBLEM.short,
+    AGENT_SEARCH_APPROX.short,
     AGENT_SEARCH_CLOSEST_DOT.short,
+    AGENT_SEARCH_PROBLEM.short,
     AGENT_USER_INPUT.short,
+    AGENT_TIMEOUT.short,
     AGENT_VALUE_ITERATION.short,
 ]
 

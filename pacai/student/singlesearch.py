@@ -5,6 +5,8 @@ In this file, you will implement code relating to simple single-agent searches.
 import random
 
 import pacai.agents.searchproblem
+import pacai.core.agent
+import pacai.core.agentaction
 import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.search
@@ -180,3 +182,9 @@ class AnyMarkerSearchProblem(pacai.search.position.PositionSearchProblem):
     def is_goal_node(self, node: pacai.search.position.PositionSearchNode) -> bool:
         # *** Your Code Here ***
         raise NotImplementedError('CornersSearchProblem.is_goal_node')
+
+class ApproximateSearchAgent(pacai.core.agent.Agent):
+    """
+    A search agent that tries to perform an approximate search instead of an exact one.
+    In other words, this agent is okay with a solution that is "good enough" and not necessarily optimal.
+    """
