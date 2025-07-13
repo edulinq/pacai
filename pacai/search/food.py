@@ -17,7 +17,7 @@ class FoodSearchNode(pacai.core.search.SearchNode):
         self.position: pacai.core.board.Position = position
         """ The current position being searched. """
 
-        self.remaining_food: tuple[pacai.core.board.Position, ...] = tuple(sorted(list(remaining_food).copy()))
+        self.remaining_food: tuple[pacai.core.board.Position, ...] = tuple(sorted(list(remaining_food)))
         """
         The food left to eat.
         This is kept sorted to ensure that underlying comparison checks run cleanly.
