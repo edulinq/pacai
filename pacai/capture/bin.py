@@ -4,7 +4,6 @@ The main executable for running a game of Capture.
 
 import argparse
 import logging
-import sys
 import typing
 
 import pacai.capture.board
@@ -129,8 +128,13 @@ def log_capture_results(results: list[pacai.core.game.GameResult], winning_agent
     elif (log_lists_to_debug):
         logging.debug('%sTurn Counts:   %s', prefix, joined_turn_counts)
 
-def main() -> int:
-    """ Invoke a game of Capture. """
+def main(argv: list[str] | None = None,
+        ) -> tuple[list[pacai.core.game.GameResult], list[pacai.core.game.GameResult]]:
+    """
+    Invoke a game of Capture.
+
+    Will return the results of any training games followed by the results of any non-training games.
+    """
 
     return pacai.util.bin.run_main(
         description = "Play a game of Capture.",
@@ -140,7 +144,8 @@ def main() -> int:
         custom_set_cli_args = set_cli_args,
         custom_init_from_args = init_from_args,
         log_results = log_capture_results,
+        argv = argv,
     )
 
 if (__name__ == '__main__'):
-    sys.exit(main())
+    main()

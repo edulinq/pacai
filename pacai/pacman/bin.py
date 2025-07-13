@@ -3,7 +3,6 @@ The main executable for running a game of Pac-Man.
 """
 
 import argparse
-import sys
 import typing
 
 import pacai.core.agentinfo
@@ -69,8 +68,13 @@ def get_additional_ui_options(args: argparse.Namespace) -> dict[str, typing.Any]
         'sprite_sheet_path': DEFAULT_SPRITE_SHEET,
     }
 
-def main() -> int:
-    """ Invoke a game of Pac-Man. """
+def main(argv: list[str] | None = None,
+        ) -> tuple[list[pacai.core.game.GameResult], list[pacai.core.game.GameResult]]:
+    """
+    Invoke a game of Pac-Man.
+
+    Will return the results of any training games followed by the results of any non-training games.
+    """
 
     return pacai.util.bin.run_main(
         description = "Play a game of Pac-Man.",
@@ -80,7 +84,8 @@ def main() -> int:
         custom_set_cli_args = set_cli_args,
         custom_init_from_args = init_from_args,
         winning_agent_indexes = {pacai.pacman.gamestate.PACMAN_AGENT_INDEX},
+        argv = argv,
     )
 
 if (__name__ == '__main__'):
-    sys.exit(main())
+    main()

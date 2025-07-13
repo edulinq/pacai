@@ -4,7 +4,6 @@ The main executable for running a game of GridWorld.
 
 import argparse
 import logging
-import sys
 import typing
 
 import pacai.core.agentinfo
@@ -78,8 +77,13 @@ def get_additional_ui_options(args: argparse.Namespace) -> dict[str, typing.Any]
         'sprite_sheet_path': DEFAULT_SPRITE_SHEET,
     }
 
-def main() -> int:
-    """ Invoke a game of GridWorld. """
+def main(argv: list[str] | None = None,
+        ) -> tuple[list[pacai.core.game.GameResult], list[pacai.core.game.GameResult]]:
+    """
+    Invoke a game of GridWorld.
+
+    Will return the results of any training games followed by the results of any non-training games.
+    """
 
     return pacai.util.bin.run_main(
         description = "Play a game of GridWorld.",
@@ -89,7 +93,8 @@ def main() -> int:
         get_additional_ui_options = get_additional_ui_options,
         custom_init_from_args = init_from_args,
         winning_agent_indexes = {pacai.gridworld.gamestate.AGENT_INDEX},
+        argv = argv,
     )
 
 if (__name__ == '__main__'):
-    sys.exit(main())
+    main()

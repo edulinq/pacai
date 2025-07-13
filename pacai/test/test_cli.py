@@ -181,7 +181,7 @@ def _get_test_method(test_name: str, path: str) -> typing.Callable:
         try:
             with contextlib.redirect_stdout(io.StringIO()) as stdout_output:
                 with contextlib.redirect_stderr(io.StringIO()) as stderr_output:
-                    actual_exit_status = module.main()
+                    module.main()
 
             stdout_text = stdout_output.getvalue()
             stderr_text = stderr_output.getvalue()
@@ -211,7 +211,7 @@ def _get_test_method(test_name: str, path: str) -> typing.Callable:
         finally:
             sys.argv = old_args
 
-        self.assertEqual(expected_exit_status, actual_exit_status)
+        self.assertEqual(expected_exit_status, 0)
 
         output_check(self, expected_output, actual_output)
 

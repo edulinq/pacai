@@ -138,14 +138,21 @@ def run_main(
         custom_init_from_args: InitFromArgs = base_init_from_args,
         winning_agent_indexes: set[int] | None = None,
         log_results: LogResults | None = base_log_results,
-        ) -> int:
-    """ A full main function to prep and run games. """
+        argv: list[str] | None = None,
+        ) -> tuple[list[pacai.core.game.GameResult], list[pacai.core.game.GameResult]]:
+    """
+    A full main function to prep and run games.
+
+    Will return the results of any training games followed by the results of any non-training games.
+    """
 
     # Create a CLI parser.
     parser = get_parser(description, default_board, custom_set_cli_args = custom_set_cli_args)
 
     # Parse the CLI args.
-    args = parse_args(parser, game_class, get_additional_ui_options = get_additional_ui_options, custom_init_from_args = custom_init_from_args)
+    args = parse_args(parser, game_class,
+            get_additional_ui_options = get_additional_ui_options, custom_init_from_args = custom_init_from_args,
+            argv = argv)
 
     return run_games(args, winning_agent_indexes = winning_agent_indexes, log_results = log_results)
 
@@ -178,10 +185,11 @@ def parse_args(
         game_class: typing.Type,
         get_additional_ui_options: GetAdditionalOptions | None = None,
         custom_init_from_args: InitFromArgs = base_init_from_args,
+        argv: list[str] | None = None,
         ) -> argparse.Namespace:
     """ Parse the args from the parser returned by get_parser(). """
 
-    args = parser.parse_args()
+    args = parser.parse_args(args = argv)
 
     # Parse logging arguments.
     args = pacai.core.log.init_from_args(args)
@@ -214,11 +222,13 @@ def run_games(
         args: argparse.Namespace,
         winning_agent_indexes: set[int] | None = None,
         log_results: LogResults | None = base_log_results,
-        ) -> int:
+        ) -> tuple[list[pacai.core.game.GameResult], list[pacai.core.game.GameResult]]:
     """
     Run one or more standard games using pre-parsed arguments.
     The arguments are expected to have `_games` and `_uis`,
     as if `pacai.core.ui.init_from_args()` and `pacai.core.game.init_from_args()` have been called.
+
+    Will return the results of any training games followed by the results of any non-training games.
     """
 
     if (winning_agent_indexes is None):
@@ -270,4 +280,4 @@ def run_games(
         if (log_results is not None):
             log_results(results, winning_agent_indexes)
 
-    return 0
+    return training_results, results
