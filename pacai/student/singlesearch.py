@@ -131,7 +131,7 @@ def corners_heuristic(node: CornersSearchNode, problem: CornersSearchProblem, **
 
 def food_heuristic(node: pacai.search.food.FoodSearchNode, problem: pacai.search.food.FoodSearchProblem, **kwargs) -> float:
     """
-    A heuristic for the CornersSearchProblem.
+    A heuristic for the FoodSearchProblem.
     """
 
     # *** Your Code Here ***
