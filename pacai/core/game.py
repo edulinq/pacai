@@ -2,6 +2,7 @@ import abc
 import argparse
 import copy
 import logging
+import math
 import os
 import random
 import typing
@@ -142,10 +143,10 @@ class GameResult(pacai.util.json.DictConverter):
         if (start_time is None):
             start_time = pacai.util.time.now()
 
-        self.start_time = start_time
+        self.start_time: pacai.util.time.Timestamp = start_time
         """ The time the game started at. """
 
-        self.end_time = end_time
+        self.end_time: pacai.util.time.Timestamp | None = end_time
         """ The time the game ended at. """
 
         if (history is None):
@@ -224,6 +225,18 @@ class GameResult(pacai.util.json.DictConverter):
             crash_agent_indexes = data.get('crash_agent_indexes', None),
             winning_agent_indexes = data.get('winning_agent_indexes', -1),
         )
+
+    def get_duration_secs(self) -> float:
+        """
+        Get the game's duration in seconds.
+        Will return positive infinity if the game has no end time
+        (it is still going or crashed (in very rare cases)).
+        """
+
+        if (self.end_time is None):
+            return math.inf
+
+        return self.end_time.sub(self.start_time).to_secs()
 
 class Game(abc.ABC):
     """
