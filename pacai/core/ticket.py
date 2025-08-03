@@ -6,6 +6,7 @@ class Ticket(pacai.util.json.DictConverter):
     """
     An agent's Ticket determines when they will move next.
     A ticket is a tuple of three values: (next move time, last move time, number of moves).
+    Tickets should be treated as immutable.
     The agent with the lowest ticket (starting with the first value and moving to the next on a tie) gets to move next.
     All "time" values represented by a ticket are abstract and do not relate to any actual time units.
     """

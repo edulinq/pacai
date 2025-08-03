@@ -104,9 +104,9 @@ class GameState(pacai.util.json.DictConverter):
         new_state = copy.copy(self)
 
         new_state.board = self.board.copy()
+        new_state.agent_actions = {agent_index: actions.copy() for (agent_index, actions) in self.agent_actions.items()}
         new_state.move_delays = self.move_delays.copy()
         new_state.tickets = self.tickets.copy()
-        new_state.agent_actions = {agent_index: actions.copy() for (agent_index, actions) in self.agent_actions.items()}
 
         return new_state
 

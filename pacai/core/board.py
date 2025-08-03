@@ -359,6 +359,15 @@ class Board(pacai.util.json.DictConverter):
         self._walls: set[Position] = set()
         """ The walls for this board. """
 
+        self._neighbor_cache: dict[Position, list[tuple[pacai.core.action.Action, Position]]]  = {}
+        """
+        Keep a cache of all neighbor locations.
+        Note that neighbors only depend on the size of the board and walls.
+        Computing neighbors is a high-throughput activity, and therefore justifies a cache.
+        Neighbors will be shallow copied when a board is copied,
+        therefore all successor boards will share the same cache.
+        """
+
         self._nonwall_objects: dict[Marker, set[Position]] = {}
         """ All the non-wall objects that appear on the board. """
 
@@ -533,7 +542,11 @@ class Board(pacai.util.json.DictConverter):
         self._check_bounds(position)
         self._copy_on_write()
 
-        self._nonwall_objects.get(marker, set()).discard(position)
+        markers = self._nonwall_objects.get(marker)
+        if (markers is None):
+            return
+
+        markers.discard(position)
 
     def place_marker(self, marker: Marker, position: Position) -> None:
         """
@@ -553,7 +566,13 @@ class Board(pacai.util.json.DictConverter):
         Get positions that are directly touching (via cardinal directions) the given position
         without being inside a wall,
         and the action it would take to get there.
+
+        Note that this is a high-throughput piece of code, and may contain optimizations.
         """
+
+        # Check the neighbor cache.
+        if (position in self._neighbor_cache):
+            return self._neighbor_cache[position]
 
         neighbors = []
         for (action, offset) in CARDINAL_OFFSETS.items():
@@ -566,6 +585,9 @@ class Board(pacai.util.json.DictConverter):
                 continue
 
             neighbors.append((action, neighbor))
+
+        # Save to the neighbor cache.
+        self._neighbor_cache[position] = neighbors
 
         return neighbors
 

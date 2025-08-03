@@ -86,7 +86,7 @@ class GameState(pacai.core.gamestate.GameState):
         if (agent_index == -1):
             agent_index = self.agent_index
 
-        return self.scared_timers.get(agent_index, 0) > 0
+        return ((agent_index in self.scared_timers) and (self.scared_timers[agent_index] > 0))
 
     def compute_move_delay(self, agent_index: int) -> int:
         move_delay = super().compute_move_delay(agent_index)
