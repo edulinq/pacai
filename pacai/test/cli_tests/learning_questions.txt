@@ -1,5 +1,5 @@
 {
-    "cli": "pacai.student.learning-questions",
+    "cli": "pacai.student.learning_questions",
     "arguments": [
     ]
 }
