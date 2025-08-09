@@ -63,7 +63,7 @@ class GreedyFeatureAgent(GreedyAgent):
 
         score = 0.0
         for key, value in features.items():
-            score += (self.weights.get(key, 1.0) * value)
+            score += (self.weights.get(key, 0.0) * value)
 
         return score
 
