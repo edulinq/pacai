@@ -102,9 +102,9 @@ def question_3e() -> tuple[float, float, float] | None:
 
     return discount, noise, living_reward
 
-def question_6() -> tuple[float, float]:
+def question_5() -> tuple[float, float]:
     """
-    Question 6.
+    Question 5.
 
     Modify any of these two options.
     If the requested scenario is not possible,
@@ -129,7 +129,7 @@ def main() -> int:
         question_3c,
         question_3d,
         question_3e,
-        question_6,
+        question_5,
     ]
 
     print('Answers to analysis questions:')
