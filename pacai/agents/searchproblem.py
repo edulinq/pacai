@@ -1,5 +1,7 @@
 import logging
 
+import edq.util.time
+
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.agentaction
@@ -12,7 +14,6 @@ import pacai.search.random
 import pacai.search.position
 import pacai.util.alias
 import pacai.util.reflection
-import pacai.util.time
 
 DEFAULT_PROBLEM: str = pacai.util.alias.SEARCH_PROBLEM_POSITION.long
 DEFAULT_PROBLEM_COST: str = pacai.util.alias.COST_FUNC_UNIT.long
@@ -75,9 +76,9 @@ class SearchProblemAgent(pacai.core.agent.Agent):
         # This is the agent's first time seeing the game's state (which includes the board).
         # Create a search problem using the game's state, and solve the problem.
 
-        start_time = pacai.util.time.now()
+        start_time = edq.util.time.Timestamp.now()
         (solution, position_history, expanded_node_count) = self._do_search(initial_state)
-        end_time = pacai.util.time.now()
+        end_time = edq.util.time.Timestamp.now()
 
         self._actions = solution.actions
 

@@ -4,12 +4,13 @@ This module handles containers for passing information from agents back to the g
 
 import typing
 
+import edq.util.json
+import edq.util.time
+
 import pacai.core.action
 import pacai.core.board
-import pacai.util.json
-import pacai.util.time
 
-class AgentAction(pacai.util.json.DictConverter):
+class AgentAction(edq.util.json.DictConverter):
     """
     The full response by an agent when an action is requested.
     Agent's usually just provide actions, but more information can be supplied if necessary.
@@ -67,7 +68,7 @@ class AgentAction(pacai.util.json.DictConverter):
         data['board_highlights'] = [pacai.core.board.Highlight.from_dict(raw_highligh) for raw_highligh in data['board_highlights']]
         return cls(**data)
 
-class AgentActionRecord(pacai.util.json.DictConverter):
+class AgentActionRecord(edq.util.json.DictConverter):
     """
     The full representation of requesting an action from an agent.
     In addition to the data supplied by the agent,
@@ -77,7 +78,7 @@ class AgentActionRecord(pacai.util.json.DictConverter):
     def __init__(self,
             agent_index: int,
             agent_action: AgentAction | None,
-            duration: pacai.util.time.Duration,
+            duration: edq.util.time.Duration,
             crashed: bool = False,
             timeout: bool = False,
             ) -> None:
@@ -87,7 +88,7 @@ class AgentActionRecord(pacai.util.json.DictConverter):
         self.agent_action: AgentAction | None = agent_action
         """ The information returned by the agent or None on a crash or timeout. """
 
-        self.duration: pacai.util.time.Duration = duration
+        self.duration: edq.util.time.Duration = duration
         """ The duration (in MS) the agent took to compute this action. """
 
         self.crashed: bool = crashed
@@ -134,7 +135,7 @@ class AgentActionRecord(pacai.util.json.DictConverter):
         return cls(
             agent_index = data['agent_index'],
             agent_action = AgentAction.from_dict(data['agent_action']) if data['agent_action'] is not None else None,
-            duration = pacai.util.time.Duration(data['duration']),
+            duration = edq.util.time.Duration(data['duration']),
             crashed = data.get('crashed', False),
             timeout = data.get('timeout', False),
         )

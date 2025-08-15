@@ -45,9 +45,9 @@ import os
 import typing
 
 import PIL.Image
+import edq.util.json
 
 import pacai.core.board
-import pacai.util.json
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 SPRITE_SHEETS_DIR: str = os.path.join(THIS_DIR, '..', 'resources', 'spritesheets')
@@ -249,7 +249,7 @@ def load(path: str) -> SpriteSheet:
         raise ValueError(f"Error loading sprite sheet config: '{path}'.") from ex
 
 def _load(config_path: str) -> SpriteSheet:
-    config = pacai.util.json.load_path(config_path)
+    config = edq.util.json.load_path(config_path)
     height, width, sprites = _load_sprites(config, config_path)
 
     background: tuple[int, int, int] = _parse_color(config, KEY_BACKGROUND, DEFAULT_BACKGROUND)

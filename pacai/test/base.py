@@ -1,7 +1,7 @@
 import typing
 import unittest
 
-import pacai.util.json
+import edq.util.json
 
 FORMAT_STR = "\n--- Expected ---\n%s\n--- Actual ---\n%s\n---\n"
 
@@ -17,17 +17,17 @@ class BaseTest(unittest.TestCase):
         and uses JSON from the error message.
         """
 
-        a_json = pacai.util.json.dumps(a, indent = 4)
-        b_json = pacai.util.json.dumps(b, indent = 4)
+        a_json = edq.util.json.dumps(a, indent = 4)
+        b_json = edq.util.json.dumps(b, indent = 4)
 
         if (not isinstance(a, dict)):
-            if (isinstance(a, pacai.util.json.DictConverter)):
+            if (isinstance(a, edq.util.json.DictConverter)):
                 a = a.to_dict()
             else:
                 a = vars(a)
 
         if (not isinstance(b, dict)):
-            if (isinstance(b, pacai.util.json.DictConverter)):
+            if (isinstance(b, edq.util.json.DictConverter)):
                 b = b.to_dict()
             else:
                 b = vars(b)
@@ -37,7 +37,7 @@ class BaseTest(unittest.TestCase):
     def assertListEqualJSON(self, a: list, b: list) -> None:  # pylint: disable=invalid-name
         """ Like unittest.TestCase.assertLiseEqual(), but uses JSON formatting in the output. """
 
-        a_json = pacai.util.json.dumps(a, indent = 4)
-        b_json = pacai.util.json.dumps(b, indent = 4)
+        a_json = edq.util.json.dumps(a, indent = 4)
+        b_json = edq.util.json.dumps(b, indent = 4)
 
         super().assertListEqual(a, b, FORMAT_STR % (a_json, b_json))

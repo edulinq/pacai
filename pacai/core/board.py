@@ -3,9 +3,10 @@ import os
 import re
 import typing
 
+import edq.util.dirent
+import edq.util.json
+
 import pacai.core.action
-import pacai.util.file
-import pacai.util.json
 import pacai.util.reflection
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
@@ -104,7 +105,7 @@ BASE_MARKERS: dict[str, Marker] = {
 for agent_marker in AGENT_MARKERS:
     BASE_MARKERS[agent_marker] = agent_marker
 
-class Position(pacai.util.json.DictConverter):
+class Position(edq.util.json.DictConverter):
     """
     An immutable 2-dimension location
     representing row/y/height/y-offset and col/x/width/x-offset.
@@ -198,7 +199,7 @@ CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
     pacai.core.action.WEST: Position(0, -1),
 }
 
-class Highlight(pacai.util.json.DictConverter):
+class Highlight(edq.util.json.DictConverter):
     """
     A class representing a request to highlight/emphasize a position on the board.
     """
@@ -297,7 +298,7 @@ class AdjacencyString(str):
 
         return (self[AdjacencyString.WEST_INDEX] == AdjacencyString.TRUE)
 
-class Board(pacai.util.json.DictConverter):
+class Board(edq.util.json.DictConverter):
     """
     A board represents the positional components of a game.
     For example, a board contains the agents, walls and collectable items.
@@ -886,7 +887,7 @@ def load_path(path: str, **kwargs) -> Board:
     if (not os.path.exists(path)):
         raise ValueError(f"Could not find board, path does not exist: '{raw_path}'.")
 
-    text = pacai.util.file.read(path, strip = False)
+    text = edq.util.dirent.read_file(path, strip = False)
     return load_string(raw_path, text, **kwargs)
 
 def load_string(source: str, text: str, **kwargs) -> Board:
@@ -912,7 +913,7 @@ def load_string(source: str, text: str, **kwargs) -> Board:
     if (len(options_text) == 0):
         options = {}
     else:
-        options = pacai.util.json.loads(options_text)
+        options = edq.util.json.loads(options_text)
 
     options.update(kwargs)
 

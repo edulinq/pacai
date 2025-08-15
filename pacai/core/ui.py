@@ -6,6 +6,7 @@ import time
 import PIL.Image
 import PIL.ImageDraw
 import PIL.ImageFont
+import edq.util.time
 
 import pacai.core.action
 import pacai.core.board
@@ -13,7 +14,6 @@ import pacai.core.font
 import pacai.core.gamestate
 import pacai.core.spritesheet
 import pacai.util.alias
-import pacai.util.time
 import pacai.util.reflection
 
 DEFAULT_FPS: int = 15
@@ -121,7 +121,7 @@ class UI(abc.ABC):
         Not all UIs will observe fps.
         """
 
-        self._last_fps_wait: pacai.util.time.Timestamp | None = None
+        self._last_fps_wait: edq.util.time.Timestamp | None = None
         """
         Keep track of the last time the UI waited to adjust the fps.
         We need this information to compute the next wait time.
@@ -257,11 +257,11 @@ class UI(abc.ABC):
 
         # This is the first wait request, we don't have enough information yet.
         if (self._last_fps_wait is None):
-            self._last_fps_wait = pacai.util.time.now()
+            self._last_fps_wait = edq.util.time.Timestamp.now()
             return
 
         last_time = self._last_fps_wait
-        now = pacai.util.time.now()
+        now = edq.util.time.Timestamp.now()
 
         duration = now.sub(last_time)
 
@@ -275,7 +275,7 @@ class UI(abc.ABC):
             self.sleep(int(wait_time_ms))
 
         # Mark the time this method completed.
-        self._last_fps_wait = pacai.util.time.now()
+        self._last_fps_wait = edq.util.time.Timestamp.now()
 
     def requires_sprites(self) -> bool:
         """ Check if this specific UI needs sprites or sprite sheets. """

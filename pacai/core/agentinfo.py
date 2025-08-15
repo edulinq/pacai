@@ -1,7 +1,8 @@
 import typing
 
+import edq.util.json
+
 import pacai.util.alias
-import pacai.util.json
 import pacai.util.reflection
 
 DEFAULT_MOVE_DELAY: int = 100
@@ -9,7 +10,7 @@ DEFAULT_MOVE_DELAY: int = 100
 
 DEFAULT_STATE_EVAL: str = pacai.util.alias.STATE_EVAL_BASE.long
 
-class AgentInfo(pacai.util.json.DictConverter):
+class AgentInfo(edq.util.json.DictConverter):
     """
     Argument used to construct an agent.
     Common arguments used by the engine are stored as top-level fields,

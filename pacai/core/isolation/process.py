@@ -5,13 +5,14 @@ import sys
 import typing
 import queue as pyqueue
 
+import edq.util.time
+
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.gamestate
 import pacai.core.isolation.isolator
-import pacai.util.time
 
 MESSAGE_TYPE_START: str = 'start'
 MESSAGE_TYPE_ACTION: str = 'action'
@@ -168,7 +169,7 @@ class ProcessIsolator(pacai.core.isolation.isolator.AgentIsolator):
         timeout = False
         agent_action = None
 
-        start_time = pacai.util.time.now()
+        start_time = edq.util.time.Timestamp.now()
 
         # Receive the action.
         try:
@@ -177,7 +178,7 @@ class ProcessIsolator(pacai.core.isolation.isolator.AgentIsolator):
         except pyqueue.Empty:
             timeout = True
 
-        end_time = pacai.util.time.now()
+        end_time = edq.util.time.Timestamp.now()
 
         # The agent has timed out, close this isolator.
         if (timeout):

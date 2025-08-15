@@ -1,4 +1,4 @@
-import pacai.util.json
+import edq.util.json
 
 class SimpleComparable:
     """
@@ -51,4 +51,4 @@ class SimpleComparable:
         (see comments for notes on who uses this method).
         """
 
-        return pacai.util.json.dumps(self)
+        return edq.util.json.dumps(self)

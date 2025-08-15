@@ -12,7 +12,9 @@ import importlib.util
 import typing
 import uuid
 
-import pacai.util.json
+import edq.util.json
+
+import pacai.util.alias
 
 REF_DELIM: str = ':'
 
@@ -22,7 +24,7 @@ A cache to help avoid importing a module multiple times.
 The key is the string representation of a reference.
 """
 
-class Reference(pacai.util.json.DictConverter):
+class Reference(edq.util.json.DictConverter):
     """
     A Reference is constructed from a formatted that references a specific Python definition (e.g. class or function).
     The rough basic structure of a reference is: `[<path>:][<qualified package name>.][<module name>.]<short name>`.

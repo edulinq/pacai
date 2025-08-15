@@ -1,8 +1,8 @@
 import typing
 
-import pacai.util.json
+import edq.util.json
 
-class Ticket(pacai.util.json.DictConverter):
+class Ticket(edq.util.json.DictConverter):
     """
     An agent's Ticket determines when they will move next.
     A ticket is a tuple of three values: (next move time, last move time, number of moves).

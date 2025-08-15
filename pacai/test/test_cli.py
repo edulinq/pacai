@@ -9,10 +9,10 @@ import sys
 import typing
 import unittest
 
+import edq.util.dirent
+import edq.util.json
+
 import pacai.test.base
-import pacai.util.file
-import pacai.util.dirent
-import pacai.util.json
 
 THIS_DIR: str = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 TEST_CASES_DIR: str = os.path.join(THIS_DIR, "cli_tests")
@@ -58,7 +58,7 @@ class CLITest(pacai.test.base.BaseTest):
     For example, `__DATA_DIR__(foo/bar.txt)` references `bar.txt` inside the `foo` directory inside the data directory.
     """
 
-    _base_temp_dir: str = pacai.util.dirent.get_temp_path('pacai_CLITest_')
+    _base_temp_dir: str = edq.util.dirent.get_temp_path('pacai_CLITest_')
 
     def _get_test_info(self, test_name: str, path: str) -> tuple[str, list[str], str, typing.Callable, int, bool, bool, bool]:
         options, expected_output = _read_test_file(path)
@@ -131,7 +131,7 @@ def _read_test_file(path: str) -> tuple[dict, str]:
     json_lines: list[str] = []
     output_lines: list[str] = []
 
-    text = pacai.util.file.read(path, strip = False)
+    text = edq.util.dirent.read_file(path, strip = False)
 
     accumulator = json_lines
     for line in text.split("\n"):
@@ -141,7 +141,7 @@ def _read_test_file(path: str) -> tuple[dict, str]:
 
         accumulator.append(line)
 
-    options = pacai.util.json.loads(''.join(json_lines))
+    options = edq.util.json.loads(''.join(json_lines))
     output = "\n".join(output_lines)
 
     return options, output

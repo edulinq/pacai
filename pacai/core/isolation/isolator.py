@@ -5,7 +5,6 @@ import pacai.core.action
 import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.gamestate
-import pacai.util.json
 
 class AgentIsolator(abc.ABC):
     """

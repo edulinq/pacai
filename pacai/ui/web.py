@@ -15,13 +15,13 @@ import urllib.parse
 import webbrowser
 
 import PIL.Image
+import edq.util.dirent
+import edq.util.json
 
 import pacai.core.action
 import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.ui
-import pacai.util.file
-import pacai.util.json
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 STATIC_DIR: str = os.path.join(THIS_DIR, '..', 'resources', 'webui')
@@ -107,7 +107,7 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
 
         buffer = io.BytesIO()
         image.save(buffer, format = 'png')
-        data_64 = base64.b64encode(buffer.getvalue()).decode(pacai.util.file.DEFAULT_ENCODING)
+        data_64 = base64.b64encode(buffer.getvalue()).decode(edq.util.dirent.DEFAULT_ENCODING)
         data_url = f"data:image/png;base64,{data_64}"
 
         with cls._lock:
@@ -169,11 +169,11 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
         payload, response_code, response_headers = result
 
         if (isinstance(payload, dict)):
-            payload = pacai.util.json.dumps(payload)
+            payload = edq.util.json.dumps(payload)
             headers['Content-Type'] = 'application/json'
 
         if (isinstance(payload, str)):
-            payload = payload.encode(pacai.util.file.DEFAULT_ENCODING)
+            payload = payload.encode(edq.util.dirent.DEFAULT_ENCODING)
 
         if (payload is not None):
             headers['Content-Length'] = len(payload)
@@ -229,10 +229,10 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
 
     def _get_post_data(self) -> dict[str, typing.Any]:
         length = int(self.headers['Content-Length'])
-        payload = self.rfile.read(length).decode(pacai.util.file.DEFAULT_ENCODING)
+        payload = self.rfile.read(length).decode(edq.util.dirent.DEFAULT_ENCODING)
 
         try:
-            request = pacai.util.json.loads(payload)
+            request = edq.util.json.loads(payload)
         except Exception as ex:
             raise ValueError("Payload is not valid json.") from ex
 
@@ -409,7 +409,7 @@ def _handler_static(handler: HTTPHandler, path: str, params: dict) -> RequestHan
     if (not os.path.isfile(static_path)):
         return (f"404 static path not found '{path}'.", http.HTTPStatus.NOT_FOUND, None)
 
-    data = pacai.util.file.read_bytes(static_path)
+    data = edq.util.dirent.read_file_bytes(static_path)
 
     code = http.HTTPStatus.OK
     headers = {}

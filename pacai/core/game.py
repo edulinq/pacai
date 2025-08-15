@@ -7,13 +7,14 @@ import os
 import random
 import typing
 
+import edq.util.json
+
 import pacai.core.action
 import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.isolation.level
 import pacai.core.ui
 import pacai.util.alias
-import pacai.util.json
 
 DEFAULT_MAX_TURNS: int = -1
 DEFAULT_AGENT_START_TIMEOUT: float = 0.0
@@ -22,7 +23,7 @@ DEFAULT_AGENT_ACTION_TIMEOUT: float = 0.0
 
 DEFAULT_AGENT: str = pacai.util.alias.AGENT_RANDOM.short
 
-class GameInfo(pacai.util.json.DictConverter):
+class GameInfo(edq.util.json.DictConverter):
     """
     A simple container that holds common information about a game.
     """
@@ -118,7 +119,7 @@ class GameInfo(pacai.util.json.DictConverter):
             training = data.get('training', False),
             extra_info = data.get('extra_info', None))
 
-class GameResult(pacai.util.json.DictConverter):
+class GameResult(edq.util.json.DictConverter):
     """ The result of running a game. """
 
     def __init__(self,
@@ -129,8 +130,8 @@ class GameResult(pacai.util.json.DictConverter):
             timeout_agent_indexes: list[int] | None = None,
             crash_agent_indexes: list[int] | None = None,
             winning_agent_indexes: list[int] | None = None,
-            start_time: pacai.util.time.Timestamp | None = None,
-            end_time: pacai.util.time.Timestamp | None = None,
+            start_time: edq.util.time.Timestamp | None = None,
+            end_time: edq.util.time.Timestamp | None = None,
             history: list[pacai.core.agentaction.AgentActionRecord] | None = None,
             agent_complete_records: dict[int, pacai.core.agentaction.AgentActionRecord] | None = None,
             **kwargs) -> None:
@@ -141,12 +142,12 @@ class GameResult(pacai.util.json.DictConverter):
         """ The core information about this game. """
 
         if (start_time is None):
-            start_time = pacai.util.time.now()
+            start_time = edq.util.time.Timestamp.now()
 
-        self.start_time: pacai.util.time.Timestamp = start_time
+        self.start_time: edq.util.time.Timestamp = start_time
         """ The time the game started at. """
 
-        self.end_time: pacai.util.time.Timestamp | None = end_time
+        self.end_time: edq.util.time.Timestamp | None = end_time
         """ The time the game ended at. """
 
         if (history is None):
@@ -413,7 +414,7 @@ class Game(abc.ABC):
                 break
 
         # Mark the end time of the game.
-        result.end_time = pacai.util.time.now()
+        result.end_time = edq.util.time.Timestamp.now()
 
         # Notify the state about the end of the game.
         winners = state.game_complete()
@@ -436,7 +437,7 @@ class Game(abc.ABC):
 
         if ((not self._is_replay) and (self._save_path is not None)):
             logging.info("Saving results to '%s'.", self._save_path)
-            pacai.util.json.dump_path(result, self._save_path)
+            edq.util.json.dump_path(result, self._save_path)
 
         return result
 
@@ -640,7 +641,7 @@ def _override_args_with_replay(args: argparse.Namespace, base_agent_infos: dict[
     """
 
     logging.info("Loading replay from '%s'.", args.replay_path)
-    replay_info = typing.cast(GameResult, pacai.util.json.load_object_path(args.replay_path, GameResult))
+    replay_info = typing.cast(GameResult, edq.util.json.load_object_path(args.replay_path, GameResult))
 
     # Overrides from the replay info.
     args.board = replay_info.game_info.board_source

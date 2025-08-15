@@ -3,6 +3,7 @@ import random
 import typing
 
 import PIL.Image
+import edq.util.json
 
 import pacai.core.action
 import pacai.core.agentaction
@@ -11,10 +12,9 @@ import pacai.core.board
 import pacai.core.font
 import pacai.core.spritesheet
 import pacai.core.ticket
-import pacai.util.json
 import pacai.util.math
 
-class GameState(pacai.util.json.DictConverter):
+class GameState(edq.util.json.DictConverter):
     """
     The base for all game states in pacai.
     A game state should contain all the information about the current state of the game.

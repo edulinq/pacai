@@ -1,3 +1,5 @@
+import edq.util.json
+
 import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.game
@@ -6,7 +8,6 @@ import pacai.core.test_board
 import pacai.core.ticket
 import pacai.pacman.gamestate
 import pacai.test.base
-import pacai.util.json
 import pacai.util.reflection
 
 class JSONTest(pacai.test.base.BaseTest):
@@ -258,7 +259,7 @@ class JSONTest(pacai.test.base.BaseTest):
                 pacai.core.agentaction.AgentActionRecord(
                     agent_index = 0,
                     agent_action = pacai.core.agentaction.AgentAction(action = pacai.core.action.STOP),
-                    duration = pacai.util.time.Duration(10),
+                    duration = edq.util.time.Duration(10),
                     crashed = False,
                 ),
                 {
@@ -280,7 +281,7 @@ class JSONTest(pacai.test.base.BaseTest):
                 pacai.core.agentaction.AgentActionRecord(
                     agent_index = 0,
                     agent_action = None,
-                    duration = pacai.util.time.Duration(10),
+                    duration = edq.util.time.Duration(10),
                     crashed = False,
                     timeout = True,
                 ),
@@ -305,7 +306,7 @@ class JSONTest(pacai.test.base.BaseTest):
                         other_info = {'foo': 'bar'},
                         clear_inputs = True,
                     ),
-                    duration = pacai.util.time.Duration(10),
+                    duration = edq.util.time.Duration(10),
                     crashed = False,
                 ),
                 {
@@ -343,7 +344,7 @@ class JSONTest(pacai.test.base.BaseTest):
                         {0: pacai.core.agentinfo.AgentInfo(name = 'a.b')},
                         seed = 4,
                     ),
-                    start_time = pacai.util.time.Timestamp(12345),
+                    start_time = edq.util.time.Timestamp(12345),
                     agent_complete_records = {
                         0: pacai.core.agentaction.AgentActionRecord(
                             agent_index = 0,
@@ -352,7 +353,7 @@ class JSONTest(pacai.test.base.BaseTest):
                                 other_info = {'value': 1},
                                 training_info = {'value': 2},
                             ),
-                            duration = pacai.util.time.Duration(0),
+                            duration = edq.util.time.Duration(0),
                             crashed = False,
                         ),
                     },
@@ -422,18 +423,18 @@ class JSONTest(pacai.test.base.BaseTest):
                         max_turns = 4,
                         isolation_level = pacai.core.isolation.level.Level.PROCESS
                     ),
-                    start_time = pacai.util.time.Timestamp(12345),
+                    start_time = edq.util.time.Timestamp(12345),
                     history = [
                         pacai.core.agentaction.AgentActionRecord(
                             agent_index = 0,
                             agent_action = pacai.core.agentaction.AgentAction(action = pacai.core.action.STOP),
-                            duration = pacai.util.time.Duration(10),
+                            duration = edq.util.time.Duration(10),
                             crashed = False,
                         ),
                         pacai.core.agentaction.AgentActionRecord(
                             agent_index = 1,
                             agent_action = None,
-                            duration = pacai.util.time.Duration(20),
+                            duration = edq.util.time.Duration(20),
                             crashed = True,
                         ),
                     ],
@@ -848,7 +849,7 @@ class JSONTest(pacai.test.base.BaseTest):
             (text, cls, error_substring, expected) = test_case
             with self.subTest(msg = f"Case {i}:"):
                 try:
-                    actual = pacai.util.json.loads_object(text, cls)
+                    actual = edq.util.json.loads_object(text, cls)
                 except Exception as ex:
                     if (error_substring is None):
                         self.fail(f"Unexpected error: '{str(ex)}'.")

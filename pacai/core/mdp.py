@@ -6,11 +6,12 @@ import abc
 import math
 import typing
 
+import edq.util.json
+
 import pacai.core.action
 import pacai.core.board
 import pacai.core.gamestate
 import pacai.util.comparable
-import pacai.util.json
 
 ACTION_EXIT: pacai.core.action.Action = pacai.core.action.Action('exit')
 """ A new action for exiting the MDP (used to reach the true terminal state). """
@@ -18,7 +19,7 @@ ACTION_EXIT: pacai.core.action.Action = pacai.core.action.Action('exit')
 TERMINAL_POSITION: pacai.core.board.Position = pacai.core.board.Position(-1, -1)
 """ A special (impossible) position representing the terminal state. """
 
-class MDPState(pacai.util.json.DictConverter):
+class MDPState(edq.util.json.DictConverter):
     """
     A state or "node" in an MDP.
     """
@@ -182,7 +183,7 @@ class Transition(typing.Generic[StateType]):
 
         self.probability += other.probability
 
-class MarkovDecisionProcess(typing.Generic[StateType], pacai.util.json.DictConverter):
+class MarkovDecisionProcess(typing.Generic[StateType], edq.util.json.DictConverter):
     """
     A class that implements a Markov Decision Process (MDP).
 

@@ -2,13 +2,14 @@ import logging
 import random
 import typing
 
+import edq.util.time
+
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.agentaction
 import pacai.core.agentinfo
 import pacai.core.gamestate
 import pacai.core.isolation.isolator
-import pacai.util.time
 
 class NoneIsolator(pacai.core.isolation.isolator.AgentIsolator):
     """
@@ -88,7 +89,7 @@ def _call_agent_method(
     crashed = False
     agent_action: pacai.core.agentaction.AgentAction | None = None
 
-    start_time = pacai.util.time.now()
+    start_time = edq.util.time.Timestamp.now()
 
     try:
         agent_action = agent_method(**agent_method_kwargs)
@@ -96,7 +97,7 @@ def _call_agent_method(
         crashed = True
         logging.warning("Agent %d crashed.", agent_index, exc_info = ex)
 
-    end_time = pacai.util.time.now()
+    end_time = edq.util.time.Timestamp.now()
 
     return pacai.core.agentaction.AgentActionRecord(
             agent_index = agent_index,

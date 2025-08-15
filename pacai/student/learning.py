@@ -1,6 +1,8 @@
 import logging
 import typing
 
+import edq.util.json
+
 import pacai.agents.mdp
 import pacai.agents.userinput
 import pacai.core.agent
@@ -296,7 +298,7 @@ class ApproximateQLearningAgent(QLearningAgent):
     def game_complete(self, final_state: pacai.core.gamestate.GameState) -> None:
         super().game_complete(final_state)
 
-        logging.debug("Weights: %s.", pacai.util.json.dumps(self.weights))
+        logging.debug("Weights: %s.", edq.util.json.dumps(self.weights))
 
     def get_qvalue(self,
             mdp_state: pacai.core.mdp.MDPStatePosition,
