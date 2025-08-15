@@ -2,9 +2,9 @@ import edq.util.json
 
 import pacai.core.agentaction
 import pacai.core.agentinfo
+import pacai.core.board_test
 import pacai.core.game
 import pacai.core.isolation.level
-import pacai.core.test_board
 import pacai.core.ticket
 import pacai.pacman.gamestate
 import pacai.test.base
@@ -529,7 +529,7 @@ class JSONTest(pacai.test.base.BaseTest):
             ),
 
             (
-                pacai.core.board.load_string('test', pacai.core.test_board.TEST_BOARD_AGENT),
+                pacai.core.board.load_string('test', pacai.core.board_test.TEST_BOARD_AGENT),
                 {
                     'source': 'test',
                     'markers': {
@@ -571,7 +571,7 @@ class JSONTest(pacai.test.base.BaseTest):
                 None,
             ),
             (
-                pacai.core.board.load_string('test', pacai.core.test_board.TEST_BOARD_SEARCH_TARGET),
+                pacai.core.board.load_string('test', pacai.core.board_test.TEST_BOARD_SEARCH_TARGET),
                 {
                     'source': 'test',
                     'markers': {
@@ -614,7 +614,7 @@ class JSONTest(pacai.test.base.BaseTest):
             (
                 pacai.pacman.gamestate.GameState(
                     seed = 4,
-                    board = pacai.core.board.load_string('test', pacai.core.test_board.TEST_BOARD_AGENT),
+                    board = pacai.core.board.load_string('test', pacai.core.board_test.TEST_BOARD_AGENT),
                     agent_actions = {
                         0: [pacai.core.action.STOP],
                         1: [pacai.core.action.NORTH],

@@ -1,5 +1,5 @@
 mypy>=1.15
 pdoc>=14.7.0
-pylint>=3.3.6
+pylint
 twine
 vermin

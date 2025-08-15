@@ -30,7 +30,7 @@ function main() {
     ((error_count += $?))
 
     echo -e "\nRunning Tests"
-    "${THIS_DIR}/run_tests.py"
+    "${THIS_DIR}/run_tests.sh"
     ((error_count += $?))
 
     echo -e "\nGenerating Docs"

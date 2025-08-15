@@ -117,42 +117,42 @@ class ReflectionTest(pacai.test.base.BaseTest):
         # [(reference, expected error substring, args, kwargs, expected_count), ...]
         test_cases = [
             (
-                'pacai.util.test_reflection._TestClass',
+                'pacai.util.reflection_test._TestClass',
                 None,
                 [],
                 {},
                 0,
             ),
             (
-                'pacai/util/test_reflection.py:_TestClass',
+                'pacai/util/reflection_test.py:_TestClass',
                 None,
                 [],
                 {},
                 0,
             ),
             (
-                'pacai.util.test_reflection._TestClass',
+                'pacai.util.reflection_test._TestClass',
                 None,
                 [1],
                 {},
                 1,
             ),
             (
-                'pacai.util.test_reflection._TestClass',
+                'pacai.util.reflection_test._TestClass',
                 None,
                 [],
                 {'count': 2},
                 2,
             ),
             (
-                'pacai.util.test_reflection._TestClass',
+                'pacai.util.reflection_test._TestClass',
                 None,
                 [],
                 {'other': 3},
                 0,
             ),
             (
-                'pacai.util.test_reflection._TestClass',
+                'pacai.util.reflection_test._TestClass',
                 None,
                 [4],
                 {'other': 5},
@@ -169,7 +169,7 @@ class ReflectionTest(pacai.test.base.BaseTest):
                 None,
             ),
             (
-                'pacai.util.test_reflection._TestClass',
+                'pacai.util.reflection_test._TestClass',
                 'got multiple values for argument',
                 [1],
                 {'count': 2},
