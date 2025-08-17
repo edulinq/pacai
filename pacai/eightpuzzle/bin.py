@@ -78,7 +78,7 @@ def _parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args = parser.parse_args()
 
     # Parse logging arguments.
-    args = pacai.core.log.init_from_args(args)
+    args = pacai.core.log.init_from_args(parser, args)
 
     # Parse specific options.
     args = init_from_args(args)

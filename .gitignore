@@ -21,6 +21,7 @@ out*/
 /dist/
 *.egg-info
 /html/
+/.mypy_*/
 
 # Project-Specific
 *.gif

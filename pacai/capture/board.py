@@ -487,7 +487,7 @@ def main() -> int:
                     + f" If not specified, a random number between {MIN_SIZE} and {MAX_RANDOM_SIZE} will be chosen."))
 
     args = parser.parse_args()
-    args = pacai.core.log.init_from_args(args)
+    args = pacai.core.log.init_from_args(parser, args)
 
     board = generate(args.seed, args.size)
     print(board)

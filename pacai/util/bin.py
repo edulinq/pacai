@@ -192,7 +192,7 @@ def parse_args(
     args = parser.parse_args(args = argv)
 
     # Parse logging arguments.
-    args = pacai.core.log.init_from_args(args)
+    args = pacai.core.log.init_from_args(parser, args)
 
     # Parse custom options.
     base_agent_infos, remove_agent_indexes, board_options = custom_init_from_args(args)

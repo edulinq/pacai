@@ -236,7 +236,7 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
         except Exception as ex:
             raise ValueError("Payload is not valid json.") from ex
 
-        return request
+        return request  # type: ignore[no-any-return]
 
 class WebUI(pacai.core.ui.UI):
     """
