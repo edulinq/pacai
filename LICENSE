@@ -1,0 +1,10 @@
+Copyright (c) 2025 Eriq Augustine, EduLinq
+
+The majority of this project is licensed under an [MIT license](LICENSE).
+Non-code portions of the code (e.g. images) under the [pacai/resources directory](/pacai/resources)
+are license under a [CC BY-SA 4.0 license](LICENSE-noncode).
+
+Additionally, solutions (implementations (full or partial) of the code in the [pacai/student directory](/pacai/student))
+should never be published or distributed.
+
+[This notice](LICENSE) should always be retained.

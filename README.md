@@ -1,5 +1,7 @@
 # Pacman
 
+An AI educational project disguised as [Pac-Man](https://en.wikipedia.org/wiki/Pac-Man)!
+
 A modified version of the Pacman educational project from the [Berkeley AI Lab](http://ai.berkeley.edu/project_overview.html).
 
 Some improvements from the original project:
@@ -64,3 +66,16 @@ Here are just a few that we know about:
  - LiveWires for providing some code from a Pacman implementation (used / modified with permission).
  - The LINQS lab from UCSC.
  - Graduates of the CMPS 140 class who have helped pave the way for future classes (their identities are immortalized in the git history).
+
+## Licensing
+
+See [LICENSE](LICENSE).
+
+The majority of this project is licensed under an [MIT license](LICENSE).
+Non-code portions of the code (e.g., images) under the [pacai/resources directory](/pacai/resources)
+are license under a [CC BY-SA 4.0 license](LICENSE-noncode).
+
+Additionally, solutions (implementations (full or partial) of the code in the [pacai/student directory](/pacai/student))
+should never be published or distributed.
+
+[This notice](LICENSE) should always be retained.
