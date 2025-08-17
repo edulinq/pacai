@@ -1,3 +1,5 @@
+import typing
+
 import pacai.core.board
 
 MARKER_PELLET: pacai.core.board.Marker = pacai.core.board.Marker('.')
@@ -18,7 +20,7 @@ class Board(pacai.core.board.Board):
     and capsules ('o').
     """
 
-    def __init__(self, *args, additional_markers: list[str] | None = None, **kwargs) -> None:
+    def __init__(self, *args: typing.Any, additional_markers: list[str] | None = None, **kwargs: typing.Any) -> None:
         if (additional_markers is None):
             additional_markers = []
 

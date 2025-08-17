@@ -1,4 +1,5 @@
 import logging
+import typing
 
 import edq.util.time
 
@@ -31,7 +32,7 @@ class SearchProblemAgent(pacai.core.agent.Agent):
             problem_cost: pacai.core.search.CostFunction | pacai.util.reflection.Reference | str = DEFAULT_PROBLEM_COST,
             solver: pacai.core.search.SearchProblemSolver | pacai.util.reflection.Reference | str = DEFAULT_SOLVER,
             heuristic: pacai.core.search.SearchHeuristic | pacai.util.reflection.Reference | str = DEFAULT_HEURISTIC,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         claen_problem_class = pacai.util.reflection.resolve_and_fetch(type, problem)

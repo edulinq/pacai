@@ -1,3 +1,5 @@
+import typing
+
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.gamestate
@@ -15,7 +17,7 @@ class ScriptedAgent(pacai.core.agent.Agent):
 
     def __init__(self,
             actions: list[pacai.core.action.Action] | list[str] | str | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         if (actions is None):

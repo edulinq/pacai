@@ -22,7 +22,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[pacai.core.mdp.MDPStateP
             start_position: pacai.core.board.Position | None = None,
             noise: float = DEFAULT_NOISE,
             living_reward: float = DEFAULT_LIVING_REWARD,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         self.board: pacai.gridworld.board.Board | None = None

@@ -1,4 +1,5 @@
 import time
+import typing
 
 import pacai.agents.dummy
 import pacai.core.action
@@ -17,7 +18,7 @@ class TimeoutAgent(pacai.agents.dummy.DummyAgent):
             game_start_wait: float = 0.0,
             game_complete_wait: float = 0.0,
             get_action_wait: float = 0.0,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         self._game_start_wait: float = float(game_start_wait)

@@ -44,10 +44,10 @@ class EightPuzzleSearchProblem(pacai.core.search.SearchProblem):
     def get_starting_node(self) -> EightPuzzleNode:
         return EightPuzzleNode(self.board)
 
-    def is_goal_node(self, node: EightPuzzleNode) -> bool:  # type: ignore[override]
+    def is_goal_node(self, node: EightPuzzleNode) -> bool:
         return node.board.is_solved()
 
-    def get_successor_nodes(self, node: EightPuzzleNode) -> list[pacai.core.search.SuccessorInfo]:  # type: ignore[override]
+    def get_successor_nodes(self, node: EightPuzzleNode) -> list[pacai.core.search.SuccessorInfo]:
         successors = []
         for action in node.board.get_legal_actions():
             new_board = node.board.apply_action(action)

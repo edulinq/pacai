@@ -34,7 +34,7 @@ class GameState(edq.util.json.DictConverter):
             move_delays: dict[int, int] | None = None,
             tickets: dict[int, pacai.core.ticket.Ticket] | None = None,
             agent_infos: dict[int, pacai.core.agentinfo.AgentInfo] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         if (board is None):
             raise ValueError("Cannot construct a game state without a board.")
 
@@ -110,7 +110,7 @@ class GameState(edq.util.json.DictConverter):
 
         return new_state
 
-    def game_start(self):
+    def game_start(self) -> None:
         """
         Indicate that the game is starting.
         This will initialize some state like tickets.
@@ -206,7 +206,7 @@ class GameState(edq.util.json.DictConverter):
     def generate_successor(self,
             action: pacai.core.action.Action,
             rng: random.Random | None = None,
-            **kwargs) -> 'GameState':
+            **kwargs: typing.Any) -> 'GameState':
         """
         Create a new deep copy of this state that represents the current agent taking the given action.
         To just apply an action to the current state, use process_turn().
@@ -244,7 +244,7 @@ class GameState(edq.util.json.DictConverter):
     def process_turn(self,
             action: pacai.core.action.Action,
             rng: random.Random | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         """
         Process the current agent's turn with the given action.
         This may modify the current state.
@@ -254,7 +254,7 @@ class GameState(edq.util.json.DictConverter):
     def process_turn_full(self,
             action: pacai.core.action.Action,
             rng: random.Random | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         """
         Process the current agent's turn with the given action.
         This will modify the current state.
@@ -423,7 +423,7 @@ class AgentStateEvaluationFunction(typing.Protocol):
             state: GameState,
             agent: typing.Any | None = None,
             action: pacai.core.action.Action | None = None,
-            **kwargs) -> float:
+            **kwargs: typing.Any) -> float:
         """
         Compute a score for a state that the provided agent can use to decide actions.
         The current state is the only required argument, the others are optional.
@@ -435,7 +435,7 @@ def base_eval(
         state: GameState,
         agent: typing.Any | None = None,
         action: pacai.core.action.Action | None = None,
-        **kwargs) -> float:
+        **kwargs: typing.Any) -> float:
     """ The most basic evaluation function, which just uses the state's current score. """
 
     return float(state.score)

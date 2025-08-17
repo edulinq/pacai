@@ -1,4 +1,5 @@
 import enum
+import typing
 
 import pacai.core.isolation.isolator
 import pacai.core.isolation.none
@@ -10,7 +11,7 @@ class Level(enum.Enum):
     NONE = 'none'
     PROCESS = 'process'
 
-    def get_isolator(self, **kwargs) -> pacai.core.isolation.isolator.AgentIsolator:
+    def get_isolator(self, **kwargs: typing.Any) -> pacai.core.isolation.isolator.AgentIsolator:
         """ Get an isolator matching the given level. """
 
         isolator: pacai.core.isolation.isolator.AgentIsolator | None = None

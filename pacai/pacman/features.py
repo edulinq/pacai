@@ -14,7 +14,7 @@ def simple_feature_extractor(
         state: pacai.core.gamestate.GameState,
         action: pacai.core.action.Action,
         agent: pacai.core.agent.Agent | None = None,
-        **kwargs) -> pacai.core.features.FeatureDict:
+        **kwargs: typing.Any) -> pacai.core.features.FeatureDict:
     """
     Get simple features for a basic reflex Pac-Man.
 

@@ -23,7 +23,7 @@ class TextStreamUserInputDevice(pacai.core.ui.UserInputDevice):
     def __init__(self,
             input_stream: typing.TextIO,
             char_mapping: dict[str, pacai.core.action.Action] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         self._input_stream: typing.TextIO = input_stream
         """ Where to get input from. """
 
@@ -62,12 +62,12 @@ class TextStreamUserInputDevice(pacai.core.ui.UserInputDevice):
 
         super().close()
 
-    def __dict__(self):
+    def __dict__(self) -> dict[str, typing.Any]:  # type: ignore[override]
         """ Do not allow for serialization because of the threads and streams. """
 
         raise ValueError(f"This class ('{type(self).__qualname__}') cannot be serialized.")
 
-    def _set_tty_attributes(self):
+    def _set_tty_attributes(self) -> None:
         """ If the target stream is a tty, then set properties for better streaming input. """
 
         # If we are not a tty, then there is nothing special to do.
@@ -97,9 +97,12 @@ class TextStreamUserInputDevice(pacai.core.ui.UserInputDevice):
 
         termios.tcsetattr(self._input_stream, termios.TCSAFLUSH, new_settings)
 
-    def _reset_tty_attributes(self):
+    def _reset_tty_attributes(self) -> None:
         if (self._old_settings is not None):
-            termios.tcsetattr(self._input_stream, termios.TCSADRAIN, self._old_settings)
+            # Note that Windows does not have these settings.
+            if (hasattr(termios, 'tcsetattr') and hasattr(termios, 'TCSADRAIN')):
+                termios.tcsetattr(self._input_stream, termios.TCSADRAIN, self._old_settings)  # type: ignore[attr-defined,unused-ignore]
+
             self._old_settings = None
 
 def _watch_text_stream(input_stream: typing.TextIO, result_queue: queue.Queue) -> None:
@@ -127,14 +130,14 @@ class TextUI(pacai.core.ui.UI):
     def __init__(self,
             input_stream: typing.TextIO,
             output_stream: typing.TextIO,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         input_device = TextStreamUserInputDevice(input_stream, **kwargs)
         super().__init__(user_input_device = input_device, **kwargs)
 
         self._output_stream: typing.TextIO = output_stream
         """ The stream output will be sent to. """
 
-    def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
+    def draw(self, state: pacai.core.gamestate.GameState, **kwargs: typing.Any) -> None:
         grid = state.board.to_grid()
         for row in grid:
             line = ''.join([self._translate_marker(marker, state) for marker in row])
@@ -162,5 +165,5 @@ class StdioUI(TextUI):
     A convenience class for a TextUI using stdin and stdout.
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: typing.Any) -> None:
         super().__init__(sys.stdin, sys.stdout, **kwargs)

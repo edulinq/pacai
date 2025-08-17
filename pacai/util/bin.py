@@ -65,7 +65,7 @@ class LogResults(typing.Protocol):
     def __call__(self,
             results: list[pacai.core.game.GameResult],
             winning_agent_indexes: set[int],
-            prefix = '',
+            prefix: str = '',
             ) -> None:
         """
         Log the result of running several games.
@@ -85,7 +85,7 @@ def base_init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.
 
     return base_agent_infos, [], {}
 
-def base_log_results(results: list[pacai.core.game.GameResult], winning_agent_indexes: set[int], prefix = '') -> None:
+def base_log_results(results: list[pacai.core.game.GameResult], winning_agent_indexes: set[int], prefix: str = '') -> None:
     """
     Log the result of running several games.
     """
@@ -132,7 +132,7 @@ def base_log_results(results: list[pacai.core.game.GameResult], winning_agent_in
 def run_main(
         description: str,
         default_board: str,
-        game_class: typing.Type,
+        game_class: typing.Type[pacai.core.game.Game],
         custom_set_cli_args: SetCLIArgs | None = None,
         get_additional_ui_options: GetAdditionalOptions | None = None,
         custom_init_from_args: InitFromArgs = base_init_from_args,
@@ -182,7 +182,7 @@ def get_parser(
 
 def parse_args(
         parser: argparse.ArgumentParser,
-        game_class: typing.Type,
+        game_class: typing.Type[pacai.core.game.Game],
         get_additional_ui_options: GetAdditionalOptions | None = None,
         custom_init_from_args: InitFromArgs = base_init_from_args,
         argv: list[str] | None = None,

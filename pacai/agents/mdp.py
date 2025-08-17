@@ -22,7 +22,7 @@ class MDPAgent(pacai.core.agent.Agent):
             discount_rate: float = DEFAULT_DISCOUNT_RATE,
             exploration_rate: float = DEFAULT_EXPLORATION_RATE,
             mdp_state_class: typing.Type | pacai.util.reflection.Reference | str | None = pacai.core.mdp.MDPStateBoard,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         if (mdp_state_class is None):

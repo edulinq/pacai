@@ -22,7 +22,7 @@ class ValueIterationAgent(pacai.agents.mdp.MDPAgent):
     def __init__(self,
             mdp: pacai.core.mdp.MarkovDecisionProcess | None = None,
             iterations: int = DEFAULT_VALUE_ITERATIONS,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         if (mdp is None):
@@ -80,7 +80,7 @@ class QLearningAgent(pacai.agents.mdp.MDPAgent):
 
     def __init__(self,
             training_info: dict[str, typing.Any] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         self.last_state: pacai.core.gamestate.GameState | None = None
@@ -233,7 +233,7 @@ class QLearningUserInputAgent(QLearningAgent):
     However, this agent can be useful if you want to see how specific actions affect the learned Q-values.
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         kwargs['remember_last_action'] = False
@@ -276,7 +276,7 @@ class ApproximateQLearningAgent(QLearningAgent):
     def __init__(self,
             feature_extractor_func: pacai.core.features.FeatureExtractor | pacai.util.reflection.Reference | str =
                     pacai.core.features.score_feature_extractor,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         self.weights: pacai.core.features.WeightDict = pacai.core.features.WeightDict()
         """ The feature weights learned by this agent. """
 

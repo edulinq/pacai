@@ -7,22 +7,15 @@ This file aims to contain all the reflection necessary for this project
 (as it can be confusing for students).
 """
 
-import importlib
-import importlib.util
 import typing
-import uuid
 
 import edq.util.json
+import edq.util.pyimport
+import edq.util.reflection
 
 import pacai.util.alias
 
 REF_DELIM: str = ':'
-
-_cache: dict[str, typing.Any] = {}
-"""
-A cache to help avoid importing a module multiple times.
-The key is the string representation of a reference.
-"""
 
 class Reference(edq.util.json.DictConverter):
     """
@@ -139,7 +132,7 @@ def fetch(reference: Reference | str) -> typing.Any:
 
     return target
 
-def new_object(reference: Reference | str, *args, **kwargs) -> typing.Any:
+def new_object(reference: Reference | str, *args: typing.Any, **kwargs: typing.Any) -> typing.Any:
     """
     Create a new instance of the specified class,
     passing along the args and kwargs.
@@ -171,36 +164,21 @@ def resolve_and_fetch(
 
     return result
 
-def _import_module(reference):
+def _import_module(reference: Reference) -> typing.Any:
     """
     Import and return the module for the given reflection reference.
     This may involve importing files.
     """
 
-    reference_string = str(reference)
-
-    # Check the cache before importing.
-    module = _cache.get(reference_string, None)
-    if (module is not None):
-        return module
-
     # Load from a path.
     if (reference.file_path is not None):
-        temp_module_name = str(uuid.uuid4()).replace('-', '')
-        spec = importlib.util.spec_from_file_location(temp_module_name, reference.file_path)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-    else:
-        # Load from a module name.
-        try:
-            module = importlib.import_module(reference.module_name)
-        except ImportError as ex:
-            raise ValueError(f"Unable to locate module '{reference.module_name}'.") from ex
+        return edq.util.pyimport.import_path(reference.file_path)
 
-    # Store the module in the cache.
-    _cache[reference_string] = module
+    # Load from a name.
+    if (reference.module_name is not None):
+        return edq.util.pyimport.import_name(reference.module_name)
 
-    return module
+    raise ValueError(f"Reference does not contain enough information to be imported as a module: '{reference}'.")
 
 def get_qualified_name(target: type | object | Reference | str) -> str:
     """
@@ -212,27 +190,4 @@ def get_qualified_name(target: type | object | Reference | str) -> str:
     if (isinstance(target, (Reference, str))):
         return str(Reference(target))
 
-    # Get the type for this target.
-    if (isinstance(target, type)):
-        target_class = target
-    elif (callable(target)):
-        target_class = typing.cast(type, target)
-    else:
-        target_class = type(target)
-
-    # Check for various name components.
-    parts = []
-
-    if (hasattr(target_class, '__module__')):
-        parts.append(str(getattr(target_class, '__module__')))
-
-    if (hasattr(target_class, '__qualname__')):
-        parts.append(str(getattr(target_class, '__qualname__')))
-    elif (hasattr(target_class, '__name__')):
-        parts.append(str(getattr(target_class, '__name__')))
-
-    # Fall back to just the string reprsentation.
-    if (len(parts) == 0):
-        return str(target_class)
-
-    return '.'.join(parts)
+    return edq.util.reflection.get_qualified_name(target)

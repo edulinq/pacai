@@ -30,7 +30,7 @@ class FeatureExtractor(typing.Protocol):
             state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action,
             agent: pacai.core.agent.Agent | None = None,
-            **kwargs) -> FeatureDict:
+            **kwargs: typing.Any) -> FeatureDict:
         """
         Extract the features for the given state/action pair.
 
@@ -50,7 +50,7 @@ def score_feature_extractor(
         state: pacai.core.gamestate.GameState,
         action: pacai.core.action.Action,
         agent: pacai.core.agent.Agent | None = None,
-        **kwargs) -> FeatureDict:
+        **kwargs: typing.Any) -> FeatureDict:
     """
     The most basic feature extractor, which just uses the state's current score.
 
@@ -73,7 +73,7 @@ def board_feature_extractor(
         state: pacai.core.gamestate.GameState,
         action: pacai.core.action.Action,
         agent: pacai.core.agent.Agent | None = None,
-        **kwargs) -> FeatureDict:
+        **kwargs: typing.Any) -> FeatureDict:
     """
     A feature extractor that just creates a key unique to the board/action pair and assigns it a value of 1.0.
     It accomplishes this by generating a JSON string for all the non-wall objects in the board.

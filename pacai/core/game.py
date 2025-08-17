@@ -134,7 +134,7 @@ class GameResult(edq.util.json.DictConverter):
             end_time: edq.util.time.Timestamp | None = None,
             history: list[pacai.core.agentaction.AgentActionRecord] | None = None,
             agent_complete_records: dict[int, pacai.core.agentaction.AgentActionRecord] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         self.game_id: int = game_id
         """ The ID of the game result. """
 

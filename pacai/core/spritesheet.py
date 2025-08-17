@@ -281,7 +281,7 @@ def _load(config_path: str) -> SpriteSheet:
 
 def _fetch_marker_sprites(
             sprites: list[list[PIL.Image.Image]],
-            marker_sprites: dict
+            marker_sprites: dict[str, typing.Any]
             ) -> tuple[
                 PIL.Image.Image | None,
                 dict[pacai.core.action.Action, list[PIL.Image.Image]],
@@ -311,7 +311,7 @@ def _fetch_coordinate(sprites: list[list[PIL.Image.Image]], raw_coordinate: typi
     (row, col) = _parse_coordinate(raw_coordinate)
     return sprites[row][col]
 
-def _parse_color(config: dict, key: str, default: tuple[int, int, int]) -> tuple[int, int, int]:
+def _parse_color(config: dict[str, typing.Any], key: str, default: tuple[int, int, int]) -> tuple[int, int, int]:
     if (key not in config):
         return default
 
@@ -343,7 +343,7 @@ def _parse_coordinate(raw_coordinate: typing.Any) -> tuple[int, int]:
 
     return (row, col)
 
-def _load_sprites(config: dict, config_path: str) -> tuple[int, int, list[list[PIL.Image.Image]]]:
+def _load_sprites(config: dict[str, typing.Any], config_path: str) -> tuple[int, int, list[list[PIL.Image.Image]]]:
     path = str(config.get(KEY_FILENAME, '')).strip()
     if (len(path) == 0):
         raise ValueError(f"Invalid or missing '{KEY_FILENAME}' field.")
@@ -353,12 +353,12 @@ def _load_sprites(config: dict, config_path: str) -> tuple[int, int, list[list[P
         path = os.path.join(os.path.dirname(config_path), path)
 
     try:
-        height = _parse_int(config.get(KEY_HEIGHT))  # type: ignore
+        height = _parse_int(config.get(KEY_HEIGHT))
     except Exception as ex:
         raise ValueError(f"Invalid or missing '{KEY_HEIGHT}' field.") from ex
 
     try:
-        width = _parse_int(config.get(KEY_WIDTH))  # type: ignore
+        width = _parse_int(config.get(KEY_WIDTH))
     except Exception as ex:
         raise ValueError(f"Invalid or missing '{KEY_WIDTH}' field.") from ex
 

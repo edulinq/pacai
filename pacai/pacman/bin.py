@@ -15,7 +15,7 @@ import pacai.util.alias
 DEFAULT_BOARD: str = 'classic-medium'
 DEFAULT_SPRITE_SHEET: str = 'pacman'
 
-def set_cli_args(parser: argparse.ArgumentParser, **kwargs) -> argparse.ArgumentParser:
+def set_cli_args(parser: argparse.ArgumentParser, **kwargs: typing.Any) -> argparse.ArgumentParser:
     """
     Set Pac-Man-specific CLI arguments.
     This is a sibling to init_from_args(), as the arguments set here can be interpreted there.

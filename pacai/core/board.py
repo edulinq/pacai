@@ -331,7 +331,7 @@ class Board(edq.util.json.DictConverter):
             _walls: set[Position] | None = None,
             _nonwall_objects: dict[Marker, set[Position]] | None = None,
             _agent_initial_positions: dict[Marker, Position] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         """
         Construct a board.
         The board details will either be parsed from `board_text` is provided,
@@ -867,7 +867,7 @@ class Board(edq.util.json.DictConverter):
 
         return self._markers.get(text, None)
 
-def load_path(path: str, **kwargs) -> Board:
+def load_path(path: str, **kwargs: typing.Any) -> Board:
     """
     Load a board from a file.
     If the given path does not exist,
@@ -890,7 +890,7 @@ def load_path(path: str, **kwargs) -> Board:
     text = edq.util.dirent.read_file(path, strip = False)
     return load_string(raw_path, text, **kwargs)
 
-def load_string(source: str, text: str, **kwargs) -> Board:
+def load_string(source: str, text: str, **kwargs: typing.Any) -> Board:
     """ Load a board from a string. """
 
     separator_index = -1
@@ -918,9 +918,9 @@ def load_string(source: str, text: str, **kwargs) -> Board:
     options.update(kwargs)
 
     board_class = options.get('class', DEFAULT_BOARD_CLASS)
-    return pacai.util.reflection.new_object(board_class, source, board_text, **options)
+    return pacai.util.reflection.new_object(board_class, source, board_text, **options)  # type: ignore[no-any-return]
 
-def create_empty(source: str, height: int, width: int, **kwargs) -> Board:
+def create_empty(source: str, height: int, width: int, **kwargs: typing.Any) -> Board:
     """
     Create an empty board with the given dimensions.
     """

@@ -34,7 +34,7 @@ class BaseTest(unittest.TestCase):
 
         super().assertDictEqual(a, b, FORMAT_STR % (a_json, b_json))
 
-    def assertListEqualJSON(self, a: list, b: list) -> None:  # pylint: disable=invalid-name
+    def assertListEqualJSON(self, a: list[typing.Any], b: list[typing.Any]) -> None:  # pylint: disable=invalid-name
         """ Like unittest.TestCase.assertLiseEqual(), but uses JSON formatting in the output. """
 
         a_json = edq.util.json.dumps(a, indent = 4)

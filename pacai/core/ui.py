@@ -2,6 +2,7 @@ import abc
 import argparse
 import os
 import time
+import typing
 
 import PIL.Image
 import PIL.ImageDraw
@@ -109,7 +110,7 @@ class UI(abc.ABC):
             animation_skip_frames: int = DEFAULT_ANIMATION_SKIP_FRAMES,
             sprite_sheet_path: str = DEFAULT_SPRITE_SHEET,
             font_path: str = pacai.core.font.DEFAULT_FONT_PATH,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         self._user_input_device: UserInputDevice | None = user_input_device
         """ The device to use to get user input. """
 
@@ -308,7 +309,7 @@ class UI(abc.ABC):
 
         return self._user_input_device.get_inputs()
 
-    def draw_image(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
+    def draw_image(self, state: pacai.core.gamestate.GameState, **kwargs: typing.Any) -> PIL.Image.Image:
         """
         Visualize the state of the game as an image.
         This method is typically used for rendering the game to an animation.
@@ -388,7 +389,7 @@ class UI(abc.ABC):
 
         return font
 
-    def _get_static_image(self, state: pacai.core.gamestate.GameState, **kwargs) -> PIL.Image.Image:
+    def _get_static_image(self, state: pacai.core.gamestate.GameState, **kwargs: typing.Any) -> PIL.Image.Image:
         """
         Get the base image that only contains static objects.
         This method will handle caching the base static image.
@@ -478,7 +479,7 @@ class UI(abc.ABC):
                 anchor = text.anchor,
                 align = 'center')
 
-    def _get_sprite(self, state: pacai.core.gamestate.GameState, position: pacai.core.board.Position, **kwargs) -> PIL.Image.Image:
+    def _get_sprite(self, state: pacai.core.gamestate.GameState, position: pacai.core.board.Position, **kwargs: typing.Any) -> PIL.Image.Image:
         """ Get the requested sprite. """
 
         if (self._sprite_sheet is None):
@@ -486,7 +487,7 @@ class UI(abc.ABC):
 
         return state.sprite_lookup(self._sprite_sheet, position, **kwargs)
 
-    def _place_sprite(self, position: pacai.core.board.Position, sprite: PIL.Image.Image, image: PIL.Image.Image):
+    def _place_sprite(self, position: pacai.core.board.Position, sprite: PIL.Image.Image, image: PIL.Image.Image) -> None:
         image_coordinates = self._position_to_image_coords(position)
 
         # Overlay the sprite onto the image.
@@ -506,7 +507,7 @@ class UI(abc.ABC):
         return self._sprite_sheet.position_to_pixels(position)
 
     @abc.abstractmethod
-    def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
+    def draw(self, state: pacai.core.gamestate.GameState, **kwargs: typing.Any) -> None:
         """
         Visualize the state of the game to the UI.
         This is the typically the main override point for children.

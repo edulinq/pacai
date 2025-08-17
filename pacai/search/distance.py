@@ -26,14 +26,14 @@ class DistanceFunction(typing.Protocol):
             a: pacai.core.board.Position,
             b: pacai.core.board.Position,
             state: pacai.core.gamestate.GameState | None = None,
-            **kwargs) -> float:
+            **kwargs: typing.Any) -> float:
         ...
 
 def manhattan_distance(
         a: pacai.core.board.Position,
         b: pacai.core.board.Position,
         state: pacai.core.gamestate.GameState | None = None,
-        **kwargs) -> float:
+        **kwargs: typing.Any) -> float:
     """
     Compute the Manhattan distance between two positions.
     See: https://en.wikipedia.org/wiki/Taxicab_geometry .
@@ -45,20 +45,20 @@ def euclidean_distance(
         a: pacai.core.board.Position,
         b: pacai.core.board.Position,
         state: pacai.core.gamestate.GameState | None = None,
-        **kwargs) -> float:
+        **kwargs: typing.Any) -> float:
     """
     Compute the Euclidean distance between two positions.
     See: https://en.wikipedia.org/wiki/Euclidean_distance .
     """
 
-    return ((a.row - b.row) ** 2 + (a.col - b.col) ** 2) ** 0.5
+    return float(((a.row - b.row) ** 2 + (a.col - b.col) ** 2) ** 0.5)
 
 def maze_distance(
         a: pacai.core.board.Position,
         b: pacai.core.board.Position,
         state: pacai.core.gamestate.GameState | None = None,
         solver: pacai.core.search.SearchProblemSolver | str = pacai.util.alias.SEARCH_SOLVER_BFS.long,
-        **kwargs) -> float:
+        **kwargs: typing.Any) -> float:
     """
     Compute the "maze distance" between any two positions.
     This distance is the solution to a pacai.search.position.PositionSearchProblem between a and b.
@@ -95,7 +95,7 @@ def distance_heuristic(
         node: pacai.core.search.SearchNode,
         problem: pacai.core.search.SearchProblem,
         distance_function: DistanceFunction = manhattan_distance,
-        **kwargs) -> float:
+        **kwargs: typing.Any) -> float:
     """
     A heuristic that looks for positional information in this search information,
     and returns the result of the given distance function if that information is found.
@@ -119,7 +119,7 @@ def distance_heuristic(
 def manhattan_heuristic(
         node: pacai.core.search.SearchNode,
         problem: pacai.core.search.SearchProblem,
-        **kwargs) -> float:
+        **kwargs: typing.Any) -> float:
     """
     A distance_heuristic using Manhattan distance.
     """
@@ -129,7 +129,7 @@ def manhattan_heuristic(
 def euclidean_heuristic(
         node: pacai.core.search.SearchNode,
         problem: pacai.core.search.SearchProblem,
-        **kwargs) -> float:
+        **kwargs: typing.Any) -> float:
     """
     A distance_heuristic using Euclidean distance.
     """

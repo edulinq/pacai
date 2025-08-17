@@ -37,7 +37,7 @@ class Agent(abc.ABC):
                     pacai.core.agentinfo.DEFAULT_STATE_EVAL,
             training: bool = False,
             training_epoch: int = 0,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         self.name: pacai.util.reflection.Reference = pacai.util.reflection.Reference(name)
         """ The name of this agent. """
 
@@ -172,7 +172,7 @@ class Agent(abc.ABC):
     def evaluate_state(self,
             state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action | None = None,
-            **kwargs) -> float:
+            **kwargs: typing.Any) -> float:
         """
         Evaluate the state to get a decide how good an action was.
         The base implementation for this function just calls `self.evaluation_function`,

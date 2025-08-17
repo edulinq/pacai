@@ -33,7 +33,7 @@ class SuccessorInfo(typing.Generic[NodeType]):
             node: NodeType,
             action: pacai.core.action.Action,
             cost: float,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         self.node = node
         """ The search node of this successor. """
 
@@ -55,7 +55,7 @@ class SearchProblem(abc.ABC, typing.Generic[NodeType]):
     the methods of this class.
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: typing.Any) -> None:
         self.expanded_node_count: int = 0
         """
         The number of search nodes that have been expended.
@@ -142,7 +142,7 @@ class CostFunction(typing.Protocol):
     A function that computes the cost associated with a specific search node.
     """
 
-    def __call__(self, node: SearchNode, **kwargs) -> float:
+    def __call__(self, node: SearchNode, **kwargs: typing.Any) -> float:
         ...
 
 @typing.runtime_checkable
@@ -151,7 +151,7 @@ class SearchHeuristic(typing.Protocol):
     A heuristic function attempts to score a search node in the context of a problem.
     """
 
-    def __call__(self, node: SearchNode, problem: SearchProblem, **kwargs) -> float:
+    def __call__(self, node: SearchNode, problem: SearchProblem, **kwargs: typing.Any) -> float:
         ...
 
 @typing.runtime_checkable
@@ -167,5 +167,5 @@ class SearchProblemSolver(typing.Protocol):
             problem: SearchProblem,
             heuristic: SearchHeuristic,
             rng: random.Random,
-            **kwargs) -> SearchSolution:
+            **kwargs: typing.Any) -> SearchSolution:
         ...

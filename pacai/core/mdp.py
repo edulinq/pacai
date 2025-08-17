@@ -38,7 +38,7 @@ class MDPStatePosition(MDPState):
 
     def __init__(self,
             position: pacai.core.board.Position | dict[str, typing.Any] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         if (position is None):
             raise ValueError("Cannot create a MDPStatePosition without a position.")
 
@@ -95,7 +95,7 @@ class MDPStateBoard(MDPStatePosition):
             board: pacai.core.board.Board | None = None,
             game_state: pacai.core.gamestate.GameState | None = None,
             _board_string: str | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         if (_board_string is None):
@@ -156,7 +156,7 @@ class Transition(typing.Generic[StateType]):
             action: pacai.core.action.Action,
             probability: float,
             reward: float,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         self.state = state
         """ The MDP state reached by this transition. """
 

@@ -1,4 +1,5 @@
 import random
+import typing
 
 import pacai.core.search
 
@@ -6,7 +7,7 @@ def random_search(
         problem: pacai.core.search.SearchProblem,
         heuristic: pacai.core.search.SearchHeuristic,
         rng: random.Random,
-        **kwargs) -> pacai.core.search.SearchSolution:
+        **kwargs: typing.Any) -> pacai.core.search.SearchSolution:
     """
     Perform a random (and really stupid) search.
     Users should strive to implement better searches as soon as possible.

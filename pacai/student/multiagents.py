@@ -19,7 +19,7 @@ class ReflexAgent(pacai.agents.greedy.GreedyAgent):
     (and maybe add to the constructor if you want).
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         # Put code here if you want.
@@ -27,7 +27,7 @@ class ReflexAgent(pacai.agents.greedy.GreedyAgent):
     def evaluate_state(self,
             state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action | None = None,
-            **kwargs) -> float:
+            **kwargs: typing.Any) -> float:
         # This would be a great place to improve your reflex agent.
         return super().evaluate_state(state, action)
 
@@ -48,7 +48,7 @@ class MyMinimaxLikeAgent(pacai.agents.minimax.MinimaxLikeAgent):
     You are free to implement/override any methods you need to.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         # You can use the constructor if you need to.
@@ -87,7 +87,7 @@ def better_state_eval(
         state: pacai.core.gamestate.GameState,
         agent: typing.Any | None = None,
         action: pacai.core.action.Action | None = None,
-        **kwargs) -> float:
+        **kwargs: typing.Any) -> float:
     """
     Create a better state evaluation function for your MyMinimaxLikeAgent agent!
 

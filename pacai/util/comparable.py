@@ -16,7 +16,7 @@ class SimpleComparable:
         if (type(self) != type(other)):  # pylint: disable=unidiomatic-typecheck
             return False
 
-        return self._to_json_string() == other._to_json_string()  # type: ignore[attr-defined]
+        return bool(self._to_json_string() == other._to_json_string())  # type: ignore[attr-defined]
 
     def __hash__(self) -> int:
         """
@@ -36,7 +36,7 @@ class SimpleComparable:
         if (type(self) != type(other)):  # pylint: disable=unidiomatic-typecheck
             return False
 
-        return self._to_json_string() < other._to_json_string() # type: ignore[attr-defined]
+        return bool(self._to_json_string() < other._to_json_string()) # type: ignore[attr-defined]
 
     def _to_json_string(self) -> str:
         """

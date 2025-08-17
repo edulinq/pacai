@@ -1,5 +1,6 @@
 import enum
 import os
+import typing
 
 import pacai.core.board
 
@@ -85,7 +86,7 @@ class BoardText(Text):
     def __init__(self,
             position: pacai.core.board.Position,
             text: str,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(text, **kwargs)
 
         self.position: pacai.core.board.Position = position

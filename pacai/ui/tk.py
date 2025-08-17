@@ -1,6 +1,7 @@
 import sys
 import time
 import tkinter
+import typing
 
 import PIL.Image
 import PIL.ImageTk
@@ -27,7 +28,7 @@ class TkUserInputDevice(pacai.core.ui.UserInputDevice):
 
     def __init__(self,
             char_mapping: dict[str, pacai.core.action.Action] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         if (char_mapping is None):
             char_mapping = pacai.core.ui.DUAL_CHAR_MAPPING
 
@@ -51,18 +52,18 @@ class TkUserInputDevice(pacai.core.ui.UserInputDevice):
         tk_window.bind("<FocusIn>", self._clear)
         tk_window.bind("<FocusOut>", self._clear)
 
-    def _clear(self, *args, **kwargs) -> None:
+    def _clear(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """ Handle a call to clear the current keys. """
 
         self._actions = []
 
-    def _key_press(self, event) -> None:
+    def _key_press(self, event: typing.Any) -> None:
         """ Handle a key being pressed. """
 
         if (event.keysym in self._char_mapping):
             self._actions.append(self._char_mapping[event.keysym])
 
-    def _key_release(self, event) -> None:
+    def _key_release(self, event: typing.Any) -> None:
         """ Handle a key being released. """
 
 class TkUI(pacai.core.ui.UI):
@@ -75,7 +76,7 @@ class TkUI(pacai.core.ui.UI):
      - https://tkdocs.com/tutorial/install.html
     """
 
-    def __init__(self, title: str = 'pacai', **kwargs) -> None:
+    def __init__(self, title: str = 'pacai', **kwargs: typing.Any) -> None:
         input_device = TkUserInputDevice(**kwargs)
         super().__init__(user_input_device = input_device, **kwargs)
 
@@ -152,7 +153,7 @@ class TkUI(pacai.core.ui.UI):
         if (isinstance(self._user_input_device, TkUserInputDevice)):
             self._user_input_device.register_root(self._window)
 
-    def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
+    def draw(self, state: pacai.core.gamestate.GameState, **kwargs: typing.Any) -> None:
         if (self._window_closed):
             self._cleanup(call_exit = True)
             return
@@ -202,7 +203,7 @@ class TkUI(pacai.core.ui.UI):
         self._canvas.config(width = self._width, height = self._height)
         self._canvas.pack(fill = 'both', expand = True)
 
-    def _handle_window_closed(self, **kwargs) -> None:
+    def _handle_window_closed(self, **kwargs: typing.Any) -> None:
         """ Handle Tk window close events. """
 
         self._window_closed = True

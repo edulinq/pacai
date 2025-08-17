@@ -44,7 +44,7 @@ class PositionSearchProblem(pacai.core.search.SearchProblem[PositionSearchNode])
             goal_position: pacai.core.board.Position | None = None,
             start_position: pacai.core.board.Position | None = None,
             cost_function: pacai.core.search.CostFunction | str = pacai.util.alias.COST_FUNC_UNIT.long,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         """
         Create a positional search problem.
 

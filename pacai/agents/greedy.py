@@ -1,3 +1,5 @@
+import typing
+
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.gamestate
@@ -42,7 +44,7 @@ class GreedyFeatureAgent(GreedyAgent):
     def __init__(self,
             feature_extractor_func: pacai.core.features.FeatureExtractor | pacai.util.reflection.Reference | str =
                     pacai.core.features.score_feature_extractor,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         self.weights: pacai.core.features.WeightDict = pacai.core.features.WeightDict()
@@ -55,7 +57,7 @@ class GreedyFeatureAgent(GreedyAgent):
     def evaluate_state(self,
             state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action | None = None,
-            **kwargs) -> float:
+            **kwargs: typing.Any) -> float:
         if (action is None):
             action = pacai.core.action.STOP
 

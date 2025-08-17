@@ -43,7 +43,7 @@ NON_SERIALIZED_FIELDS: list[str] = [
 class GameState(pacai.core.gamestate.GameState):
     """ A game state specific to a standard GridWorld game. """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         self._win: bool = False
@@ -310,7 +310,7 @@ class GameState(pacai.core.gamestate.GameState):
             action: pacai.core.action.Action,
             rng: random.Random | None = None,
             mdp: pacai.gridworld.mdp.GridWorldMDP | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         if (rng is None):
             logging.warning("No RNG passed to pacai.gridworld.gamestate.GameState.process_turn().")
             rng = random.Random(4)

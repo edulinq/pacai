@@ -1,5 +1,6 @@
 import logging
 import math
+import typing
 
 import pacai.core.action
 import pacai.core.agent
@@ -21,7 +22,7 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
             ply_count: int = DEFAULT_PLY_COUNT,
             alphabeta_prune: bool = False,
             expectimax: bool = False,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         # Parse (possibly string) arguments.
@@ -55,7 +56,7 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
     def evaluate_state(self,
             state: pacai.core.gamestate.GameState,
             action: pacai.core.action.Action | None = None,
-            **kwargs) -> float:
+            **kwargs: typing.Any) -> float:
         self._stats_states_evaluated[-1] += 1
         return super().evaluate_state(state, action)
 

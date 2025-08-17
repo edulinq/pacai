@@ -1,4 +1,5 @@
 import random
+import typing
 
 import PIL.Image
 
@@ -299,7 +300,7 @@ class GameState(pacai.pacman.gamestate.GameState):
     def process_turn(self,  # pylint: disable=too-many-statements
             action: pacai.core.action.Action,
             rng: random.Random | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         agent_marker = pacai.core.board.Marker(str(self.agent_index))
         team_modifier = self._team_modifier()
 

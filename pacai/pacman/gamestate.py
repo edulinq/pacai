@@ -49,7 +49,7 @@ class GameState(pacai.core.gamestate.GameState):
 
     def __init__(self,
             scared_timers: dict[int, int] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         if (scared_timers is None):
@@ -194,7 +194,7 @@ class GameState(pacai.core.gamestate.GameState):
     def process_turn(self,
             action: pacai.core.action.Action,
             rng: random.Random | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         # Do actions specific to Pac-Man or ghosts.
         if (self.agent_index == PACMAN_AGENT_INDEX):
             self._process_pacman_turn(action)

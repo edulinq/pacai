@@ -16,7 +16,7 @@ class DefensiveAgent(pacai.agents.greedy.GreedyFeatureAgent):
 
     def __init__(self,
             override_weights: dict[str, float] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         kwargs['feature_extractor_func'] = _extract_baseline_defensive_features
         super().__init__(**kwargs)
 
@@ -46,7 +46,7 @@ class OffensiveAgent(pacai.agents.greedy.GreedyFeatureAgent):
 
     def __init__(self,
             override_weights: dict[str, float] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         kwargs['feature_extractor_func'] = _extract_baseline_offensive_features
         super().__init__(**kwargs)
 
@@ -70,7 +70,7 @@ def _extract_baseline_defensive_features(
         state: pacai.core.gamestate.GameState,
         action: pacai.core.action.Action,
         agent: pacai.core.agent.Agent | None = None,
-        **kwargs) -> pacai.core.features.FeatureDict:
+        **kwargs: typing.Any) -> pacai.core.features.FeatureDict:
     agent = typing.cast(DefensiveAgent, agent)
     state = typing.cast(pacai.capture.gamestate.GameState, state)
 
@@ -108,7 +108,7 @@ def _extract_baseline_offensive_features(
         state: pacai.core.gamestate.GameState,
         action: pacai.core.action.Action,
         agent: pacai.core.agent.Agent | None = None,
-        **kwargs) -> pacai.core.features.FeatureDict:
+        **kwargs: typing.Any) -> pacai.core.features.FeatureDict:
     agent = typing.cast(OffensiveAgent, agent)
     state = typing.cast(pacai.capture.gamestate.GameState, state)
 

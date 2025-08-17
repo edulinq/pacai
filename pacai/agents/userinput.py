@@ -1,3 +1,5 @@
+import typing
+
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.agentaction
@@ -10,7 +12,7 @@ class UserInputAgent(pacai.core.agent.Agent):
 
     def __init__(self,
             remember_last_action: bool = True,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         self._remember_last_action: bool = remember_last_action

@@ -152,7 +152,7 @@ class Maze:
 
         return pacai.core.board.load_string(source, board_text, **kwargs)
 
-    def _add_wall(self, rng: random.Random, wall_index: int, gaps: float = 1.0, vertical = True) -> bool:
+    def _add_wall(self, rng: random.Random, wall_index: int, gaps: float = 1.0, vertical: bool = True) -> bool:
         """
         Try to add a vertical wall with gaps at the given location.
         Return True if a wall was added, False otherwise.

@@ -25,7 +25,7 @@ class AgentInfo(edq.util.json.DictConverter):
             move_delay: int | None = DEFAULT_MOVE_DELAY,
             state_eval_func: pacai.util.reflection.Reference | str = DEFAULT_STATE_EVAL,
             extra_arguments: dict[str, typing.Any] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         if (isinstance(name, str)):
             name = pacai.util.reflection.Reference(name)
 

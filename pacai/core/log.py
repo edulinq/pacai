@@ -1,5 +1,6 @@
 import argparse
 import logging
+import typing
 
 DEFAULT_LOGGING_LEVEL: str = logging.getLevelName(logging.INFO)
 DEFAULT_LOGGING_FORMAT: str = '%(asctime)s [%(levelname)-8s] - %(filename)s:%(lineno)s -- %(message)s'
@@ -13,7 +14,7 @@ LEVELS: list[str] = [
     logging.getLevelName(logging.CRITICAL),
 ]
 
-def init(level: str = DEFAULT_LOGGING_LEVEL, log_format: str = DEFAULT_LOGGING_FORMAT, **kwargs) -> None:
+def init(level: str = DEFAULT_LOGGING_LEVEL, log_format: str = DEFAULT_LOGGING_FORMAT, **kwargs: typing.Any) -> None:
     """
     Initialize or re-initialize the logging infrastructure.
     """
@@ -79,11 +80,11 @@ def _add_logging_level(level_name: str, level_number: int, method_name: str | No
     if hasattr(logging, level_name):
         return
 
-    def log_for_level(self, message, *args, **kwargs):
+    def log_for_level(self: typing.Any, message: str, *args: typing.Any, **kwargs: typing.Any) -> None:
         if self.isEnabledFor(level_number):
             self._log(level_number, message, args, **kwargs)
 
-    def log_to_root(message, *args, **kwargs):
+    def log_to_root(message: str, *args: typing.Any, **kwargs: typing.Any) -> None:
         logging.log(level_number, message, *args, **kwargs)
 
     logging.addLevelName(level_number, level_name)

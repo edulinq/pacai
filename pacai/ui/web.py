@@ -46,7 +46,7 @@ class WebUserInputDevice(pacai.core.ui.UserInputDevice):
 
     def __init__(self,
             char_mapping: dict[str, pacai.core.action.Action] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         self._actions: list[pacai.core.action.Action] = []
         """ The actions stored from the web page. """
 
@@ -121,7 +121,7 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
         with cls._lock:
             return cls._state, cls._image_url
 
-    def log_message(self, *args) -> None:
+    def log_message(self, *args: typing.Any) -> None:
         """
         Reduce the logging noise.
         """
@@ -194,7 +194,7 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
         if (payload is not None):
             self.wfile.write(payload)
 
-    def _route(self, path, params) -> RequestHandlerResult:
+    def _route(self, path: str, params: dict[str, typing.Any]) -> RequestHandlerResult:
         path = path.strip()
 
         target = _handler_not_found
@@ -246,7 +246,7 @@ class WebUI(pacai.core.ui.UI):
     """
 
     def __init__(self,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         input_device = WebUserInputDevice(**kwargs)
         super().__init__(user_input_device = input_device, **kwargs)
 
@@ -268,7 +268,7 @@ class WebUI(pacai.core.ui.UI):
     def game_start(self,
             initial_state: pacai.core.gamestate.GameState,
             board_highlights: list[pacai.core.board.Highlight] | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         self._start_server()
 
         super().game_start(initial_state, board_highlights = board_highlights)
@@ -286,7 +286,7 @@ class WebUI(pacai.core.ui.UI):
 
         self._stop_server()
 
-    def draw(self, state: pacai.core.gamestate.GameState, **kwargs) -> None:
+    def draw(self, state: pacai.core.gamestate.GameState, **kwargs: typing.Any) -> None:
         image = self.draw_image(state)
         HTTPHandler.set_data(state, image)
 

@@ -21,10 +21,10 @@ class Board(pacai.core.board.Board):
     e.g., `T1`, `T100`, `T-5`.
     """
 
-    def __init__(self, *args,
+    def __init__(self, *args: typing.Any,
             additional_markers: list[str] | None = None,
             qdisplay: bool = False,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         """
         Construct a GridWorld board.
         If qdisplay is true, then the existing board will be extended to display Q-Values and policies.

@@ -17,7 +17,7 @@ DEFAULT_SPRITE_SHEET: str = 'capture'
 
 RANDOM_BOARD_PREFIX: str = 'random'
 
-def set_cli_args(parser: argparse.ArgumentParser, **kwargs) -> argparse.ArgumentParser:
+def set_cli_args(parser: argparse.ArgumentParser, **kwargs: typing.Any) -> argparse.ArgumentParser:
     """
     Set Capture-specific CLI arguments.
     This is a sibling to init_from_args(), as the arguments set here can be interpreted there.
@@ -86,7 +86,7 @@ def get_additional_ui_options(args: argparse.Namespace) -> dict[str, typing.Any]
         'sprite_sheet_path': DEFAULT_SPRITE_SHEET,
     }
 
-def log_capture_results(results: list[pacai.core.game.GameResult], winning_agent_indexes: set[int], prefix = '') -> None:
+def log_capture_results(results: list[pacai.core.game.GameResult], winning_agent_indexes: set[int], prefix: str = '') -> None:
     """
     Log the result of running several games.
     """

@@ -3,6 +3,7 @@ In this file, you will implement code relating to simple single-agent searches.
 """
 
 import random
+import typing
 
 import pacai.agents.searchproblem
 import pacai.core.agent
@@ -19,7 +20,7 @@ def depth_first_search(
         problem: pacai.core.search.SearchProblem,
         heuristic: pacai.core.search.SearchHeuristic,
         rng: random.Random,
-        **kwargs) -> pacai.core.search.SearchSolution:
+        **kwargs: typing.Any) -> pacai.core.search.SearchSolution:
     """
     A pacai.core.search.SearchProblemSolver that implements depth first search (DFS).
     This means that it will search the deepest nodes in the search tree first.
@@ -33,7 +34,7 @@ def breadth_first_search(
         problem: pacai.core.search.SearchProblem,
         heuristic: pacai.core.search.SearchHeuristic,
         rng: random.Random,
-        **kwargs) -> pacai.core.search.SearchSolution:
+        **kwargs: typing.Any) -> pacai.core.search.SearchSolution:
     """
     A pacai.core.search.SearchProblemSolver that implements breadth first search (BFS).
     This means that it will search nodes based on what level in search tree they appear.
@@ -47,7 +48,7 @@ def uniform_cost_search(
         problem: pacai.core.search.SearchProblem,
         heuristic: pacai.core.search.SearchHeuristic,
         rng: random.Random,
-        **kwargs) -> pacai.core.search.SearchSolution:
+        **kwargs: typing.Any) -> pacai.core.search.SearchSolution:
     """
     A pacai.core.search.SearchProblemSolver that implements uniform cost search (UCS).
     This means that it will search nodes with a lower total cost first.
@@ -61,7 +62,7 @@ def astar_search(
         problem: pacai.core.search.SearchProblem,
         heuristic: pacai.core.search.SearchHeuristic,
         rng: random.Random,
-        **kwargs) -> pacai.core.search.SearchSolution:
+        **kwargs: typing.Any) -> pacai.core.search.SearchSolution:
     """
     A pacai.core.search.SearchProblemSolver that implements A* search (pronounced "A Star search").
     This means that it will search nodes with a lower combined cost and heuristic first.
@@ -99,7 +100,7 @@ class CornersSearchProblem(pacai.core.search.SearchProblem[CornersSearchNode]):
 
     def __init__(self,
             game_state: pacai.core.gamestate.GameState,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
         # *** Your Code Here ***
@@ -116,7 +117,7 @@ class CornersSearchProblem(pacai.core.search.SearchProblem[CornersSearchNode]):
         # *** Your Code Here ***
         raise NotImplementedError('CornersSearchProblem.get_successor_nodes')
 
-def corners_heuristic(node: CornersSearchNode, problem: CornersSearchProblem, **kwargs) -> float:
+def corners_heuristic(node: CornersSearchNode, problem: CornersSearchProblem, **kwargs: typing.Any) -> float:
     """
     A heuristic for CornersSearchProblem.
 
@@ -129,7 +130,7 @@ def corners_heuristic(node: CornersSearchNode, problem: CornersSearchProblem, **
     # *** Your Code Here ***
     return pacai.search.common.null_heuristic(node, problem)  # Default to a trivial solution.
 
-def food_heuristic(node: pacai.search.food.FoodSearchNode, problem: pacai.search.food.FoodSearchProblem, **kwargs) -> float:
+def food_heuristic(node: pacai.search.food.FoodSearchNode, problem: pacai.search.food.FoodSearchProblem, **kwargs: typing.Any) -> float:
     """
     A heuristic for the FoodSearchProblem.
     """
@@ -174,7 +175,7 @@ class AnyMarkerSearchProblem(pacai.search.position.PositionSearchProblem):
     def __init__(self,
             game_state: pacai.core.gamestate.GameState,
             target_marker: pacai.core.board.Marker = pacai.pacman.board.MARKER_PELLET,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         super().__init__(game_state, **kwargs)
 
         # *** Your Code Here ***

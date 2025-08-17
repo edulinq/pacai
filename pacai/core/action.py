@@ -13,7 +13,7 @@ class Action(str):
     This type is more semantic than functional.
     """
 
-    def __new__(cls, raw_text: str, safe = False) -> 'Action':
+    def __new__(cls, raw_text: str, safe: bool = False) -> 'Action':
         # If the caller deems the imput "safe" then we will skip all checks and cleaning,
         # and return just the input string.
         if (safe):

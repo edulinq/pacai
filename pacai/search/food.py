@@ -46,7 +46,7 @@ class FoodSearchProblem(pacai.core.search.SearchProblem[FoodSearchNode]):
     def __init__(self,
             game_state: pacai.core.gamestate.GameState,
             start_position: pacai.core.board.Position | None = None,
-            **kwargs) -> None:
+            **kwargs: typing.Any) -> None:
         """
         Create a food search problem.
 
