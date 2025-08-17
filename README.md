@@ -3,7 +3,7 @@
 An AI educational project disguised as [Pac-Man](https://en.wikipedia.org/wiki/Pac-Man)!
 
 This project was inspired by and originally based off of the Pacman educational project from the
-[Berkeley AI Lab](http://ai.berkeley.edu/project_overview.html).
+[Berkeley AI Lab](https://www-inst.eecs.berkeley.edu/project_overview.html).
 It has since been completely rewritten.
 
 Some notable changes from the original Berkeley project:
@@ -174,7 +174,7 @@ Here are just a few that we know about:
 
 See [LICENSE](LICENSE).
 
-The majority of this project is licensed under an [MIT license](LICENSE).
+The majority of this project is licensed under an [MIT license](LICENSE-code).
 Non-code portions of the code (e.g., images) under the [pacai/resources directory](/pacai/resources)
 are license under a [CC BY-SA 4.0 license](LICENSE-noncode).
 
