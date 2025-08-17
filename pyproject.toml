@@ -5,11 +5,13 @@ requires = [
     "packaging>=21.3",
     "setuptools>=60",
     "setuptools-scm>=8.0",
+    "twine",
+    "vermin",
 ]
 
 [project]
-name = "linqs-pacai"
-description = "A modified version of the Pacman educational project from the Berkley AI Lab."
+name = "pacai"
+description = "An AI educational project disguised as Pac-Man."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE.md"}
@@ -44,6 +46,12 @@ optional-dependencies = {dev = {file = ["requirements-dev.txt"]}}
 [project.urls]
 Homepage = "https://github.com/linqs/pacman"
 Repository = "https://github.com/linqs/pacman"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["*"]
 
 [tool.setuptools.packages.find]
 where = ["."]
