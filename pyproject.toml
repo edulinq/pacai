@@ -17,7 +17,7 @@ requires-python = ">=3.10"
 license = {file = "LICENSE.md"}
 
 authors = [
-    {name = "Eriq Augustine", email = "eaugusti@ucsc.edu"},
+    {name = "Eriq Augustine", email = "eriq@edulinq.org"},
     {name = "Connor Pryor", email = "cfpryor@ucsc.edu"},
     {name = "LINQS", email = "linqs.edu@gmail.com"},
 ]
