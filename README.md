@@ -23,7 +23,7 @@ This project requires [Python](https://www.python.org/) >= 3.10.
 
 The project can be installed from PyPi with:
 ```sh
-pip3 install pacai
+pip3 install edq-pacai
 ```
 
 Standard Python requirements are listed in `pyproject.toml`.
