@@ -21,15 +21,12 @@ readonly MODULE_TITLE_LOCATION='<section class="module-info">'
 readonly API_DOC_MARKER='<!-- API-DOC-MARKER -->'
 
 function check_git() {
-    # TEST
-    return 0
-
-    if [ ! -z "$(git status --porcelain)" ] ; then 
+    if [ ! -z "$(git status --porcelain)" ] ; then
         echo "ERROR: Repository is not clean."
         exit 1
     fi
 
-    if [ $(git branch --show-current) == 'main' ] ; then
+    if [ $(git branch --show-current) != 'main' ] ; then
         echo "ERROR: Repository is not on the main branch."
         exit 2
     fi
