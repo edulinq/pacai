@@ -10,7 +10,7 @@ requires = [
 ]
 
 [project]
-name = "pacai"
+name = "edq-pacai"
 description = "An AI educational project disguised as Pac-Man."
 readme = "README.md"
 requires-python = ">=3.10"
