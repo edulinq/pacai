@@ -1,12 +1,13 @@
 import os
 
+import edq.testing.unittest
+
 import pacai.core.agent
-import pacai.test.base
 import pacai.util.reflection
 
 THIS_DIR: str = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
-class ReflectionTest(pacai.test.base.BaseTest):
+class ReflectionTest(edq.testing.unittest.BaseTest):
     """ Test reflection functionality. """
 
     def test_class_reference_base(self):

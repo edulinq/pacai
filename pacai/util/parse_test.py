@@ -1,7 +1,8 @@
-import pacai.test.base
+import edq.testing.unittest
+
 import pacai.util.parse
 
-class ParseTest(pacai.test.base.BaseTest):
+class ParseTest(edq.testing.unittest.BaseTest):
     """ Test parsing functionality. """
 
     def test_boolean(self):

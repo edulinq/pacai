@@ -1,9 +1,10 @@
+import edq.testing.unittest
+
 import pacai.core.board
 import pacai.search.distance
 import pacai.search.position
-import pacai.test.base
 
-class DistanceTest(pacai.test.base.BaseTest):
+class DistanceTest(edq.testing.unittest.BaseTest):
     """ Test different distance-related functionalities. """
 
     def test_manhattan_base(self):

@@ -1,7 +1,6 @@
 {
     "cli": "pacai.pacman.bin",
-    "skip_windows": true,
-    "skip_mac": true,
+    "platform_skip": "darwin|win32",
     "arguments": [
         "--seed", "4",
         "--board", "maze-tiny",

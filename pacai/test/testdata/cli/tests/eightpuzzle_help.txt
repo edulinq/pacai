@@ -6,4 +6,4 @@
     "error": true
 }
 ---
-0
+builtins.SystemExit: 0

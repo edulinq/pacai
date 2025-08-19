@@ -1,10 +1,11 @@
 import sys
 
-import pacai.test.base
+import edq.testing.unittest
+
 import pacai.util.alias
 import pacai.util.reflection
 
-class AliasTest(pacai.test.base.BaseTest):
+class AliasTest(edq.testing.unittest.BaseTest):
     """ Test alias functionality. """
 
     def test_alias_reflection(self):

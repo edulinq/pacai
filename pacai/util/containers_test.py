@@ -1,7 +1,8 @@
-import pacai.test.base
+import edq.testing.unittest
+
 import pacai.util.containers
 
-class ContainersTest(pacai.test.base.BaseTest):
+class ContainersTest(edq.testing.unittest.BaseTest):
     """ Test the provided containers. """
 
     def test_push_pop(self):
@@ -75,4 +76,4 @@ class ContainersTest(pacai.test.base.BaseTest):
                 if (error_substring is not None):
                     self.fail(f"Did not get expected error: '{error_substring}'.")
 
-                self.assertListEqualJSON(expected_output, actual_output)
+                self.assertJSONListEqual(expected_output, actual_output)

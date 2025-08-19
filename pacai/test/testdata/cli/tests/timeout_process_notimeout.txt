@@ -1,7 +1,6 @@
 {
     "cli": "pacai.pacman.bin",
-    "skip_windows": true,
-    "skip_mac": true,
+    "platform_skip": "darwin|win32",
     "arguments": [
         "--seed", "4",
         "--board", "maze-tiny",
@@ -11,14 +10,13 @@
         "--agent-start-timeout", "0.1",
         "--agent-end-timeout", "0.1",
         "--agent-action-timeout", "0.1",
-        "--agent-arg", "0::get_action_wait=0.2",
         "--max-turns", "2",
     ]
 }
 ---
-<LOG_PREFIX> -- Average Score: -1000000.0
-<LOG_PREFIX> -- Scores:        -1000000
+<LOG_PREFIX> -- Average Score: -2.0
+<LOG_PREFIX> -- Scores:        -2
 <LOG_PREFIX> -- Win Rate:      0 / 1 (0.00)
 <LOG_PREFIX> -- Record:        Loss
-<LOG_PREFIX> -- Average Turns: 1.0
-<LOG_PREFIX> -- Turn Counts:   1
+<LOG_PREFIX> -- Average Turns: 2.0
+<LOG_PREFIX> -- Turn Counts:   2

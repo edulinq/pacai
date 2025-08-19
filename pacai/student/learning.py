@@ -275,7 +275,7 @@ class ApproximateQLearningAgent(QLearningAgent):
 
     def __init__(self,
             feature_extractor_func: pacai.core.features.FeatureExtractor | pacai.util.reflection.Reference | str =
-                    pacai.core.features.score_feature_extractor,
+                pacai.core.features.score_feature_extractor,
             **kwargs: typing.Any) -> None:
         self.weights: pacai.core.features.WeightDict = pacai.core.features.WeightDict()
         """ The feature weights learned by this agent. """

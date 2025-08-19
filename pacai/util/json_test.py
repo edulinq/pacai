@@ -1,3 +1,4 @@
+import edq.testing.unittest
 import edq.util.json
 
 import pacai.core.agentaction
@@ -7,10 +8,9 @@ import pacai.core.game
 import pacai.core.isolation.level
 import pacai.core.ticket
 import pacai.pacman.gamestate
-import pacai.test.base
 import pacai.util.reflection
 
-class JSONTest(pacai.test.base.BaseTest):
+class JSONTest(edq.testing.unittest.BaseTest):
     """
     Test the JSON encoding/decoding functionality.
     """
@@ -785,11 +785,11 @@ class JSONTest(pacai.test.base.BaseTest):
                 if (error_substring is not None):
                     self.fail(f"Did not get expected error: '{error_substring}'.")
 
-                self.assertDictEqualJSON(expected_dict, actual_dict)
+                self.assertJSONDictEqual(expected_dict, actual_dict)
 
-                self.assertDictEqualJSON(original, obj_from_expected)
-                self.assertDictEqualJSON(original, obj_from_actual)
-                self.assertDictEqualJSON(obj_from_expected, obj_from_actual)
+                self.assertJSONDictEqual(original, obj_from_expected)
+                self.assertJSONDictEqual(original, obj_from_actual)
+                self.assertJSONDictEqual(obj_from_expected, obj_from_actual)
 
     def test_loads_object(self):
         """ Test loading a JSON string into an object. """
@@ -860,4 +860,4 @@ class JSONTest(pacai.test.base.BaseTest):
                 if (error_substring is not None):
                     self.fail(f"Did not get expected error: '{error_substring}'.")
 
-                self.assertDictEqualJSON(expected, actual)
+                self.assertJSONDictEqual(expected, actual)

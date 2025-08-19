@@ -1,6 +1,6 @@
 {
     "cli": "pacai.pacman.bin",
-    "skip_windows": true,
+    "platform_skip": "win32",
     "arguments": [
         "--seed", "4",
         "--board", "maze-test",

@@ -1,10 +1,11 @@
+import edq.testing.unittest
+
 import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.ticket
 import pacai.search.position
-import pacai.test.base
 
-class GameStateTest(pacai.test.base.BaseTest):
+class GameStateTest(edq.testing.unittest.BaseTest):
     """ Test different game state functionalities. """
 
     def test_get_agent_position_base(self):
@@ -30,7 +31,7 @@ class GameStateTest(pacai.test.base.BaseTest):
             1: agent_1_position,
         }
         agent_positions_actual = state.get_agent_positions()
-        self.assertDictEqualJSON(agent_positions_expected, agent_positions_actual)
+        self.assertJSONDictEqual(agent_positions_expected, agent_positions_actual)
 
         self.assertEqual(agent_0_position, state.get_agent_position(), 'default agent')
         self.assertEqual(agent_0_position, state.get_agent_position(0), 'agent 0')

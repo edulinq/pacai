@@ -1,7 +1,8 @@
-import pacai.core.ticket
-import pacai.test.base
+import edq.testing.unittest
 
-class TicketTest(pacai.test.base.BaseTest):
+import pacai.core.ticket
+
+class TicketTest(edq.testing.unittest.BaseTest):
     """ Test ticket functionality. """
 
     def test_ordering_base(self):

@@ -1,10 +1,11 @@
 import glob
 import os
 
-import pacai.core.spritesheet
-import pacai.test.base
+import edq.testing.unittest
 
-class SpriteSheetTest(pacai.test.base.BaseTest):
+import pacai.core.spritesheet
+
+class SpriteSheetTest(edq.testing.unittest.BaseTest):
     """ Test sprite sheet functionality. """
 
     def test_load_default_sprite_sheets(self):

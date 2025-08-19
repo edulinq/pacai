@@ -3,7 +3,7 @@
     "arguments": [
         "--seed", "4",
         "--board", "maze-test",
-        "--pacman", "__REL_DIR__(../../agents/random.py:RandomAgent)",
+        "--pacman", "__BASE_DIR__(../../../../agents/random.py:RandomAgent)",
         "--ui", "null"
     ]
 }

@@ -6,4 +6,4 @@
     "error": true
 }
 ---
-breadth_first_search
+builtins.NotImplementedError: breadth_first_search

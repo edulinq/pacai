@@ -1,10 +1,11 @@
 import glob
 import os
 
-import pacai.core.board
-import pacai.test.base
+import edq.testing.unittest
 
-class BoardTest(pacai.test.base.BaseTest):
+import pacai.core.board
+
+class BoardTest(edq.testing.unittest.BaseTest):
     """
     Test the core board class.
     """
