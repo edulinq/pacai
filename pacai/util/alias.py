@@ -40,6 +40,9 @@ class Alias:
         Alias._alias_map[short] = long
         Alias._all_aliases.append(self)
 
+    def __repr__(self) -> str:
+        return f"('{self.short}' -> '{self.long}')"
+
 def lookup(short: str, default: str | None = None) -> str:
     """
     Lookup the long name for an alias.
