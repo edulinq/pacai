@@ -17,6 +17,10 @@ Some notable changes from the original Berkeley project:
  - Substantial testing infrastructure has been added.
  - Agent speed is now configurable.
 
+## Documentation
+
+API documentation for all releases is available at [edulinq.github.io/pacai](https://edulinq.github.io/pacai).
+
 ## Installation / Requirements
 
 This project requires [Python](https://www.python.org/) >= 3.10.
@@ -158,8 +162,10 @@ Students who are working on this project as part of a class should note a few th
 
 This project has been built up from the work of many people.
 Here are just a few that we know about:
- - The Berkeley AI Lab for starting this project.
-   Primarily John Denero and Dan Klein.
+ - The [Berkeley AI Lab](http://ai.berkeley.edu/) for starting
+   [this project](https://www-inst.eecs.berkeley.edu/project_overview.html).
+   Primarily John Denero ([denero@cs.berkeley.edu](mailto:denero@cs.berkeley.edu))
+   and Dan Klein ([klein@cs.berkeley.edu](mailto:klein@cs.berkeley.edu)).
  - Barak Michener for providing the original graphics and debugging help.
  - Ed Karuna for providing the original graphics and debugging help.
  - Jeremy Cowles for implementing an initial tournament infrastructure.
@@ -182,3 +188,7 @@ Additionally, solutions (implementations (full or partial) of the code in the [p
 should never be published or distributed.
 
 [This notice](LICENSE) should always be retained.
+
+Licensing for the original UC Berkeley project
+(not applicable as of release `v2.0.0`)
+can be found [in release `v1.0.0`](https://github.com/edulinq/pacai/blob/v1.0.0/LICENSE.md).
