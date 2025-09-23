@@ -48,9 +48,13 @@ class UserInputAgent(pacai.core.agent.Agent):
             intended_action = state.get_last_agent_action()
             used_user_input = False
 
-        # If the action is illegal, then just stop.
+        # If the action is illegal, then just stop (if legal) or pick a random action.
         if (intended_action not in legal_actions):
-            intended_action = pacai.core.action.STOP
+            if (pacai.core.action.STOP in legal_actions):
+                intended_action = pacai.core.action.STOP
+            else:
+                intended_action = self.rng.choice(legal_actions)
+
             used_user_input = False
 
         return pacai.core.agentaction.AgentAction(intended_action, clear_inputs = used_user_input)
