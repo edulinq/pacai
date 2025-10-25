@@ -132,7 +132,7 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[pacai.core.mdp.MDPStateP
         if (action not in possible_actions):
             raise ValueError(f"Got an illegal action '{action}'. Available actions are: {possible_actions}.")
 
-        (north_state, east_state, south_state, west_state) = self._get_move_states(state)
+        (north_state, east_state, south_state, west_state) = self._get_move_states(state)  # pylint: disable=unbalanced-tuple-unpacking
 
         transitions = []
 

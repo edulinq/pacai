@@ -164,7 +164,7 @@ class Position(edq.util.json.DictConverter):
 
         return self.add(offset)
 
-    def __lt__(self, other: 'Position') -> bool:
+    def __lt__(self, other: 'Position') -> bool:  # type: ignore[override]
         return (self._hash < other._hash)
 
     def __eq__(self, other: object) -> bool:

@@ -54,7 +54,7 @@ class MDPStatePosition(MDPState):
     def is_terminal(self) -> bool:
         return (self.position == TERMINAL_POSITION)
 
-    def __lt__(self, other: 'MDPStatePosition') -> bool:
+    def __lt__(self, other: 'MDPStatePosition') -> bool:  # type: ignore[override]
         return (self.position < other.position)
 
     def __eq__(self, other: object) -> bool:
