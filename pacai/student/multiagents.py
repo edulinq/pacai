@@ -41,7 +41,7 @@ class MyMinimaxLikeAgent(pacai.agents.minimax.MinimaxLikeAgent):
     (you can ignore alpha and beta).
 
     To implement minimax with alpha-beta pruning,
-    minimax_step_max() and minimax_step_min() with alpha an beta are required.
+    minimax_step_max() and minimax_step_min() with alpha and beta are required.
 
     To implement expectimax, minimax_step_max() and minimax_step_expected_min() are required.
 
