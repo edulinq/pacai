@@ -73,7 +73,7 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
         self._stats_states_evaluated.append(0)
         self._stats_nodes_visited.append(0)
 
-        actions, score = self.minimax_step(state, self.ply_count + 1, math.inf, -math.inf)
+        actions, score = self.minimax_step(state, self.ply_count + 1, -math.inf, math.inf)
         action = self.rng.choice(actions)
 
         logging.debug("Turn: %d, Game State Score: %d, Minimax Score: %d, Chosen Action: %s, States Evaluated: %d, Nodes Visited: %d.",
