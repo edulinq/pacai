@@ -437,7 +437,7 @@ class Game(abc.ABC):
 
         if ((not self._is_replay) and (self._save_path is not None)):
             logging.info("Saving results to '%s'.", self._save_path)
-            edq.util.json.dump_path(result, self._save_path)
+            edq.util.json.dump_path(result, self._save_path, indent = 4)
 
         return result
 
