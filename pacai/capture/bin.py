@@ -15,8 +15,6 @@ import pacai.util.bin
 DEFAULT_BOARD: str = 'capture-medium'
 DEFAULT_SPRITE_SHEET: str = 'capture'
 
-RANDOM_BOARD_PREFIX: str = 'random'
-
 def set_cli_args(parser: argparse.ArgumentParser, **kwargs: typing.Any) -> argparse.ArgumentParser:
     """
     Set Capture-specific CLI arguments.
@@ -69,13 +67,7 @@ def init_from_args(args: argparse.Namespace) -> tuple[dict[int, pacai.core.agent
         base_agent_infos[i] = agent_info
 
     # Check for random boards.
-    if (args.board.startswith(RANDOM_BOARD_PREFIX)):
-        board_seed = None
-        if (args.board != RANDOM_BOARD_PREFIX):
-            # Strip 'random-' and 'random'.
-            board_seed = int(args.board.removeprefix(RANDOM_BOARD_PREFIX + '-').removeprefix(RANDOM_BOARD_PREFIX))
-
-        args.board = pacai.capture.board.generate(seed = board_seed)
+    args.board = pacai.capture.game.Game.check_for_random_board(args.board)
 
     return base_agent_infos, [], {}
 

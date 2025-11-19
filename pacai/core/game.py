@@ -452,6 +452,43 @@ class Game(abc.ABC):
         for user_inputs in agent_user_inputs.values():
             user_inputs += new_user_inputs
 
+    @classmethod
+    def override_args_with_replay(cls,
+            args: argparse.Namespace, base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
+        """
+        Override the args with the settings from the replay in the args.
+        Children may extend this for additional functionality.
+        """
+
+        logging.info("Loading replay from '%s'.", args.replay_path)
+        replay_info = typing.cast(GameResult, edq.util.json.load_object_path(args.replay_path, GameResult))
+
+        # Overrides from the replay info.
+        args.board = replay_info.game_info.board_source
+        args.seed = replay_info.game_info.seed
+
+        # Special settings for replays.
+        args.num_games = 1
+        args.num_training = 0
+        args.max_turns = len(replay_info.history)
+
+        # Script the moves for each agent based on the replay's history.
+        scripted_actions: dict[int, list[pacai.core.action.Action]] = {}
+        for item in replay_info.history:
+            if (item.agent_index not in scripted_actions):
+                scripted_actions[item.agent_index] = []
+
+            scripted_actions[item.agent_index].append(item.get_action())
+
+        base_agent_infos.clear()
+
+        for (agent_index, actions) in scripted_actions.items():
+            base_agent_infos[agent_index] = pacai.core.agentinfo.AgentInfo(
+                name = pacai.util.alias.AGENT_SCRIPTED.short,
+                move_delay = replay_info.game_info.agent_infos[agent_index].move_delay,
+                actions = actions,
+            )
+
 def set_cli_args(parser: argparse.ArgumentParser, default_board: str | None = None) -> argparse.ArgumentParser:
     """
     Set common CLI arguments.
@@ -553,7 +590,7 @@ def init_from_args(
     # then all the core arguments are loaded differently (directly from the file).
     # Use the replay file to override all the current options.
     if (args.replay_path is not None):
-        _override_args_with_replay(args, base_agent_infos)
+        game_class.override_args_with_replay(args, base_agent_infos)
         remove_agent_indexes = []
 
     if (args.board is None):
@@ -634,40 +671,6 @@ def init_from_args(
     setattr(args, '_games', all_games)
 
     return args
-
-def _override_args_with_replay(args: argparse.Namespace, base_agent_infos: dict[int, pacai.core.agentinfo.AgentInfo]) -> None:
-    """
-    Override the args with the settings from the replay in the args.
-    """
-
-    logging.info("Loading replay from '%s'.", args.replay_path)
-    replay_info = typing.cast(GameResult, edq.util.json.load_object_path(args.replay_path, GameResult))
-
-    # Overrides from the replay info.
-    args.board = replay_info.game_info.board_source
-    args.seed = replay_info.game_info.seed
-
-    # Special settings for replays.
-    args.num_games = 1
-    args.num_training = 0
-    args.max_turns = len(replay_info.history)
-
-    # Script the moves for each agent based on the replay's history.
-    scripted_actions: dict[int, list[pacai.core.action.Action]] = {}
-    for item in replay_info.history:
-        if (item.agent_index not in scripted_actions):
-            scripted_actions[item.agent_index] = []
-
-        scripted_actions[item.agent_index].append(item.get_action())
-
-    base_agent_infos.clear()
-
-    for (agent_index, actions) in scripted_actions.items():
-        base_agent_infos[agent_index] = pacai.core.agentinfo.AgentInfo(
-            name = pacai.util.alias.AGENT_SCRIPTED.short,
-            move_delay = replay_info.game_info.agent_infos[agent_index].move_delay,
-            actions = actions,
-        )
 
 def _parse_agent_infos(
         agent_indexes: list[int],

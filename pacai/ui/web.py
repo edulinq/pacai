@@ -192,7 +192,7 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
         if (payload is not None):
-            self.wfile.write(payload)  # type: ignore[arg-type]
+            self.wfile.write(payload)
 
     def _route(self, path: str, params: dict[str, typing.Any]) -> RequestHandlerResult:
         path = path.strip()
