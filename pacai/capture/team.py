@@ -56,3 +56,16 @@ def create_team_baseline() -> list[pacai.core.agentinfo.AgentInfo]:
         pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CAPTURE_OFFENSIVE.long),
         pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CAPTURE_DEFENSIVE.long),
     ]
+
+def create_team_cheating() -> list[pacai.core.agentinfo.AgentInfo]:
+    """
+    Create a team with just cheating agents.
+    """
+
+    return [
+        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CHEATING.long),
+        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CHEATING.long),
+        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CHEATING.long),
+        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CHEATING.long),
+        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CHEATING.long),
+    ]

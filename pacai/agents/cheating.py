@@ -12,10 +12,13 @@ class CheatingAgent(pacai.core.agent.Agent):
 
     def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
         # Get a bunch of points.
-        state.score = 1000
+        if (self.agent_index % 2 == 0):
+            state.score = -1000
+        else:
+            state.score = 1000
 
         # Eat all the food, thereby winning the game.
-        for food_position in state.board.get_marker_positions(pacai.pacman.board.MARKER_PELLET):
+        for food_position in state.get_food():
             state.board.remove_marker(pacai.pacman.board.MARKER_PELLET, food_position)
 
         # End the game.

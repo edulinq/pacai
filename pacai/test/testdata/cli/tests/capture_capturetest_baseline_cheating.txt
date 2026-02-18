@@ -1,0 +1,16 @@
+{
+    "cli": "pacai.capture.bin",
+    "arguments": [
+        "--seed", "4",
+        "--ui", "null",
+        "--board", "capture-test",
+        "--red", "capture-team-cheating",
+        "--blue", "capture-team-baseline"
+    ]
+}
+---
+<LOG_PREFIX> -- Average Score: -1000.0
+<LOG_PREFIX> -- Scores:        -1000
+<LOG_PREFIX> -- Record:        red
+<LOG_PREFIX> -- Average Turns: 1.0
+<LOG_PREFIX> -- Turn Counts:   1
