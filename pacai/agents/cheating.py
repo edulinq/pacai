@@ -1,3 +1,5 @@
+import typing
+
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.gamestate
@@ -11,6 +13,8 @@ class CheatingAgent(pacai.core.agent.Agent):
     """
 
     def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
+        state = typing.cast(pacai.pacman.gamestate.GameState, state)
+
         # Get a bunch of points.
         if (self.agent_index % 2 == 0):
             state.score = -1000
