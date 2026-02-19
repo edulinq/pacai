@@ -17,9 +17,9 @@ DEATH_SLEEP_TIME_SECS: float = 0.5
 MIN_WINDOW_HEIGHT: int = 100
 MIN_WINDOW_WIDTH: int = 100
 
-_tk_root: tkinter.Tk | None = None
+_tk_root: tkinter.Tk | None = None  # pylint: disable=invalid-name
 
-_tk_window_count: int = 0
+_tk_window_count: int = 0  # pylint: disable=invalid-name
 
 class TkUserInputDevice(pacai.core.ui.UserInputDevice):
     """

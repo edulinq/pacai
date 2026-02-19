@@ -3,6 +3,7 @@ import typing
 import pacai.core.board
 import pacai.core.gamestate
 import pacai.core.search
+import pacai.pacman.board
 
 class FoodSearchNode(pacai.core.search.SearchNode):
     """

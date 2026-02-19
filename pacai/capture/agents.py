@@ -1,6 +1,7 @@
 import typing
 
 import pacai.agents.greedy
+import pacai.capture.gamestate
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.gamestate
@@ -65,6 +66,26 @@ class OffensiveAgent(pacai.agents.greedy.GreedyFeatureAgent):
 
     def game_start(self, initial_state: pacai.core.gamestate.GameState) -> None:
         self._distances.compute(initial_state.board)
+
+class CheatingAgent(pacai.core.agent.Agent):
+    """
+    A capture agent that cheats.
+    """
+
+    def get_action(self, state: pacai.core.gamestate.GameState) -> pacai.core.action.Action:
+        state = typing.cast(pacai.capture.gamestate.GameState, state)
+
+        # Get a bunch of points.
+        state.score = state._team_modifier() * 1000
+
+        # Eat all the food, thereby winning the game.
+        for food_position in state.get_food(agent_index = self.agent_index):
+            state.board.remove_marker(pacai.pacman.board.MARKER_PELLET, food_position)
+
+        # End the game.
+        state.game_over = True
+
+        return pacai.core.action.STOP
 
 def _extract_baseline_defensive_features(
         state: pacai.core.gamestate.GameState,

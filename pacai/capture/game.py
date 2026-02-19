@@ -1,6 +1,7 @@
 import argparse
 import random
 
+import pacai.capture.board
 import pacai.capture.gamestate
 import pacai.core.agentinfo
 import pacai.core.board

@@ -62,6 +62,7 @@ def lookup(short: str, default: str | None = None) -> str:
 
 AGENT_CAPTURE_DEFENSIVE: Alias = Alias('agent-capture-defensive', 'pacai.capture.agents.DefensiveAgent')
 AGENT_CAPTURE_OFFENSIVE: Alias = Alias('agent-capture-offensive', 'pacai.capture.agents.OffensiveAgent')
+AGENT_CAPTURE_CHEATING: Alias = Alias('agent-capture-cheating', 'pacai.capture.agents.CheatingAgent')
 AGENT_CHEATING: Alias = Alias('agent-cheating', 'pacai.agents.cheating.CheatingAgent')
 AGENT_DUMMY: Alias = Alias('agent-dummy', 'pacai.agents.dummy.DummyAgent')
 AGENT_GO_WEST: Alias = Alias('agent-go-west', 'pacai.agents.gowest.GoWestAgent')
@@ -84,6 +85,7 @@ AGENT_VALUE_ITERATION: Alias = Alias('agent-value-iteration', 'pacai.student.lea
 AGENT_SHORT_NAMES: list[str] = [
     AGENT_CAPTURE_DEFENSIVE.short,
     AGENT_CAPTURE_OFFENSIVE.short,
+    AGENT_CAPTURE_CHEATING.short,
     AGENT_CHEATING.short,
     AGENT_DUMMY.short,
     AGENT_GO_WEST.short,
@@ -108,12 +110,14 @@ CAPTURE_TEAM_DUMMY: Alias = Alias('capture-team-dummy', 'pacai.capture.team.crea
 CAPTURE_TEAM_RANDOM: Alias = Alias('capture-team-random', 'pacai.capture.team.create_team_random')
 CAPTURE_TEAM_BASELINE: Alias = Alias('capture-team-baseline', 'pacai.capture.team.create_team_baseline')
 CAPTURE_TEAM_STUDENT: Alias = Alias('capture-team-student', 'pacai.student.capture.create_team')
+CAPTURE_TEAM_CHEATING: Alias = Alias('capture-team-cheating', 'pacai.capture.team.create_team_cheating')
 
 CAPTURE_TEAM_SHORT_NAMES: list[str] = [
     CAPTURE_TEAM_DUMMY.short,
     CAPTURE_TEAM_RANDOM.short,
     CAPTURE_TEAM_BASELINE.short,
     CAPTURE_TEAM_STUDENT.short,
+    CAPTURE_TEAM_CHEATING.short
 ]
 
 DISTANCE_EUCLIDEAN: Alias = Alias('distance-euclidean', 'pacai.search.distance.euclidean_distance')
