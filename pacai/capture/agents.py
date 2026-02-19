@@ -1,6 +1,7 @@
 import typing
 
 import pacai.agents.greedy
+import pacai.capture.gamestate
 import pacai.core.action
 import pacai.core.agent
 import pacai.core.gamestate
