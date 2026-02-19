@@ -4,6 +4,7 @@ import pacai.core.action
 import pacai.core.agent
 import pacai.core.gamestate
 import pacai.pacman.board
+import pacai.pacman.gamestate
 
 class CheatingAgent(pacai.core.agent.Agent):
     """
