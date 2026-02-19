@@ -63,9 +63,9 @@ def create_team_cheating() -> list[pacai.core.agentinfo.AgentInfo]:
     """
 
     return [
-        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CHEATING.long),
-        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CHEATING.long),
-        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CHEATING.long),
-        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CHEATING.long),
-        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CHEATING.long),
+        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CAPTURE_CHEATING.long),
+        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CAPTURE_CHEATING.long),
+        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CAPTURE_CHEATING.long),
+        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CAPTURE_CHEATING.long),
+        pacai.core.agentinfo.AgentInfo(name = pacai.util.alias.AGENT_CAPTURE_CHEATING.long),
     ]

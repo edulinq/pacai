@@ -4,8 +4,8 @@
         "--seed", "4",
         "--ui", "null",
         "--board", "capture-test",
-        "--blue", "capture-team-cheating",
-        "--red", "capture-team-baseline"
+        "--red", "capture-team-baseline",
+        "--blue", "capture-team-cheating"
     ]
 }
 ---

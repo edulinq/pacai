@@ -62,6 +62,7 @@ def lookup(short: str, default: str | None = None) -> str:
 
 AGENT_CAPTURE_DEFENSIVE: Alias = Alias('agent-capture-defensive', 'pacai.capture.agents.DefensiveAgent')
 AGENT_CAPTURE_OFFENSIVE: Alias = Alias('agent-capture-offensive', 'pacai.capture.agents.OffensiveAgent')
+AGENT_CAPTURE_CHEATING: Alias = Alias('agent-capture-cheating', 'pacai.capture.agents.CheatingAgent')
 AGENT_CHEATING: Alias = Alias('agent-cheating', 'pacai.agents.cheating.CheatingAgent')
 AGENT_DUMMY: Alias = Alias('agent-dummy', 'pacai.agents.dummy.DummyAgent')
 AGENT_GO_WEST: Alias = Alias('agent-go-west', 'pacai.agents.gowest.GoWestAgent')
@@ -84,6 +85,7 @@ AGENT_VALUE_ITERATION: Alias = Alias('agent-value-iteration', 'pacai.student.lea
 AGENT_SHORT_NAMES: list[str] = [
     AGENT_CAPTURE_DEFENSIVE.short,
     AGENT_CAPTURE_OFFENSIVE.short,
+    AGENT_CAPTURE_CHEATING.short,
     AGENT_CHEATING.short,
     AGENT_DUMMY.short,
     AGENT_GO_WEST.short,
