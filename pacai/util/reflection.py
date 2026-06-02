@@ -9,15 +9,15 @@ This file aims to contain all the reflection necessary for this project
 
 import typing
 
-import edq.util.json
 import edq.util.pyimport
 import edq.util.reflection
+import edq.util.serial
 
 import pacai.util.alias
 
 REF_DELIM: str = ':'
 
-class Reference(edq.util.json.DictConverter):
+class Reference(edq.util.serial.DictConverter):
     """
     A Reference is constructed from a formatted that references a specific Python definition (e.g. class or function).
     The rough basic structure of a reference is: `[<path>:][<qualified package name>.][<module name>.]<short name>`.
@@ -110,12 +110,13 @@ class Reference(edq.util.json.DictConverter):
 
         return file_path, module_name, short_name
 
-    def to_dict(self) -> dict[str, typing.Any]:
-        return vars(self).copy()
-
     @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        text = Reference.build_string(data.get('short_name', ''), data.get('file_path', None), data.get('module_name', None))
+    def from_dict(cls,
+            data: typing.Dict[str, edq.util.serial.PODType],
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> 'Reference':
+        text = Reference.build_string(
+                data.get('short_name', ''), data.get('file_path', None), data.get('module_name', None))  # type: ignore[arg-type]
         return cls(text)
 
 def fetch(reference: Reference | str) -> typing.Any:

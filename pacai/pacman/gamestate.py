@@ -2,6 +2,7 @@ import random
 import typing
 
 import PIL.Image
+import edq.util.serial
 
 import pacai.core.action
 import pacai.core.gamestate
@@ -62,7 +63,9 @@ class GameState(pacai.core.gamestate.GameState):
         so all ghosts need an independent timer.
         """
 
-    def copy(self) -> pacai.core.gamestate.GameState:
+    def copy(self,
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> 'GameState':
         new_state = super().copy()
         new_state = typing.cast(GameState, new_state)
 

@@ -1,8 +1,6 @@
-import typing
+import edq.util.serial
 
-import edq.util.json
-
-class Ticket(edq.util.json.DictConverter):
+class Ticket(edq.util.serial.DictConverter):
     """
     An agent's Ticket determines when they will move next.
     A ticket is a tuple of three values: (next move time, last move time, number of moves).
@@ -40,11 +38,3 @@ class Ticket(edq.util.json.DictConverter):
             last_time = self.next_time,
             num_moves = self.num_moves + 1,
         )
-
-    def to_dict(self) -> dict[str, typing.Any]:
-        return vars(self).copy()
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        data = data.copy()
-        return cls(**data)

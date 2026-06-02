@@ -8,6 +8,7 @@ import random
 import typing
 
 import edq.util.json
+import edq.util.serial
 
 import pacai.core.action
 import pacai.core.agentaction
@@ -23,7 +24,7 @@ DEFAULT_AGENT_ACTION_TIMEOUT: float = 0.0
 
 DEFAULT_AGENT: str = pacai.util.alias.AGENT_RANDOM.short
 
-class GameInfo(edq.util.json.DictConverter):
+class GameInfo(edq.util.serial.DictConverter):
     """
     A simple container that holds common information about a game.
     """
@@ -91,35 +92,7 @@ class GameInfo(edq.util.json.DictConverter):
         self.extra_info: dict[str, typing.Any] = extra_info
         """ Any additional arguments passed to the game. """
 
-    def to_dict(self) -> dict[str, typing.Any]:
-        return {
-            'seed': self.seed,
-            'board_source': self.board_source,
-            'agent_infos': {id: info.to_dict() for (id, info) in self.agent_infos.items()},
-            'isolation_level': self.isolation_level.value,
-            'max_turns': self.max_turns,
-            'agent_start_timeout': self.agent_start_timeout,
-            'agent_end_timeout': self.agent_end_timeout,
-            'agent_action_timeout': self.agent_action_timeout,
-            'training': self.training,
-            'extra_info': self.extra_info,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return cls(
-            seed = data.get('seed', None),
-            board_source = data['board_source'],
-            agent_infos = {int(id): pacai.core.agentinfo.AgentInfo.from_dict(raw_info) for (id, raw_info) in data['agent_infos'].items()},
-            isolation_level = pacai.core.isolation.level.Level(data.get('isolation_level', pacai.core.isolation.level.Level.NONE.value)),
-            max_turns = data.get('max_turns', DEFAULT_MAX_TURNS),
-            agent_start_timeout = data.get('agent_start_timeout', DEFAULT_AGENT_START_TIMEOUT),
-            agent_end_timeout = data.get('agent_end_timeout', DEFAULT_AGENT_END_TIMEOUT),
-            agent_action_timeout = data.get('agent_action_timeout', DEFAULT_AGENT_ACTION_TIMEOUT),
-            training = data.get('training', False),
-            extra_info = data.get('extra_info', None))
-
-class GameResult(edq.util.json.DictConverter):
+class GameResult(edq.util.serial.DictConverter):
     """ The result of running a game. """
 
     def __init__(self,
@@ -191,41 +164,6 @@ class GameResult(edq.util.json.DictConverter):
         The agents that are considered the "winner" of this game.
         Games may interpret this value in different ways.
         """
-
-    def to_dict(self) -> dict[str, typing.Any]:
-        return {
-            'game_id': self.game_id,
-            'game_info': self.game_info.to_dict(),
-            'start_time': self.start_time,
-            'end_time': self.end_time,
-            'history': [item.to_dict() for item in self.history],
-            'agent_complete_records': {agent_index: record.to_dict() for (agent_index, record) in self.agent_complete_records.items()},
-            'score': self.score,
-            'game_timeout': self.game_timeout,
-            'timeout_agent_indexes': self.timeout_agent_indexes,
-            'crash_agent_indexes': self.crash_agent_indexes,
-            'winning_agent_indexes': self.winning_agent_indexes,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        agent_complete_records = {}
-        for (agent_index, raw_record) in data.get('agent_complete_records', {}).items():
-            agent_complete_records[agent_index] = pacai.core.agentaction.AgentActionRecord.from_dict(raw_record)
-
-        return cls(
-            data['game_id'],
-            GameInfo.from_dict(data['game_info']),
-            start_time = data.get('start_time', None),
-            end_time = data.get('end_time', None),
-            history = [pacai.core.agentaction.AgentActionRecord.from_dict(item) for item in data.get('history', [])],
-            agent_complete_records = agent_complete_records,
-            score = data.get('score', 0),
-            game_timeout = data.get('game_timeout', False),
-            timeout_agent_indexes = data.get('timeout_agent_indexes', None),
-            crash_agent_indexes = data.get('crash_agent_indexes', None),
-            winning_agent_indexes = data.get('winning_agent_indexes', -1),
-        )
 
     def get_duration_secs(self) -> float:
         """
@@ -461,20 +399,20 @@ class Game(abc.ABC):
         """
 
         logging.info("Loading replay from '%s'.", args.replay_path)
-        replay_info = typing.cast(GameResult, edq.util.json.load_object_path(args.replay_path, GameResult))
+        replay_info = GameResult.from_path(args.replay_path)
 
         # Overrides from the replay info.
-        args.board = replay_info.game_info.board_source
-        args.seed = replay_info.game_info.seed
+        args.board = replay_info.game_info.board_source  # pylint: disable=no-member
+        args.seed = replay_info.game_info.seed  # pylint: disable=no-member
 
         # Special settings for replays.
         args.num_games = 1
         args.num_training = 0
-        args.max_turns = len(replay_info.history)
+        args.max_turns = len(replay_info.history)  # pylint: disable=no-member
 
         # Script the moves for each agent based on the replay's history.
         scripted_actions: dict[int, list[pacai.core.action.Action]] = {}
-        for item in replay_info.history:
+        for item in replay_info.history:  # pylint: disable=no-member
             if (item.agent_index not in scripted_actions):
                 scripted_actions[item.agent_index] = []
 
@@ -485,7 +423,7 @@ class Game(abc.ABC):
         for (agent_index, actions) in scripted_actions.items():
             base_agent_infos[agent_index] = pacai.core.agentinfo.AgentInfo(
                 name = pacai.util.alias.AGENT_SCRIPTED.short,
-                move_delay = replay_info.game_info.agent_infos[agent_index].move_delay,
+                move_delay = replay_info.game_info.agent_infos[agent_index].move_delay,  # pylint: disable=no-member
                 actions = actions,
             )
 

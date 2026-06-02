@@ -5,6 +5,7 @@ import typing
 
 import PIL.Image
 import PIL.ImageDraw
+import edq.util.serial
 
 import pacai.core.action
 import pacai.core.agentaction
@@ -475,7 +476,9 @@ class GameState(pacai.core.gamestate.GameState):
 
         return texts
 
-    def to_dict(self) -> dict[str, typing.Any]:
+    def to_dict(self,
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> typing.Dict[str, edq.util.serial.PODType]:
         data = super().to_dict()
         data['_win'] = self._win
 
@@ -486,7 +489,11 @@ class GameState(pacai.core.gamestate.GameState):
         return data
 
     @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+    @typing.no_type_check
+    def from_dict(cls,
+            data: typing.Dict[str, edq.util.serial.PODType],
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> 'GameState':
         game_state = super().from_dict(data)
         game_state._win = data['_win']
         return game_state
