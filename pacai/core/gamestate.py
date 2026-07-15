@@ -3,7 +3,7 @@ import random
 import typing
 
 import PIL.Image
-import edq.util.json
+import edq.util.serial
 
 import pacai.core.action
 import pacai.core.agentaction
@@ -14,7 +14,9 @@ import pacai.core.spritesheet
 import pacai.core.ticket
 import pacai.util.math
 
-class GameState(edq.util.json.DictConverter):
+GameStateClass = typing.TypeVar('GameStateClass', bound = 'GameState')
+
+class GameState(edq.util.serial.DictConverter):
     """
     The base for all game states in pacai.
     A game state should contain all the information about the current state of the game.
@@ -94,7 +96,9 @@ class GameState(edq.util.json.DictConverter):
             for (info_agent_index, agent_info) in agent_infos.items():
                 self.move_delays[info_agent_index] = agent_info.move_delay
 
-    def copy(self) -> 'GameState':
+    def copy(self: GameStateClass,
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> GameStateClass:
         """
         Get a deep copy of this state.
 
@@ -365,7 +369,9 @@ class GameState(edq.util.json.DictConverter):
 
         return pacai.core.font.Text(score_text, horizontal_align = pacai.core.font.TextHorizontalAlign.LEFT)
 
-    def to_dict(self) -> dict[str, typing.Any]:
+    def to_dict(self,
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> typing.Dict[str, edq.util.serial.PODType]:
         data = vars(self).copy()
 
         data['board'] = self.board.to_dict()
@@ -375,7 +381,11 @@ class GameState(edq.util.json.DictConverter):
         return data
 
     @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+    @typing.no_type_check
+    def from_dict(cls: typing.Type[GameStateClass],
+            data: typing.Dict[str, edq.util.serial.PODType],
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> GameStateClass:
         data = data.copy()
 
         data['board'] = pacai.core.board.Board.from_dict(data['board'])

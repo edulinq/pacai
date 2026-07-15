@@ -207,20 +207,3 @@ class GridWorldMDP(pacai.core.mdp.MarkovDecisionProcess[pacai.core.mdp.MDPStateP
                 states.append(pacai.core.mdp.MDPStatePosition(new_position))
 
         return tuple(states)  # type: ignore[return-value]
-
-    def to_dict(self) -> dict[str, typing.Any]:
-        data = super().to_dict()
-
-        if (self.board is not None):
-            data['board'] = self.board.to_dict()
-
-        return data
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        mdp = super().from_dict(data)
-
-        if ('board' in data):
-            mdp.board = pacai.gridworld.board.Board.from_dict(data['board'])
-
-        return mdp

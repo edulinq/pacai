@@ -4,13 +4,13 @@ This module handles containers for passing information from agents back to the g
 
 import typing
 
-import edq.util.json
+import edq.util.serial
 import edq.util.time
 
 import pacai.core.action
 import pacai.core.board
 
-class AgentAction(edq.util.json.DictConverter):
+class AgentAction(edq.util.serial.DictConverter):
     """
     The full response by an agent when an action is requested.
     Agent's usually just provide actions, but more information can be supplied if necessary.
@@ -57,18 +57,7 @@ class AgentAction(edq.util.json.DictConverter):
         All information put here must be trivially JSON serializable.
         """
 
-    def to_dict(self) -> dict[str, typing.Any]:
-        data = vars(self).copy()
-        data['board_highlights'] = [board_highlight.to_dict() for board_highlight in self.board_highlights]
-        return data
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        data = data.copy()
-        data['board_highlights'] = [pacai.core.board.Highlight.from_dict(raw_highligh) for raw_highligh in data['board_highlights']]
-        return cls(**data)
-
-class AgentActionRecord(edq.util.json.DictConverter):
+class AgentActionRecord(edq.util.serial.DictConverter):
     """
     The full representation of requesting an action from an agent.
     In addition to the data supplied by the agent,
@@ -120,22 +109,3 @@ class AgentActionRecord(edq.util.json.DictConverter):
             return []
 
         return self.agent_action.board_highlights
-
-    def to_dict(self) -> dict[str, typing.Any]:
-        return {
-            'agent_index': self.agent_index,
-            'agent_action': self.agent_action.to_dict() if (self.agent_action is not None) else None,
-            'duration': self.duration,
-            'crashed': self.crashed,
-            'timeout': self.timeout,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return cls(
-            agent_index = data['agent_index'],
-            agent_action = AgentAction.from_dict(data['agent_action']) if data['agent_action'] is not None else None,
-            duration = edq.util.time.Duration(data['duration']),
-            crashed = data.get('crashed', False),
-            timeout = data.get('timeout', False),
-        )

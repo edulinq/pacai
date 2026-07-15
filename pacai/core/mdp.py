@@ -6,7 +6,7 @@ import abc
 import math
 import typing
 
-import edq.util.json
+import edq.util.serial
 
 import pacai.core.action
 import pacai.core.board
@@ -19,7 +19,7 @@ ACTION_EXIT: pacai.core.action.Action = pacai.core.action.Action('exit')
 TERMINAL_POSITION: pacai.core.board.Position = pacai.core.board.Position(-1, -1)
 """ A special (impossible) position representing the terminal state. """
 
-class MDPState(edq.util.json.DictConverter):
+class MDPState(edq.util.serial.DictConverter):
     """
     A state or "node" in an MDP.
     """
@@ -71,15 +71,6 @@ class MDPStatePosition(MDPState):
 
     def __repr__(self) -> str:
         return str(self)
-
-    def to_dict(self) -> dict[str, typing.Any]:
-        return {
-            'position': self.position.to_dict(),
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return MDPStatePosition(data['position'])
 
 class MDPStateBoard(MDPStatePosition):
     """
@@ -134,16 +125,6 @@ class MDPStateBoard(MDPStatePosition):
     def __repr__(self) -> str:
         return str(self)
 
-    def to_dict(self) -> dict[str, typing.Any]:
-        return {
-            'position': self.position.to_dict(),
-            '_board_string': self._board_string,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return MDPStateBoard(position = data['position'], _board_string = data['_board_string'])
-
 StateType = typing.TypeVar('StateType', bound = MDPState)  # pylint: disable=invalid-name
 
 class Transition(typing.Generic[StateType]):
@@ -183,7 +164,7 @@ class Transition(typing.Generic[StateType]):
 
         self.probability += other.probability
 
-class MarkovDecisionProcess(typing.Generic[StateType], edq.util.json.DictConverter):
+class MarkovDecisionProcess(typing.Generic[StateType], edq.util.serial.DictConverter):
     """
     A class that implements a Markov Decision Process (MDP).
 
@@ -230,10 +211,3 @@ class MarkovDecisionProcess(typing.Generic[StateType], edq.util.json.DictConvert
         Note that in some methods like Q-Learning and reinforcement learning,
         we do not know these probabilities nor do we directly model them.
         """
-
-    def to_dict(self) -> dict[str, typing.Any]:
-        return vars(self).copy()
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return cls(**data)

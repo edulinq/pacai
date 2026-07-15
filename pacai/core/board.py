@@ -5,6 +5,7 @@ import typing
 
 import edq.util.dirent
 import edq.util.json
+import edq.util.serial
 
 import pacai.core.action
 import pacai.util.reflection
@@ -23,6 +24,8 @@ MAX_AGENTS: int = 10
 
 MIN_HL_INTENSITY: int = 0
 MAX_HL_INTENSITY: int = 1000
+
+BoardClass = typing.TypeVar('BoardClass', bound = 'Board')
 
 class Marker(str):
     """
@@ -105,7 +108,7 @@ BASE_MARKERS: dict[str, Marker] = {
 for agent_marker in AGENT_MARKERS:
     BASE_MARKERS[agent_marker] = agent_marker
 
-class Position(edq.util.json.DictConverter):
+class Position(edq.util.serial.DictConverter):
     """
     An immutable 2-dimension location
     representing row/y/height/y-offset and col/x/width/x-offset.
@@ -182,15 +185,20 @@ class Position(edq.util.json.DictConverter):
     def __repr__(self) -> str:
         return str(self)
 
-    def to_dict(self) -> dict[str, typing.Any]:
+    def to_dict(self,
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> typing.Dict[str, edq.util.serial.PODType]:
         return {
             'row': self._row,
             'col': self._col,
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        return Position(row = data['row'], col = data['col'])
+    def from_dict(cls,
+            data: typing.Dict[str, edq.util.serial.PODType],
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> 'Position':
+        return Position(row = data['row'], col = data['col'])  # type: ignore[arg-type]
 
 CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
     pacai.core.action.NORTH: Position(-1, 0),
@@ -199,7 +207,7 @@ CARDINAL_OFFSETS: dict[pacai.core.action.Action, Position] = {
     pacai.core.action.WEST: Position(0, -1),
 }
 
-class Highlight(edq.util.json.DictConverter):
+class Highlight(edq.util.serial.DictConverter):
     """
     A class representing a request to highlight/emphasize a position on the board.
     """
@@ -234,20 +242,6 @@ class Highlight(edq.util.json.DictConverter):
             return None
 
         return self.intensity / MAX_HL_INTENSITY
-
-    def to_dict(self) -> dict[str, typing.Any]:
-        return {
-            'position': self.position.to_dict(),
-            'intensity': self.intensity,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
-        data = {
-            'position': Position.from_dict(data['position']),
-            'intensity': data['intensity'],
-        }
-        return cls(**data)
 
 class AdjacencyString(str):
     """
@@ -298,7 +292,7 @@ class AdjacencyString(str):
 
         return (self[AdjacencyString.WEST_INDEX] == AdjacencyString.TRUE)
 
-class Board(edq.util.json.DictConverter):
+class Board(edq.util.serial.DictConverter):
     """
     A board represents the positional components of a game.
     For example, a board contains the agents, walls and collectable items.
@@ -420,7 +414,9 @@ class Board(edq.util.json.DictConverter):
             self._nonwall_objects = _nonwall_objects  # type: ignore
             self._agent_initial_positions = _agent_initial_positions  # type: ignore
 
-    def copy(self) -> 'Board':
+    def copy(self,
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> 'Board':
         """ Get a copy of this board. """
 
         # Make a shallow copy.
@@ -734,7 +730,9 @@ class Board(edq.util.json.DictConverter):
 
         return True
 
-    def to_dict(self) -> dict[str, typing.Any]:
+    def to_dict(self,
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> typing.Dict[str, edq.util.serial.PODType]:
         all_objects = {}
         for (marker, positions) in sorted(self._nonwall_objects.items()):
             all_objects[str(marker)] = [position.to_dict() for position in sorted(positions)]
@@ -754,12 +752,16 @@ class Board(edq.util.json.DictConverter):
             'width': self.width,
             'search_target': search_target,
             '_walls': [position.to_dict() for position in sorted(self._walls)],
-            '_nonwall_objects': all_objects,
-            '_agent_initial_positions': agent_initial_positions,
+            '_nonwall_objects': all_objects,  # type: ignore[dict-item]
+            '_agent_initial_positions': agent_initial_positions,  # type: ignore[dict-item]
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, typing.Any]) -> typing.Any:
+    @typing.no_type_check
+    def from_dict(cls: typing.Type[BoardClass],
+            data: typing.Dict[str, edq.util.serial.PODType],
+            context: typing.Union[edq.util.serial.SerializationContext, None] = None,
+            ) -> BoardClass:
         all_objects: dict[Marker, set[Position]] = {}
         for (raw_marker, raw_positions) in data['_nonwall_objects'].items():
             all_objects[Marker(raw_marker)] = {Position.from_dict(raw_position) for raw_position in raw_positions}

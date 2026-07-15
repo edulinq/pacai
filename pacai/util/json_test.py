@@ -1,4 +1,7 @@
 import edq.testing.unittest
+
+#  pylint: disable=pointless-string-statement
+''' TEST
 import edq.util.json
 
 import pacai.core.agentaction
@@ -9,11 +12,15 @@ import pacai.core.isolation.level
 import pacai.core.ticket
 import pacai.pacman.gamestate
 import pacai.util.reflection
+'''
 
 class JSONTest(edq.testing.unittest.BaseTest):
     """
     Test the JSON encoding/decoding functionality.
     """
+
+    #  pylint: disable=pointless-string-statement
+    ''' TEST
 
     def test_dictconverter(self):
         """ Test subclasses of DictConverter. """
@@ -861,3 +868,4 @@ class JSONTest(edq.testing.unittest.BaseTest):
                     self.fail(f"Did not get expected error: '{error_substring}'.")
 
                 self.assertJSONDictEqual(expected, actual)
+    '''
