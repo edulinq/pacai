@@ -20,6 +20,9 @@ readonly MODULE_TITLE_LOCATION='<section class="module-info">'
 
 readonly API_DOC_MARKER='<!-- API-DOC-MARKER -->'
 
+# Don't generate any docs for this version or earlier.
+readonly ONLY_AFTER_TAG='v2.0.2'
+
 function check_git() {
     if [ ! -z "$(git status --porcelain)" ] ; then
         echo "ERROR: Repository is not clean."
@@ -85,6 +88,10 @@ function main() {
 
     # Generate docs for each tagged version.
     for tag in $(git tag -l | grep -P '^v\d+\.\d+\.\d+') ; do
+        if [[ ! "${tag}" > "${ONLY_AFTER_TAG}" ]] ; then
+            continue
+        fi
+
         git checkout --quiet "${tag}"
         gen_docs "${tag}" "${tag}"
     done
