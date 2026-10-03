@@ -427,6 +427,7 @@ confidence=HIGH,
 # --disable=W".
 disable=bad-inline-option,
         broad-exception-caught,
+        chained-comparison,
         consider-iterating-dictionary,
         deprecated-pragma,
         duplicate-code,
