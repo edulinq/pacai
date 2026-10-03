@@ -98,7 +98,7 @@ class MinimaxLikeAgent(pacai.core.agent.Agent):
         When doing alpha-beta pruning,
         alpha represents the "best minimum" score
         while beta represents the "best maximum" score.
-        They will typically start at inf and -inf, respectively.
+        They will typically start at -inf and inf, respectively.
 
         Return: ([best action, ...], best score).
         """
